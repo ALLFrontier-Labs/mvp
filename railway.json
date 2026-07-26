@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node dist/index.js"
+    "startCommand": "npx tsc && node dist/index.js"
   }
 }

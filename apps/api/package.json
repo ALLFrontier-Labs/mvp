@@ -1,0 +1,33 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "LiteDaemon API — OpenRouter for AI Agents and Tools",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node -r dotenv/config src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@fastify/cors": "^11.3.0",
+    "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
+    "@sentry/node": "^10.68.0",
+    "axios": "^1.18.1",
+    "fastify": "^5.10.0",
+    "fastify-raw-body": "^5.0.0",
+    "ioredis": "^5.11.1",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/pg": "^8.20.0",
+    "dotenv": "^17.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  }
+}

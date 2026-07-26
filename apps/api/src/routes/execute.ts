@@ -1,0 +1,70 @@
+import { FastifyInstance } from 'fastify';
+import { pool }            from '../db/client';
+import { getAdapter }      from '../adapters/index';
+import { decrypt }         from '../services/encryption';
+import { debitLedger, InsufficientFundsError } from '../services/ledger';
+import { calculateCharge } from '../services/billing';
+import { checkRateLimit }  from '../services/rateLimit';
+import type { LDProvider } from '../types';
+
+export async function executeRoute(app: FastifyInstance) {
+  app.post('/v1/execute', async (req, reply) => {
+    const user = req.user;
+    const { provider: providerId = 'e2b', params = {} } = req.body as any;
+
+    if (!params.code)
+      return reply.code(422).send({ error: 'validation_error', fields: ['params.code is required'] });
+
+    const rl = await checkRateLimit(user.id, user.plan);
+    if (!rl.ok)
+      return reply.code(429).send({ error: 'rate_limit_exceeded', retry_after: rl.resetAt - Math.floor(Date.now() / 1000) });
+
+    const pr = await pool.query(
+      `SELECT * FROM providers WHERE id = $1 AND endpoint = 'execute' AND is_active = true`,
+      [providerId]
+    );
+    if (!pr.rows[0]) return reply.code(404).send({ error: 'provider_not_found' });
+    const provider = pr.rows[0] as LDProvider;
+
+    const charge = calculateCharge(parseFloat(provider.cost_per_call_usd));
+
+    const jr = await pool.query(
+      `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd)
+       VALUES ($1, $2, 'execute', $3, 'pending', $4) RETURNING id`,
+      [user.id, providerId, JSON.stringify(params), charge]
+    );
+    const jobId = jr.rows[0].id;
+
+    try {
+      await debitLedger(user.id, charge, providerId, jobId, `${provider.name} execution`);
+    } catch (err: any) {
+      await pool.query(`DELETE FROM jobs WHERE id = $1`, [jobId]);
+      if (err instanceof InsufficientFundsError)
+        return reply.code(402).send({ error: 'insufficient_balance', required_usd: charge });
+      throw err;
+    }
+
+    const adapter = getAdapter(provider.adapter_type);
+    const apiKey  = decrypt(provider.api_key_encrypted);
+    const started = Date.now();
+
+    try {
+      const res = await adapter.run(params, apiKey);
+      await pool.query(
+        `UPDATE jobs SET status='completed', result=$1, completed_at=NOW() WHERE id=$2`,
+        [JSON.stringify((res as any).result), jobId]
+      );
+      return reply.send({
+        job_id:      jobId,
+        status:      'completed',
+        provider:    providerId,
+        result:      (res as any).result,
+        cost_usd:    charge,
+        duration_ms: Date.now() - started,
+      });
+    } catch (err: any) {
+      await pool.query(`UPDATE jobs SET status='failed', completed_at=NOW() WHERE id=$1`, [jobId]);
+      return reply.code(502).send({ error: 'provider_error', message: err.message });
+    }
+  });
+}

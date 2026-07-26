@@ -1,0 +1,12 @@
+{
+  "name": "litedaemon",
+  "version": "1.0.0",
+  "description": "LiteDaemon — OpenRouter for AI Agents and Tools",
+  "private": true,
+  "scripts": {
+    "build:api": "cd apps/api && npm run build",
+    "build:dashboard": "cd apps/dashboard && npm run build",
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:dashboard": "cd apps/dashboard && npm run dev"
+  }
+}

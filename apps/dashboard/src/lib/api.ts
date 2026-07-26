@@ -1,0 +1,100 @@
+// src/lib/api.ts
+
+const API_BASE = '/v1';
+
+export function getStoredApiKey(): string | null {
+  return localStorage.getItem('litedaemon_api_key');
+}
+
+export function setStoredApiKey(key: string): void {
+  localStorage.setItem('litedaemon_api_key', key);
+}
+
+export function clearStoredApiKey(): void {
+  localStorage.removeItem('litedaemon_api_key');
+}
+
+async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const apiKey = getStoredApiKey();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
+  }
+
+  return data;
+}
+
+export const api = {
+  signup: async (email: string) => {
+    return apiRequest<{ api_key: string; message: string }>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  getUsage: async () => {
+    return apiRequest<{
+      total_calls: number;
+      billed_calls: number;
+      total_spent_usd: number;
+      balance_usd: number;
+    }>('/usage');
+  },
+
+  getJob: async (id: string) => {
+    return apiRequest<{
+      job_id: string;
+      status: 'pending' | 'running' | 'completed' | 'failed';
+      provider: string;
+      result?: any;
+      cost_usd?: number;
+      error?: string;
+    }>(`/jobs/${id}`);
+  },
+
+  getCheckoutUrl: async (amount: string) => {
+    return apiRequest<{ checkout_url: string }>(`/billing/checkout?amount=${amount}`);
+  },
+
+  scrape: async (provider: string, params: Record<string, any>) => {
+    return apiRequest('/scrape', {
+      method: 'POST',
+      body: JSON.stringify({ provider, params }),
+    });
+  },
+
+  search: async (provider: string, params: Record<string, any>) => {
+    return apiRequest('/search', {
+      method: 'POST',
+      body: JSON.stringify({ provider, params }),
+    });
+  },
+
+  browser: async (provider: string, params: Record<string, any>) => {
+    return apiRequest('/browser', {
+      method: 'POST',
+      body: JSON.stringify({ provider, params }),
+    });
+  },
+
+  execute: async (provider: string = 'e2b', params: Record<string, any>) => {
+    return apiRequest('/execute', {
+      method: 'POST',
+      body: JSON.stringify({ provider, params }),
+    });
+  },
+};

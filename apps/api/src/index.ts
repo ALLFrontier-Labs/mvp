@@ -1,23 +1,23 @@
 import 'dotenv/config';
-import Fastify       from 'fastify';
-import rawBody       from 'fastify-raw-body';
-import cors          from '@fastify/cors';
-import * as Sentry   from '@sentry/node';
-import { authHook }  from './services/auth';
+import Fastify from 'fastify';
+import rawBody from 'fastify-raw-body';
+import cors from '@fastify/cors';
+import * as Sentry from '@sentry/node';
+import { authHook } from './services/auth';
 import { startOrphanJobReconciliation } from './services/reconciliation';
-import { authRoute }    from './routes/auth';
-import { scrapeRoute }  from './routes/scrape';
-import { searchRoute }  from './routes/search';
+import { authRoute } from './routes/auth';
+import { scrapeRoute } from './routes/scrape';
+import { searchRoute } from './routes/search';
 import { browserRoute } from './routes/browser';
 import { executeRoute } from './routes/execute';
-import { jobsRoute }    from './routes/jobs';
-import { usageRoute }   from './routes/usage';
+import { jobsRoute } from './routes/jobs';
+import { usageRoute } from './routes/usage';
 import { billingRoute } from './routes/billing';
 
 Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV });
 
 const app = Fastify({
-  logger:            process.env.NODE_ENV !== 'production',
+  logger: process.env.NODE_ENV !== 'production',
   connectionTimeout: 0,
   // connectionTimeout: 0 disables Fastify's connection timeout.
   // Needed for sync providers like Firecrawl that may take 30s+.
@@ -25,7 +25,7 @@ const app = Fastify({
 
 async function main() {
   await app.register(rawBody);
-  await app.register(cors, { origin: ['https://app.litedaemon.io'] });
+  await app.register(cors, { origin: ['https://mvp-cun3vdjr9-lite-daemon.vercel.app'] });
 
   app.addHook('preHandler', authHook);
 

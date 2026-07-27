@@ -47,6 +47,7 @@ CREATE TABLE providers (
   response_type     TEXT            NOT NULL DEFAULT 'sync',
   api_key_encrypted TEXT            NOT NULL,
   cost_per_call_usd NUMERIC(18, 8)  NOT NULL,
+  config            JSONB           NOT NULL DEFAULT '{}',
   is_active         BOOLEAN         NOT NULL DEFAULT true,
   created_at        TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );

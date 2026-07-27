@@ -36,10 +36,10 @@ async function main() {
   });
 
   // Global error handler — return clean JSON for all unhandled errors
-  app.setErrorHandler((error, _req, reply) => {
+  app.setErrorHandler((error: any, _req, reply) => {
     console.error('[Fastify error]', error);
-    const status = error.statusCode ?? 500;
-    reply.code(status).send({ error: error.message || 'Internal Server Error' });
+    const status = (error.statusCode as number) ?? 500;
+    reply.code(status).send({ error: (error.message as string) || 'Internal Server Error' });
   });
 
   app.addHook('preHandler', authHook);

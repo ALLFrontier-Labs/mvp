@@ -1,6 +1,6 @@
 // src/lib/api.ts
 
-const API_BASE = '/v1';
+const API_BASE = 'https://mvp-production-c1e8.up.railway.app/v1';
 
 export function getStoredApiKey(): string | null {
   return localStorage.getItem('litedaemon_api_key');

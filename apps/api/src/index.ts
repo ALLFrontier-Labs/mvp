@@ -25,7 +25,15 @@ const app = Fastify({
 
 async function main() {
   await app.register(rawBody);
-  await app.register(cors, { origin: ['https://mvp-cun3vdjr9-lite-daemon.vercel.app'] });
+  await app.register(cors, {
+    origin: (origin, cb) => {
+      if (!origin || origin.endsWith('.vercel.app')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not allowed by CORS'), false);
+      }
+    },
+  });
 
   app.addHook('preHandler', authHook);
 

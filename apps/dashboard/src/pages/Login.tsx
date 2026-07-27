@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Key, Copy, Check, AlertTriangle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Zap, Key, Copy, Check, AlertTriangle, ArrowRight, ShieldCheck, LogIn } from 'lucide-react';
 import { api, setStoredApiKey } from '../lib/api';
 
+type Mode = 'signup' | 'login';
+
 export const Login: React.FC = () => {
+  const [mode, setMode] = useState<Mode>('signup');
   const [email, setEmail] = useState('');
+  const [apiKeyInput, setApiKeyInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdApiKey, setCreatedApiKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setError(null);
+    setApiKeyInput('');
+  };
+
+  // ── Signup: create a new account ──────────────────────────────────────────
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
@@ -23,11 +34,37 @@ export const Login: React.FC = () => {
       setCreatedApiKey(res.api_key);
       setStoredApiKey(res.api_key);
     } catch (err: any) {
-      if (err.message?.includes('already_registered')) {
-        setError('This email is already registered. If you already have an API key, you can enter it below.');
+      if (err.message?.toLowerCase().includes('already_registered') || err.message?.toLowerCase().includes('already registered')) {
+        // Auto-switch to login mode with a helpful message
+        setError('This email is already registered. Switch to "Sign In" and paste your API key below.');
+        switchMode('login');
       } else {
-        setError(err.message || 'Signup failed');
+        setError(err.message || 'Signup failed. Please try again.');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Login: validate an existing API key by hitting /usage ─────────────────
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedKey = apiKeyInput.trim();
+    if (!trimmedKey) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Temporarily store the key so apiRequest() picks it up
+      setStoredApiKey(trimmedKey);
+      await api.getUsage(); // will throw if key is invalid (401)
+      // Key is valid — navigate to dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      // Remove the bad key
+      localStorage.removeItem('litedaemon_api_key');
+      setError('Invalid API key. Please double-check and try again.');
     } finally {
       setLoading(false);
     }
@@ -44,19 +81,47 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md space-y-8">
-        
+
         {/* Header Branding */}
         <div className="text-center">
           <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-4">
             <Zap className="w-8 h-8 text-emerald-400" />
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Developer Sign In</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Developer Access</h2>
           <p className="mt-2 text-sm text-slate-400">
             One API Key. Prepaid Wallet. Zero Margin on 10 AI Tools.
           </p>
         </div>
 
-        {/* API Key Banner if just generated */}
+        {/* Tab Toggle */}
+        {!createdApiKey && (
+          <div className="flex rounded-xl bg-slate-900/60 border border-slate-800 p-1">
+            <button
+              type="button"
+              onClick={() => switchMode('signup')}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                mode === 'signup'
+                  ? 'bg-emerald-500 text-slate-950 shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              New Account
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode('login')}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                mode === 'login'
+                  ? 'bg-emerald-500 text-slate-950 shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Sign In
+            </button>
+          </div>
+        )}
+
+        {/* API Key Banner (after successful signup) */}
         {createdApiKey ? (
           <div className="rounded-2xl bg-slate-900/90 border border-emerald-500/40 p-6 space-y-4 shadow-xl shadow-emerald-500/5">
             <div className="flex items-center space-x-2 text-emerald-400 font-semibold">
@@ -95,9 +160,9 @@ export const Login: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        ) : (
-          /* Signup / Existing Key Form */
-          <form onSubmit={handleSubmit} className="rounded-2xl bg-[#121620]/80 border border-slate-800 p-8 shadow-2xl space-y-6">
+        ) : mode === 'signup' ? (
+          /* ── Signup Form ─────────────────────────────────────────────────── */
+          <form onSubmit={handleSignup} className="rounded-2xl bg-[#121620]/80 border border-slate-800 p-8 shadow-2xl space-y-6">
             {error && (
               <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-400">
                 {error}
@@ -105,11 +170,11 @@ export const Login: React.FC = () => {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">
+              <label htmlFor="signup-email" className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">
                 Work / Developer Email
               </label>
               <input
-                id="email"
+                id="signup-email"
                 type="email"
                 required
                 value={email}
@@ -137,6 +202,61 @@ export const Login: React.FC = () => {
             <div className="pt-4 border-t border-slate-800/80 text-center">
               <p className="text-xs text-slate-500">
                 LiteDaemon is zero-margin & pre-revenue. Free tier includes starter credits.
+              </p>
+            </div>
+          </form>
+        ) : (
+          /* ── Login Form (existing API key) ──────────────────────────────── */
+          <form onSubmit={handleLogin} className="rounded-2xl bg-[#121620]/80 border border-slate-800 p-8 shadow-2xl space-y-6">
+            {error && (
+              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-400">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="api-key-input" className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">
+                Your API Key
+              </label>
+              <input
+                id="api-key-input"
+                type="text"
+                required
+                value={apiKeyInput}
+                onChange={(e) => setApiKeyInput(e.target.value)}
+                placeholder="ld_live_..."
+                className="w-full px-4 py-3 rounded-xl bg-[#0a0d14] border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-mono text-sm"
+              />
+              <p className="mt-2 text-xs text-slate-500">
+                Paste the API key you received when you first signed up.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <span>Verifying key...</span>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In to Dashboard</span>
+                </>
+              )}
+            </button>
+
+            <div className="pt-4 border-t border-slate-800/80 text-center">
+              <p className="text-xs text-slate-500">
+                Don't have a key yet?{' '}
+                <button
+                  type="button"
+                  onClick={() => switchMode('signup')}
+                  className="text-emerald-400 hover:text-emerald-300 underline"
+                >
+                  Create a free account
+                </button>
               </p>
             </div>
           </form>

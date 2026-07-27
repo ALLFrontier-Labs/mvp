@@ -6,7 +6,12 @@ export async function billingRoute(app: FastifyInstance) {
     const { amount } = req.query as any;
     if (!['10', '25', '50', '100'].includes(amount))
       return reply.code(422).send({ error: 'invalid_amount', valid: [10, 25, 50, 100] });
-    return reply.send({ checkout_url: getCheckoutUrl(req.user.id, amount) });
+    try {
+      const checkout_url = await getCheckoutUrl(req.user.id, amount);
+      return reply.send({ checkout_url });
+    } catch (err: any) {
+      return reply.code(500).send({ error: err.message || 'Failed to create checkout' });
+    }
   });
 
   // LemonSqueezy calls this directly — it sends X-Signature, never a Bearer

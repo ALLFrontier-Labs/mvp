@@ -13,6 +13,7 @@ import { executeRoute } from './routes/execute';
 import { jobsRoute } from './routes/jobs';
 import { usageRoute } from './routes/usage';
 import { billingRoute } from './routes/billing';
+import { providersRoute } from './routes/providers';
 
 Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV });
 
@@ -52,6 +53,7 @@ async function main() {
   app.register(jobsRoute);
   app.register(usageRoute);
   app.register(billingRoute);
+  app.register(providersRoute);
 
   // Public — no API key exists yet for a health check
   app.get('/health', { config: { public: true } }, async () => ({ ok: true, ts: Date.now() }));

@@ -39,6 +39,20 @@ async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}):
 }
 
 export const api = {
+  listProviders: async () => {
+    return apiRequest<{
+      providers: Array<{
+        id: string;
+        name: string;
+        endpoint: string;
+        adapter_type: string;
+        response_type: 'sync' | 'async';
+        cost_per_call_usd: number;
+        is_live: boolean;
+      }>;
+    }>('/providers');
+  },
+
   signup: async (email: string) => {
     return apiRequest<{ api_key: string; message: string }>('/auth/signup', {
       method: 'POST',

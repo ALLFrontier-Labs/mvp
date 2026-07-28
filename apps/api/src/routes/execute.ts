@@ -5,12 +5,13 @@ import { debitLedger, InsufficientFundsError } from '../services/ledger';
 import { calculateCharge } from '../services/billing';
 import { checkRateLimit }  from '../services/rateLimit';
 import { resolveProviderKey } from '../services/byok';
+import { autoRun }         from '../services/autoRoute';
 import type { LDProvider } from '../types';
 
 export async function executeRoute(app: FastifyInstance) {
   app.post('/v1/execute', async (req, reply) => {
     const user = req.user;
-    const { provider: providerId = 'e2b', params = {} } = req.body as any;
+    const { provider: providerId = 'auto', params = {} } = req.body as any;
 
     if (!params.code)
       return reply.code(422).send({ error: 'validation_error', fields: ['params.code is required'] });
@@ -19,6 +20,43 @@ export async function executeRoute(app: FastifyInstance) {
     if (!rl.ok)
       return reply.code(429).send({ error: 'rate_limit_exceeded', retry_after: rl.resetAt - Math.floor(Date.now() / 1000) });
 
+    // ── AUTO routing path ───────────────────────────────────────────────────
+    if (!providerId || providerId === 'auto') {
+      try {
+        const { result, provider, isByok, charge, duration_ms } = await autoRun('execute', params, user.id);
+
+        if (!isByok && charge > 0) {
+          try {
+            const jr = await pool.query(
+              `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd, is_byok)
+               VALUES ($1, $2, 'execute', $3, 'pending', $4, false) RETURNING id`,
+              [user.id, provider.id, JSON.stringify(params), charge]
+            );
+            const jobId = jr.rows[0].id;
+            await debitLedger(user.id, charge, provider.id, jobId, `${provider.name} execution (auto)`);
+            await pool.query(`UPDATE jobs SET status='completed', result=$1, completed_at=NOW() WHERE id=$2`, [JSON.stringify(result), jobId]);
+            return reply.send({ job_id: jobId, status: 'completed', provider: provider.id, provider_auto: true, result, cost_usd: charge, duration_ms });
+          } catch (err: any) {
+            if (err instanceof InsufficientFundsError)
+              return reply.code(402).send({ error: 'insufficient_balance', required_usd: charge });
+            throw err;
+          }
+        } else {
+          const jr = await pool.query(
+            `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd, is_byok)
+             VALUES ($1, $2, 'execute', $3, 'completed', 0, true) RETURNING id`,
+            [user.id, provider.id, JSON.stringify(params)]
+          );
+          const jobId = jr.rows[0].id;
+          await pool.query(`UPDATE jobs SET result=$1, completed_at=NOW() WHERE id=$2`, [JSON.stringify(result), jobId]);
+          return reply.send({ job_id: jobId, status: 'completed', provider: provider.id, provider_auto: true, result, cost_usd: 0, duration_ms });
+        }
+      } catch (err: any) {
+        return reply.code(502).send({ error: 'auto_route_failed', message: err.message });
+      }
+    }
+
+    // ── Specific Provider Path ───────────────────────────────────────────────
     const pr = await pool.query(
       `SELECT * FROM providers WHERE id = $1 AND endpoint = 'execute' AND is_active = true`,
       [providerId]

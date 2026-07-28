@@ -4,12 +4,16 @@ import type { ProviderAdapter, ScrapeResult } from '../types';
 export const apifyAdapter: ProviderAdapter = {
   // run() returns Apify run_id immediately in < 300ms
   async run(params, apiKey) {
-    if (!params.actor_id) throw new Error('apify requires params.actor_id');
-    if (!params.run_input && !params.url)
-      throw new Error('apify requires either params.run_input or params.url');
+    // Default to website-content-crawler — no extra permissions needed
+    const actorId = params.actor_id || 'apify/website-content-crawler';
+    const runInput = params.run_input || {
+      startUrls: [{ url: params.url || 'https://example.com' }],
+      maxCrawlDepth: 0,
+      maxCrawlPages: 1,
+    };
     const r = await axios.post(
-      `https://api.apify.com/v2/acts/${encodeURIComponent(params.actor_id)}/runs`,
-      params.run_input || { startUrls: [{ url: params.url }] },
+      `https://api.apify.com/v2/acts/${encodeURIComponent(actorId)}/runs`,
+      runInput,
       { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 15000 }
     );
     return { type: 'async', provider_job_id: r.data.data.id };

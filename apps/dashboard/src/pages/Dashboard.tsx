@@ -107,7 +107,9 @@ export const Dashboard: React.FC = () => {
               {['10', '25', '50', '100'].map((amt) => (
                 <Link
                   key={amt}
-                  to={`/billing?topup=${amt}`}
+                  to={`/billing`}
+                  onClick={() => {}}
+                  state={{ amount: amt }}
                   className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-mono text-xs transition-colors"
                 >
                   +${amt}

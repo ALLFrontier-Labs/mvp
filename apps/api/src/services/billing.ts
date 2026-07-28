@@ -1,68 +1,94 @@
 // services/billing.ts
 import crypto from 'crypto';
-import { lemonSqueezySetup, createCheckout } from '@lemonsqueezy/lemonsqueezy.js';
 import { creditLedger } from './ledger';
 import { pool } from '../db/client';
 
-// ── SDK INIT ──────────────────────────────────────────────────────────────────
-lemonSqueezySetup({ apiKey: process.env.LEMONSQUEEZY_API_KEY! });
-
 // ── CHARGE CALCULATION ────────────────────────────────────────────────────────
-// LiteDaemon is pre-revenue. The developer is charged exactly the provider's
-// wholesale cost — no markup, no percentage, no platform fee.
 export function calculateCharge(providerCostUsd: number): number {
   return Math.round(providerCostUsd * 1e8) / 1e8;
 }
 
-// ── LEMONSQUEEZY VARIANT MAP ──────────────────────────────────────────────────
-const VARIANT_IDS: Record<string, number> = {
-  '10':  1954573,
-  '25':  1954620,
-  '50':  1954599,
-  '100': 1954615,
-};
+// ── FEE-INCLUSIVE CHECKOUT PRICE ─────────────────────────────────────────────
+// LemonSqueezy charges 5% + $0.50. We gross up so the user gets exactly their
+// requested credit amount after fees — LiteDaemon keeps $0.00.
+//   checkout_price = (credit_amount + 0.50) / 0.95
+export function calcCheckoutPrice(creditUsd: number): number {
+  return Math.ceil(((creditUsd + 0.5) / 0.95) * 100) / 100; // round up to nearest cent
+}
 
-const STORE_ID = 440354;
+// ── LEMONSQUEEZY CONFIG ───────────────────────────────────────────────────────
+const STORE_ID  = 440354;
+// Any live variant — we override the price dynamically via custom_price
+const VARIANT_ID = 1954573; // $10 variant as the base template
 
-// ── CREATE CHECKOUT SESSION ───────────────────────────────────────────────────
-// Uses the LS SDK to create a proper hosted checkout URL.
-// Pre-fills the user's email so they don't have to type it twice.
-export async function getCheckoutUrl(userId: string, creditAmount: string): Promise<string> {
-  const variantId = VARIANT_IDS[creditAmount];
-  if (!variantId) throw new Error(`Invalid amount. Valid: 10, 25, 50, 100`);
+const MIN_TOPUP = 5;   // $5 minimum
+const MAX_TOPUP = 999; // $999 maximum
 
-  // Fetch the user's email to pre-fill on the checkout page
+// ── CREATE CHECKOUT SESSION (custom price) ────────────────────────────────────
+export async function getCheckoutUrl(userId: string, creditAmount: number): Promise<string> {
+  if (creditAmount < MIN_TOPUP) throw new Error(`Minimum top-up is $${MIN_TOPUP}`);
+  if (creditAmount > MAX_TOPUP) throw new Error(`Maximum top-up is $${MAX_TOPUP}`);
+
+  const checkoutPrice = calcCheckoutPrice(creditAmount);
+  const checkoutPriceCents = Math.round(checkoutPrice * 100);
+
+  // Fetch user email for pre-fill
   let email: string | undefined;
   try {
     const r = await pool.query('SELECT email FROM users WHERE id = $1', [userId]);
     email = r.rows[0]?.email;
-  } catch { /* non-fatal — checkout still works without pre-fill */ }
+  } catch { /* non-fatal */ }
 
-  const { data, error } = await createCheckout(STORE_ID, variantId, {
-    checkoutOptions: {
-      embed: false,
-      media: true,
-      logo: true,
-    },
-    checkoutData: {
-      email,
-      custom: {
-        user_id: userId,
-        credit_amount: creditAmount,
+  // Use raw LS REST API — the JS SDK doesn't expose custom_price
+  const payload = {
+    data: {
+      type: 'checkouts',
+      attributes: {
+        checkout_data: {
+          email,
+          custom_price: checkoutPriceCents,
+          custom: {
+            user_id:       userId,
+            credit_amount: String(creditAmount),
+          },
+        },
+        product_options: {
+          redirect_url:          `${process.env.FRONTEND_URL || 'https://mvp-omega-livid.vercel.app'}/billing?success=1`,
+          receipt_button_text:   'Go to Dashboard',
+          receipt_thank_you_note: `$${creditAmount.toFixed(2)} has been credited to your LiteDaemon wallet.`,
+        },
+        checkout_options: {
+          embed: false,
+          media: true,
+          logo:  true,
+        },
+      },
+      relationships: {
+        store:   { data: { type: 'stores',   id: String(STORE_ID) } },
+        variant: { data: { type: 'variants', id: String(VARIANT_ID) } },
       },
     },
-    productOptions: {
-      redirectUrl: `${process.env.FRONTEND_URL || 'https://mvp-omega-livid.vercel.app'}/billing?success=1`,
-      receiptButtonText: 'Go to Dashboard',
-      receiptThankYouNote: `Your $${creditAmount} has been credited to your LiteDaemon wallet.`,
+  };
+
+  const res = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
+    method: 'POST',
+    headers: {
+      'Accept':        'application/vnd.api+json',
+      'Content-Type':  'application/vnd.api+json',
+      'Authorization': `Bearer ${process.env.LEMONSQUEEZY_API_KEY}`,
     },
+    body: JSON.stringify(payload),
   });
 
-  if (error || !data?.data?.attributes?.url) {
-    throw new Error(error?.message || 'Failed to create LemonSqueezy checkout');
+  const json: any = await res.json();
+  if (!res.ok || json.errors) {
+    const msg = json.errors?.[0]?.detail || `LS API error ${res.status}`;
+    throw new Error(msg);
   }
 
-  return data.data.attributes.url;
+  const url = json.data?.attributes?.url;
+  if (!url) throw new Error('LemonSqueezy did not return a checkout URL');
+  return url;
 }
 
 // ── WEBHOOK SIGNATURE VERIFICATION ───────────────────────────────────────────
@@ -85,6 +111,8 @@ export async function handleOrderCreated(body: any): Promise<void> {
   if (!userId || !creditAmount || status !== 'paid') return;
 
   const amountUsd = parseFloat(creditAmount);
-  await creditLedger(userId, amountUsd, `LemonSqueezy deposit — $${amountUsd.toFixed(2)} credits`);
+  if (isNaN(amountUsd) || amountUsd <= 0) return;
+
+  await creditLedger(userId, amountUsd, `Wallet top-up — $${amountUsd.toFixed(2)} deposited`);
   console.log(`[Billing] Credited $${amountUsd} to user ${userId}`);
 }

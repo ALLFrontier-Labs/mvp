@@ -1,14 +1,17 @@
 import { FastifyInstance } from 'fastify';
-import { getCheckoutUrl, verifyLSSignature, handleOrderCreated } from '../services/billing';
+import { getCheckoutUrl, calcCheckoutPrice, verifyLSSignature, handleOrderCreated } from '../services/billing';
 
 export async function billingRoute(app: FastifyInstance) {
   app.get('/v1/billing/checkout', async (req, reply) => {
     const { amount } = req.query as any;
-    if (!['10', '25', '50', '100'].includes(amount))
-      return reply.code(422).send({ error: 'invalid_amount', valid: [10, 25, 50, 100] });
+    const creditAmount = parseFloat(amount);
+    if (isNaN(creditAmount) || creditAmount < 5 || creditAmount > 999)
+      return reply.code(422).send({ error: 'invalid_amount', message: 'Amount must be between $5 and $999' });
+
     try {
-      const checkout_url = await getCheckoutUrl(req.user.id, amount);
-      return reply.send({ checkout_url });
+      const checkout_url    = await getCheckoutUrl(req.user.id, creditAmount);
+      const checkout_price  = calcCheckoutPrice(creditAmount);
+      return reply.send({ checkout_url, checkout_price, credit_amount: creditAmount });
     } catch (err: any) {
       return reply.code(500).send({ error: err.message || 'Failed to create checkout' });
     }

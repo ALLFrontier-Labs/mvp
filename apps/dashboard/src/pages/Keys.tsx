@@ -18,6 +18,7 @@ const PROVIDER_META: Record<string, { description: string; website: string }> = 
   browserbase: { description: 'Cloud Chromium + CDP sessions',     website: 'https://browserbase.com' },
   steel:       { description: 'Anti-detect browser + captcha',     website: 'https://steel.dev' },
   e2b:             { description: 'Isolated Python/JS code sandbox',   website: 'https://e2b.dev' },
+  daytona:         { description: 'Fast cloud dev environment & sandbox', website: 'https://daytona.io' },
   firecrawl_parse: { description: 'PDF, DOCX & XLSX parser to MD/JSON', website: 'https://firecrawl.dev' },
   llamaparse:      { description: 'LlamaIndex PDF & table parser',      website: 'https://llamaindex.ai' },
 };
@@ -43,6 +44,7 @@ const ALL_PROVIDERS = [
   { id: 'serper',          name: 'Serper',                   endpoint: 'search' },
   { id: 'browserbase',     name: 'Browserbase',              endpoint: 'browser' },
   { id: 'steel',           name: 'Steel Browser',            endpoint: 'browser' },
+  { id: 'daytona',         name: 'Daytona Sandbox',          endpoint: 'execute' },
   { id: 'e2b',             name: 'E2B Sandbox',              endpoint: 'execute' },
 ];
 

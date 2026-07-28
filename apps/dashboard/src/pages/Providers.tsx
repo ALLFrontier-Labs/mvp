@@ -97,6 +97,14 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { code: 'import math\nprint(f"Pi calculated: {math.pi}")' },
     iconBg: 'from-fuchsia-500/20 to-purple-500/20 text-fuchsia-400 border-fuchsia-500/30',
   },
+  daytona: {
+    description: 'Fast, secure cloud code execution environment for AI agents and automated workflows.',
+    website: 'https://daytona.io',
+    latency: '~650ms',
+    capabilities: ['Python / JS Execution', 'Isolated Container', 'Fast Startup', 'Workspace API'],
+    sampleParams: { code: 'print("Hello from Daytona Sandbox via LiteDaemon!")' },
+    iconBg: 'from-emerald-600/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
+  },
   firecrawl_parse: {
     description: 'Parse local or hosted PDF, DOCX, and XLSX files directly into LLM-ready markdown or structured JSON.',
     website: 'https://firecrawl.dev',

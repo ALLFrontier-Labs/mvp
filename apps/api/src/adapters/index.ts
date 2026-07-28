@@ -11,6 +11,7 @@ import { serperAdapter }         from './serper';
 import { browserbaseAdapter }    from './browserbase';
 import { steelAdapter }          from './steel';
 import { e2bAdapter }            from './e2b';
+import { daytonaAdapter }        from './daytona';
 
 const REGISTRY: Record<string, ProviderAdapter> = {
   firecrawl:       firecrawlAdapter,
@@ -25,6 +26,7 @@ const REGISTRY: Record<string, ProviderAdapter> = {
   browserbase:     browserbaseAdapter,
   steel:           steelAdapter,
   e2b:             e2bAdapter,
+  daytona:         daytonaAdapter,
 };
 
 export function getAdapter(slug: string): ProviderAdapter {

@@ -281,9 +281,9 @@ export const Dashboard: React.FC = () => {
           <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-purple-400">POST /v1/execute</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300">1 Provider</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300">2 Providers</span>
             </div>
-            <p className="text-xs text-slate-400">E2B Code Sandbox</p>
+            <p className="text-xs text-slate-400">Daytona Sandbox, E2B Sandbox</p>
             <div className="text-[11px] text-slate-500 font-mono">Output: stdout, stderr, exit code</div>
           </div>
 

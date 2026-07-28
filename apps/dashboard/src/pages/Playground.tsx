@@ -1,0 +1,934 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  Globe,
+  Search,
+  Monitor,
+  Terminal,
+  FileText,
+  Play,
+  Copy,
+  Check,
+  AlertTriangle,
+  X,
+  ChevronDown,
+  Loader2,
+  Clock,
+  Zap,
+  DollarSign,
+  Activity,
+  Code2,
+  RefreshCw,
+  Trash2,
+  ChevronUp,
+} from 'lucide-react';
+import { api, getStoredApiKey } from '../lib/api';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+interface Provider {
+  id: string;
+  name: string;
+  endpoint: string;
+  adapter_type: string;
+  cost_per_call_usd: number;
+  is_live: boolean;
+}
+
+interface LogEntry {
+  id: string;
+  tab: string;
+  provider: string;
+  status: number;
+  latency_ms: number;
+  cost_usd: number;
+  request: Record<string, any>;
+  response: any;
+  ts: Date;
+  error?: string;
+  expanded: boolean;
+  copied: boolean;
+}
+
+type TabId = 'scrape' | 'search' | 'browser' | 'execute' | 'document';
+
+// ── Tab config ────────────────────────────────────────────────────────────────
+const TABS: { id: TabId; label: string; icon: React.FC<any>; color: string; glow: string }[] = [
+  { id: 'scrape',   label: 'Scrape',   icon: Globe,     color: 'emerald', glow: 'shadow-emerald-500/20' },
+  { id: 'search',   label: 'Search',   icon: Search,    color: 'teal',    glow: 'shadow-teal-500/20' },
+  { id: 'browser',  label: 'Browser',  icon: Monitor,   color: 'cyan',    glow: 'shadow-cyan-500/20' },
+  { id: 'execute',  label: 'Execute',  icon: Terminal,  color: 'purple',  glow: 'shadow-purple-500/20' },
+  { id: 'document', label: 'Document', icon: FileText,  color: 'amber',   glow: 'shadow-amber-500/20' },
+];
+
+const TAB_COLORS: Record<string, { active: string; badge: string; btn: string; text: string; border: string }> = {
+  scrape:   { active: 'bg-emerald-500/10 text-emerald-300 border-b-2 border-emerald-500',  badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', btn: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/25', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  search:   { active: 'bg-teal-500/10 text-teal-300 border-b-2 border-teal-500',          badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20',           btn: 'bg-teal-600 hover:bg-teal-500 shadow-teal-500/25',         text: 'text-teal-400',    border: 'border-teal-500/30' },
+  browser:  { active: 'bg-cyan-500/10 text-cyan-300 border-b-2 border-cyan-500',          badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',           btn: 'bg-cyan-600 hover:bg-cyan-500 shadow-cyan-500/25',         text: 'text-cyan-400',    border: 'border-cyan-500/30' },
+  execute:  { active: 'bg-purple-500/10 text-purple-300 border-b-2 border-purple-500',    badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20',     btn: 'bg-purple-600 hover:bg-purple-500 shadow-purple-500/25',   text: 'text-purple-400',  border: 'border-purple-500/30' },
+  document: { active: 'bg-amber-500/10 text-amber-300 border-b-2 border-amber-500',       badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',         btn: 'bg-amber-600 hover:bg-amber-500 shadow-amber-500/25',       text: 'text-amber-400',   border: 'border-amber-500/30' },
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function uid() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function timeAgo(d: Date) {
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  return `${Math.floor(s / 3600)}h ago`;
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">{children}</label>
+);
+
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
+  <input
+    {...props}
+    className={`w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all ${props.className ?? ''}`}
+  />
+);
+
+const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ children, ...props }) => (
+  <div className="relative">
+    <select
+      {...props}
+      className={`w-full appearance-none bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all pr-9 ${props.className ?? ''}`}
+    >
+      {children}
+    </select>
+    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+  </div>
+);
+
+const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
+  <textarea
+    {...props}
+    className={`w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all font-mono resize-none ${props.className ?? ''}`}
+  />
+);
+
+// ── Provider Selector ─────────────────────────────────────────────────────────
+const ProviderSelect: React.FC<{
+  providers: Provider[];
+  endpoint: TabId;
+  value: string;
+  onChange: (v: string) => void;
+}> = ({ providers, endpoint, value, onChange }) => {
+  const filtered = providers.filter((p) => p.endpoint === endpoint && p.is_live);
+  const selected = filtered.find((p) => p.id === value);
+  return (
+    <div>
+      <Label>Provider</Label>
+      <Select value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="auto">⚡ Auto (cheapest live)</option>
+        {filtered.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name} — ${Number(p.cost_per_call_usd).toFixed(4)}/call
+          </option>
+        ))}
+      </Select>
+      {selected && (
+        <p className="mt-1.5 text-xs text-slate-500 font-mono">
+          Provider cost: <span className="text-emerald-400 font-semibold">${Number(selected.cost_per_call_usd).toFixed(4)}</span> per call
+        </p>
+      )}
+    </div>
+  );
+};
+
+// ── Run Button ────────────────────────────────────────────────────────────────
+const RunButton: React.FC<{
+  tab: TabId;
+  loading: boolean;
+  cost?: number;
+  onClick: () => void;
+}> = ({ tab, loading, cost, onClick }) => {
+  const c = TAB_COLORS[tab];
+  return (
+    <button
+      id={`playground-run-${tab}`}
+      onClick={onClick}
+      disabled={loading}
+      className={`flex items-center gap-2.5 px-6 py-3 rounded-xl font-semibold text-sm text-white shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed ${c.btn}`}
+    >
+      {loading ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <Play className="w-4 h-4 fill-white/70" />
+      )}
+      {loading ? 'Running…' : 'Run'}
+      {!loading && cost !== undefined && (
+        <span className="ml-1 px-2 py-0.5 rounded-md bg-white/10 text-xs font-mono">
+          ${cost.toFixed(4)}/call
+        </span>
+      )}
+    </button>
+  );
+};
+
+// ── Log Entry Card ────────────────────────────────────────────────────────────
+const LogCard: React.FC<{
+  entry: LogEntry;
+  onToggle: (id: string) => void;
+  onCopy: (id: string) => void;
+}> = ({ entry, onToggle, onCopy }) => {
+  const c = TAB_COLORS[entry.tab as TabId] ?? TAB_COLORS.scrape;
+  const isOk = entry.status >= 200 && entry.status < 300;
+
+  return (
+    <div className={`rounded-xl border ${isOk ? 'border-slate-700/60' : 'border-rose-500/30'} bg-slate-900/60 overflow-hidden`}>
+      {/* Header row */}
+      <div
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-slate-800/40 transition-colors"
+        onClick={() => onToggle(entry.id)}
+      >
+        {/* Status pill */}
+        <span
+          className={`shrink-0 px-2 py-0.5 rounded-md text-xs font-mono font-bold border ${
+            isOk ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+          }`}
+        >
+          {entry.status}
+        </span>
+
+        {/* Endpoint badge */}
+        <span className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-mono uppercase font-semibold border ${c.badge}`}>
+          {entry.tab}
+        </span>
+
+        {/* Provider */}
+        <span className="text-xs text-slate-400 font-mono truncate flex-1">via {entry.provider}</span>
+
+        {/* Meta */}
+        <div className="hidden sm:flex items-center gap-4 shrink-0 text-xs text-slate-500 font-mono">
+          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{entry.latency_ms}ms</span>
+          <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{entry.cost_usd === 0 ? 'BYOK / free' : `$${entry.cost_usd.toFixed(6)}`}</span>
+          <span className="text-slate-600">{timeAgo(entry.ts)}</span>
+        </div>
+
+        {/* Expand chevron */}
+        {entry.expanded ? (
+          <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+        )}
+      </div>
+
+      {/* Expanded body */}
+      {entry.expanded && (
+        <div className="border-t border-slate-800/60 px-4 py-4 space-y-4">
+          {/* Mobile meta */}
+          <div className="flex sm:hidden items-center gap-4 text-xs text-slate-500 font-mono">
+            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{entry.latency_ms}ms</span>
+            <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{entry.cost_usd === 0 ? 'BYOK / free' : `$${entry.cost_usd.toFixed(6)}`}</span>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Request */}
+            <div>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Request Payload</p>
+              <pre className="text-xs font-mono text-slate-300 bg-slate-950/60 rounded-xl p-3 overflow-x-auto whitespace-pre-wrap max-h-56 overflow-y-auto border border-slate-800/60">
+                {JSON.stringify(entry.request, null, 2)}
+              </pre>
+            </div>
+
+            {/* Response */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Response JSON</p>
+                <button
+                  onClick={() => onCopy(entry.id)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700/60"
+                >
+                  {entry.copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {entry.copied ? 'Copied!' : 'Copy JSON'}
+                </button>
+              </div>
+              <pre className="text-xs font-mono text-slate-300 bg-slate-950/60 rounded-xl p-3 overflow-x-auto whitespace-pre-wrap max-h-56 overflow-y-auto border border-slate-800/60">
+                {JSON.stringify(entry.response, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Tab Forms ─────────────────────────────────────────────────────────────────
+
+// Scrape Form
+const ScrapeForm: React.FC<{
+  providers: Provider[];
+  onRun: (provider: string, params: any) => void;
+  loading: boolean;
+}> = ({ providers, onRun, loading }) => {
+  const [url, setUrl] = useState('https://example.com');
+  const [format, setFormat] = useState<'markdown' | 'html'>('markdown');
+  const [provider, setProvider] = useState('auto');
+  const selected = providers.find((p) => p.id === provider && p.endpoint === 'scrape');
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <Label>Target URL</Label>
+        <Input
+          id="scrape-url"
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://example.com"
+        />
+      </div>
+
+      <div>
+        <Label>Output Format</Label>
+        <div className="flex gap-2">
+          {(['markdown', 'html'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFormat(f)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                format === f
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
+                  : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
+              }`}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <ProviderSelect providers={providers} endpoint="scrape" value={provider} onChange={setProvider} />
+
+      <RunButton
+        tab="scrape"
+        loading={loading}
+        cost={selected?.cost_per_call_usd}
+        onClick={() => onRun(provider, { url, format })}
+      />
+    </div>
+  );
+};
+
+// Search Form
+const SearchForm: React.FC<{
+  providers: Provider[];
+  onRun: (provider: string, params: any) => void;
+  loading: boolean;
+}> = ({ providers, onRun, loading }) => {
+  const [query, setQuery] = useState('');
+  const [maxResults, setMaxResults] = useState(5);
+  const [provider, setProvider] = useState('auto');
+  const selected = providers.find((p) => p.id === provider && p.endpoint === 'search');
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <Label>Search Query</Label>
+        <Input
+          id="search-query"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="e.g. latest AI research papers 2025"
+        />
+      </div>
+
+      <div>
+        <Label>Max Results: <span className="text-slate-200 font-mono">{maxResults}</span></Label>
+        <input
+          id="search-max-results"
+          type="range"
+          min={1}
+          max={20}
+          value={maxResults}
+          onChange={(e) => setMaxResults(Number(e.target.value))}
+          className="w-full h-1.5 rounded-full accent-teal-500 cursor-pointer"
+        />
+        <div className="flex justify-between text-xs text-slate-600 mt-1 font-mono">
+          <span>1</span>
+          <span>20</span>
+        </div>
+      </div>
+
+      <ProviderSelect providers={providers} endpoint="search" value={provider} onChange={setProvider} />
+
+      <RunButton
+        tab="search"
+        loading={loading}
+        cost={selected?.cost_per_call_usd}
+        onClick={() => onRun(provider, { query, max_results: maxResults })}
+      />
+    </div>
+  );
+};
+
+// Browser Form
+const BrowserForm: React.FC<{
+  providers: Provider[];
+  onRun: (provider: string, params: any) => void;
+  loading: boolean;
+}> = ({ providers, onRun, loading }) => {
+  const [url, setUrl] = useState('https://example.com');
+  const [script, setScript] = useState('');
+  const [provider, setProvider] = useState('auto');
+  const selected = providers.find((p) => p.id === provider && p.endpoint === 'browser');
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <Label>Target URL</Label>
+        <Input
+          id="browser-url"
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://example.com"
+        />
+      </div>
+
+      <div>
+        <Label>Automation Script <span className="normal-case text-slate-600 font-normal">(optional)</span></Label>
+        <Textarea
+          id="browser-script"
+          rows={5}
+          value={script}
+          onChange={(e) => setScript(e.target.value)}
+          placeholder={`// Optional Playwright-style actions\nawait page.click('#login-btn');\nawait page.fill('#email', 'user@example.com');`}
+        />
+      </div>
+
+      <ProviderSelect providers={providers} endpoint="browser" value={provider} onChange={setProvider} />
+
+      <RunButton
+        tab="browser"
+        loading={loading}
+        cost={selected?.cost_per_call_usd}
+        onClick={() => onRun(provider, { url, ...(script.trim() ? { script: script.trim() } : {}) })}
+      />
+    </div>
+  );
+};
+
+// Execute Form
+const ExecuteForm: React.FC<{
+  providers: Provider[];
+  onRun: (provider: string, params: any) => void;
+  loading: boolean;
+}> = ({ providers, onRun, loading }) => {
+  const [code, setCode] = useState(`# Python example\nimport json\n\ndata = {"message": "Hello from LiteDaemon sandbox!"}\nprint(json.dumps(data, indent=2))`);
+  const [language, setLanguage] = useState('python');
+  const [provider, setProvider] = useState('auto');
+  const selected = providers.find((p) => p.id === provider && p.endpoint === 'execute');
+
+  const LANGUAGES = [
+    { value: 'python',     label: 'Python' },
+    { value: 'javascript', label: 'JavaScript' },
+    { value: 'typescript', label: 'TypeScript' },
+    { value: 'bash',       label: 'Bash' },
+  ];
+
+  const SNIPPETS: Record<string, string> = {
+    python: `# Python example\nimport json\n\ndata = {"message": "Hello from LiteDaemon sandbox!"}\nprint(json.dumps(data, indent=2))`,
+    javascript: `// JavaScript example\nconst data = { message: "Hello from LiteDaemon sandbox!" };\nconsole.log(JSON.stringify(data, null, 2));`,
+    typescript: `// TypeScript example\nconst greet = (name: string): string => \`Hello, \${name}!\`;\nconsole.log(greet("LiteDaemon"));`,
+    bash: `#!/bin/bash\necho "Hello from LiteDaemon sandbox!"\ndate\nuname -a`,
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <Label>Language</Label>
+        <div className="flex gap-2 flex-wrap">
+          {LANGUAGES.map((l) => (
+            <button
+              key={l.value}
+              onClick={() => {
+                setLanguage(l.value);
+                setCode(SNIPPETS[l.value] ?? '');
+              }}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                language === l.value
+                  ? 'bg-purple-500/15 text-purple-300 border-purple-500/40 shadow-sm'
+                  : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Label>Code</Label>
+        <div className="relative rounded-xl overflow-hidden border border-slate-700/60">
+          {/* Fake editor header */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-950/80 border-b border-slate-800/60">
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
+            <span className="ml-2 text-xs font-mono text-slate-600">sandbox.{language === 'python' ? 'py' : language === 'javascript' ? 'js' : language === 'typescript' ? 'ts' : 'sh'}</span>
+            <Code2 className="ml-auto w-3.5 h-3.5 text-slate-600" />
+          </div>
+          <textarea
+            id="execute-code"
+            rows={10}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="w-full bg-slate-950/60 px-4 py-3 text-sm text-slate-200 font-mono focus:outline-none resize-none"
+            spellCheck={false}
+          />
+        </div>
+      </div>
+
+      <ProviderSelect providers={providers} endpoint="execute" value={provider} onChange={setProvider} />
+
+      <RunButton
+        tab="execute"
+        loading={loading}
+        cost={selected?.cost_per_call_usd}
+        onClick={() => onRun(provider, { code, language })}
+      />
+    </div>
+  );
+};
+
+// Document Form
+const DocumentForm: React.FC<{
+  providers: Provider[];
+  onRun: (provider: string, params: any) => void;
+  loading: boolean;
+}> = ({ providers, onRun, loading }) => {
+  const [mode, setMode] = useState<'url' | 'upload'>('url');
+  const [fileUrl, setFileUrl] = useState('');
+  const [format, setFormat] = useState<'markdown' | 'json'>('markdown');
+  const [schema, setSchema] = useState('');
+  const [provider, setProvider] = useState('auto');
+  const [dragging, setDragging] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileB64, setFileB64] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const selected = providers.find((p) => p.id === provider && p.endpoint === 'document');
+
+  const handleFile = (file: File) => {
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setFileB64(result.split(',')[1]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Mode Toggle */}
+      <div>
+        <Label>Input Source</Label>
+        <div className="flex gap-2">
+          {(['url', 'upload'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                mode === m
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                  : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
+              }`}
+            >
+              {m === 'url' ? '🔗 File URL' : '📁 Upload File'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {mode === 'url' ? (
+        <div>
+          <Label>File URL (PDF, DOCX, XLSX)</Label>
+          <Input
+            id="document-url"
+            type="url"
+            value={fileUrl}
+            onChange={(e) => setFileUrl(e.target.value)}
+            placeholder="https://example.com/document.pdf"
+          />
+        </div>
+      ) : (
+        <div>
+          <Label>Upload File</Label>
+          <div
+            onClick={() => fileRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              const f = e.dataTransfer.files[0];
+              if (f) handleFile(f);
+            }}
+            className={`flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+              dragging
+                ? 'border-amber-500/60 bg-amber-500/5'
+                : 'border-slate-700/60 bg-slate-900/40 hover:border-slate-600 hover:bg-slate-900/60'
+            }`}
+          >
+            <FileText className={`w-8 h-8 ${fileName ? 'text-amber-400' : 'text-slate-600'}`} />
+            {fileName ? (
+              <div className="text-center">
+                <p className="text-sm font-medium text-amber-300">{fileName}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Click to replace</p>
+              </div>
+            ) : (
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-300">Drop file here or click to browse</p>
+                <p className="text-xs text-slate-500 mt-0.5">PDF, DOCX, XLSX supported</p>
+              </div>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.docx,.xlsx,.txt,.csv"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div>
+        <Label>Output Format</Label>
+        <div className="flex gap-2">
+          {(['markdown', 'json'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFormat(f)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                format === f
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                  : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
+              }`}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {format === 'json' && (
+        <div>
+          <Label>Schema <span className="normal-case text-slate-600 font-normal">(optional JSON schema)</span></Label>
+          <Textarea
+            id="document-schema"
+            rows={4}
+            value={schema}
+            onChange={(e) => setSchema(e.target.value)}
+            placeholder={`{\n  "type": "object",\n  "properties": { "title": { "type": "string" } }\n}`}
+          />
+        </div>
+      )}
+
+      <ProviderSelect providers={providers} endpoint="document" value={provider} onChange={setProvider} />
+
+      <RunButton
+        tab="document"
+        loading={loading}
+        cost={selected?.cost_per_call_usd}
+        onClick={() => {
+          const params: any = { format };
+          if (mode === 'url') {
+            params.file_url = fileUrl;
+          } else if (fileB64) {
+            params.file_b64 = fileB64;
+          }
+          if (schema.trim()) {
+            try { params.schema = JSON.parse(schema.trim()); } catch { params.schema = schema.trim(); }
+          }
+          onRun(provider, params);
+        }}
+      />
+    </div>
+  );
+};
+
+// ── Main Playground Page ──────────────────────────────────────────────────────
+export const Playground: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabId>('scrape');
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [providersLoading, setProvidersLoading] = useState(true);
+  const [log, setLog] = useState<LogEntry[]>([]);
+  const [running, setRunning] = useState(false);
+  const [warningDismissed, setWarningDismissed] = useState(() =>
+    localStorage.getItem('ld_playground_warning_dismissed') === '1'
+  );
+
+  // Load providers
+  useEffect(() => {
+    api.listProviders()
+      .then((d) => setProviders(d.providers ?? []))
+      .catch(() => setProviders([]))
+      .finally(() => setProvidersLoading(false));
+  }, []);
+
+  const dismissWarning = () => {
+    localStorage.setItem('ld_playground_warning_dismissed', '1');
+    setWarningDismissed(true);
+  };
+
+  // Core run function — calls real backend
+  const handleRun = useCallback(async (endpoint: TabId, provider: string, params: Record<string, any>) => {
+    const apiKey = getStoredApiKey();
+    if (!apiKey) return;
+
+    setRunning(true);
+    const reqPayload = { provider, params };
+    const startTs = Date.now();
+    let httpStatus = 0;
+    let responseData: any = null;
+
+    try {
+      const res = await fetch(`https://mvp-production-c1e8.up.railway.app/v1/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(reqPayload),
+      });
+
+      httpStatus = res.status;
+      try { responseData = await res.json(); } catch { responseData = { error: 'Non-JSON response' }; }
+
+      const latency = Date.now() - startTs;
+      const cost = responseData?.cost_usd ?? 0;
+      const resolvedProvider = responseData?.provider ?? provider;
+
+      setLog((prev) => [
+        {
+          id: uid(),
+          tab: endpoint,
+          provider: resolvedProvider,
+          status: httpStatus,
+          latency_ms: latency,
+          cost_usd: cost,
+          request: reqPayload,
+          response: responseData,
+          ts: new Date(),
+          expanded: true,
+          copied: false,
+          error: res.ok ? undefined : (responseData?.error ?? `HTTP ${httpStatus}`),
+        },
+        ...prev,
+      ]);
+    } catch (err: any) {
+      const latency = Date.now() - startTs;
+      setLog((prev) => [
+        {
+          id: uid(),
+          tab: endpoint,
+          provider: provider,
+          status: 0,
+          latency_ms: latency,
+          cost_usd: 0,
+          request: reqPayload,
+          response: { error: err.message },
+          ts: new Date(),
+          expanded: true,
+          copied: false,
+          error: err.message,
+        },
+        ...prev,
+      ]);
+    } finally {
+      setRunning(false);
+    }
+  }, []);
+
+  const toggleExpand = (id: string) =>
+    setLog((prev) => prev.map((e) => (e.id === id ? { ...e, expanded: !e.expanded } : e)));
+
+  const copyEntry = (id: string) => {
+    const entry = log.find((e) => e.id === id);
+    if (!entry) return;
+    navigator.clipboard.writeText(JSON.stringify(entry.response, null, 2)).catch(() => {});
+    setLog((prev) => prev.map((e) => (e.id === id ? { ...e, copied: true } : e)));
+    setTimeout(() => setLog((prev) => prev.map((e) => (e.id === id ? { ...e, copied: false } : e))), 2000);
+  };
+
+  const clearLog = () => setLog([]);
+
+  const c = TAB_COLORS[activeTab];
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+      {/* ── Page Header ───────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-900/60 border border-slate-700/50">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <Zap className="w-5 h-5 text-white fill-white/30" />
+            </div>
+            API Playground
+          </h1>
+          <p className="text-slate-400 text-sm mt-1.5">
+            Test all 5 live endpoints directly from your browser — each call is real, authenticated, and billed.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/40 text-xs font-mono text-slate-400">
+            <Activity className="w-3.5 h-3.5 text-emerald-400" />
+            {log.length} calls this session
+          </div>
+          {log.length > 0 && (
+            <button
+              onClick={clearLog}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-400 bg-slate-800/60 hover:bg-rose-500/10 border border-slate-700/40 hover:border-rose-500/20 transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear log
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Live Warning Banner ───────────────────────────────── */}
+      {!warningDismissed && (
+        <div className="flex items-start gap-4 p-4 rounded-xl bg-amber-950/30 border border-amber-500/30">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-300">Live Production Calls</p>
+            <p className="text-xs text-amber-400/80 mt-0.5 leading-relaxed">
+              Every test here executes a <strong>live production call</strong> and deducts funds from your prepaid wallet balance — this is <strong>not a mock sandbox</strong>. Ensure you have sufficient balance before running calls.
+            </p>
+          </div>
+          <button
+            onClick={dismissWarning}
+            className="shrink-0 p-1 rounded-lg hover:bg-amber-500/10 text-amber-500/60 hover:text-amber-400 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* ── Main Workbench ────────────────────────────────────── */}
+      <div className="grid lg:grid-cols-[380px_1fr] gap-6">
+
+        {/* LEFT — Tab form panel */}
+        <div className="space-y-0">
+          {/* Endpoint tabs */}
+          <div className="flex border-b border-slate-800/60 bg-slate-900/40 rounded-t-2xl overflow-hidden">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const isActive = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  id={`playground-tab-${t.id}`}
+                  onClick={() => setActiveTab(t.id)}
+                  className={`flex-1 flex flex-col items-center gap-1.5 px-2 py-3 text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                    isActive
+                      ? TAB_COLORS[t.id].active
+                      : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:block">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Form body */}
+          <div className={`bg-slate-900/60 border border-t-0 ${c.border} rounded-b-2xl p-5`}>
+            {providersLoading ? (
+              <div className="flex items-center justify-center h-40 gap-3 text-slate-500">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="text-sm">Loading providers…</span>
+              </div>
+            ) : (
+              <>
+                {activeTab === 'scrape' && (
+                  <ScrapeForm
+                    providers={providers}
+                    onRun={(p, params) => handleRun('scrape', p, params)}
+                    loading={running}
+                  />
+                )}
+                {activeTab === 'search' && (
+                  <SearchForm
+                    providers={providers}
+                    onRun={(p, params) => handleRun('search', p, params)}
+                    loading={running}
+                  />
+                )}
+                {activeTab === 'browser' && (
+                  <BrowserForm
+                    providers={providers}
+                    onRun={(p, params) => handleRun('browser', p, params)}
+                    loading={running}
+                  />
+                )}
+                {activeTab === 'execute' && (
+                  <ExecuteForm
+                    providers={providers}
+                    onRun={(p, params) => handleRun('execute', p, params)}
+                    loading={running}
+                  />
+                )}
+                {activeTab === 'document' && (
+                  <DocumentForm
+                    providers={providers}
+                    onRun={(p, params) => handleRun('document', p, params)}
+                    loading={running}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT — Execution log */}
+        <div className="space-y-3">
+          {/* Log header */}
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+              <RefreshCw className={`w-4 h-4 ${running ? 'animate-spin text-emerald-400' : 'text-slate-600'}`} />
+              Execution Log
+            </h2>
+            <span className="text-xs text-slate-600 font-mono">Latest first</span>
+          </div>
+
+          {/* Log entries */}
+          {log.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-2xl border border-dashed border-slate-800/60 bg-slate-900/30">
+              <div className="w-12 h-12 rounded-2xl bg-slate-800/60 flex items-center justify-center">
+                <Terminal className="w-6 h-6 text-slate-600" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-500">No calls yet</p>
+                <p className="text-xs text-slate-600 mt-1">Configure a request and click <strong className="text-slate-400">Run</strong> to see results here.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+              {log.map((entry) => (
+                <LogCard
+                  key={entry.id}
+                  entry={entry}
+                  onToggle={toggleExpand}
+                  onCopy={copyEntry}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

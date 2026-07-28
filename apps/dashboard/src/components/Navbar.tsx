@@ -10,7 +10,8 @@ import {
   LogOut, 
   Wallet,
   ExternalLink,
-  Key
+  Key,
+  FlaskConical,
 } from 'lucide-react';
 import { getStoredApiKey, clearStoredApiKey, api } from '../lib/api';
 
@@ -34,12 +35,13 @@ export const Navbar: React.FC = () => {
   };
 
   const navItems = [
-    { label: 'Dashboard',        path: '/dashboard', icon: LayoutDashboard, protected: true },
-    { label: 'Providers Catalog',path: '/providers', icon: Layers,          protected: false },
-    { label: 'Job History',      path: '/jobs',      icon: History,         protected: true },
-    { label: 'My Keys (BYOK)',   path: '/keys',      icon: Key,             protected: true },
-    { label: 'Billing & Wallet', path: '/billing',   icon: CreditCard,      protected: true },
-    { label: 'Settings',         path: '/settings',  icon: SettingsIcon,    protected: true },
+    { label: 'Dashboard',        path: '/dashboard',  icon: LayoutDashboard, protected: true },
+    { label: 'Providers Catalog',path: '/providers',  icon: Layers,          protected: false },
+    { label: 'Playground',       path: '/playground', icon: FlaskConical,    protected: true },
+    { label: 'Job History',      path: '/jobs',       icon: History,         protected: true },
+    { label: 'My Keys (BYOK)',   path: '/keys',       icon: Key,             protected: true },
+    { label: 'Billing & Wallet', path: '/billing',    icon: CreditCard,      protected: true },
+    { label: 'Settings',         path: '/settings',   icon: SettingsIcon,    protected: true },
   ];
 
   return (

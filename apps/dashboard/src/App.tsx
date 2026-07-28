@@ -7,8 +7,9 @@ import { Providers } from './pages/Providers';
 import { Jobs } from './pages/Jobs';
 import { Billing } from './pages/Billing';
 import { Settings } from './pages/Settings';
-import { Keys }     from './pages/Keys';
-import { Landing }  from './pages/Landing';
+import { Keys }        from './pages/Keys';
+import { Landing }     from './pages/Landing';
+import { Playground }  from './pages/Playground';
 import { getStoredApiKey } from './lib/api';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -85,6 +86,14 @@ export const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <Keys />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/playground"
+              element={
+                <ProtectedRoute>
+                  <Playground />
                 </ProtectedRoute>
               }
             />

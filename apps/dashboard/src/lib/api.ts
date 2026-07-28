@@ -66,6 +66,22 @@ export const api = {
     }>(`/jobs/${id}`);
   },
 
+  listJobs: async (limit = 20, offset = 0) => {
+    return apiRequest<{
+      jobs: Array<{
+        job_id: string;
+        provider: string;
+        endpoint: string;
+        status: 'pending' | 'running' | 'completed' | 'failed';
+        cost_usd: number;
+        duration_ms?: number;
+        created_at: string;
+        completed_at?: string;
+      }>;
+      total: number;
+    }>(`/jobs?limit=${limit}&offset=${offset}`);
+  },
+
   getCheckoutUrl: async (amount: string) => {
     return apiRequest<{ checkout_url: string }>(`/billing/checkout?amount=${amount}`);
   },

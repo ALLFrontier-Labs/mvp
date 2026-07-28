@@ -4,6 +4,34 @@ import { getAdapter }  from '../adapters/index';
 import { decrypt }     from '../services/encryption';
 
 export async function jobsRoute(app: FastifyInstance) {
+  // List recent jobs
+  app.get('/v1/jobs', async (req, reply) => {
+    const { limit = '20', offset = '0', endpoint } = req.query as any;
+    const lim  = Math.min(parseInt(limit)  || 20, 50);
+    const off  = parseInt(offset) || 0;
+    const r = await pool.query(
+      `SELECT id, provider_id, endpoint, status, cost_usd, duration_ms, created_at, completed_at
+       FROM jobs
+       WHERE user_id = $1 ${endpoint ? `AND endpoint = '${endpoint}'` : ''}
+       ORDER BY created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [req.user.id, lim, off]
+    );
+    return reply.send({
+      jobs:  r.rows.map(j => ({
+        job_id:       j.id,
+        provider:     j.provider_id,
+        endpoint:     j.endpoint,
+        status:       j.status,
+        cost_usd:     parseFloat(j.cost_usd),
+        duration_ms:  j.duration_ms,
+        created_at:   j.created_at,
+        completed_at: j.completed_at,
+      })),
+      total: parseInt(r.rowCount as any),
+    });
+  });
+
   app.get('/v1/jobs/:id', async (req, reply) => {
     const { id } = req.params as any;
 

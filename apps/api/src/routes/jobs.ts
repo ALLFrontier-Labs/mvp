@@ -10,7 +10,8 @@ export async function jobsRoute(app: FastifyInstance) {
     const lim  = Math.min(parseInt(limit)  || 20, 50);
     const off  = parseInt(offset) || 0;
     const r = await pool.query(
-      `SELECT id, provider_id, endpoint, status, cost_usd, duration_ms, created_at, completed_at
+      `SELECT id, provider_id, endpoint, status, cost_usd, created_at, completed_at,
+              EXTRACT(EPOCH FROM (completed_at - created_at)) * 1000 AS duration_ms
        FROM jobs
        WHERE user_id = $1 ${endpoint ? `AND endpoint = '${endpoint}'` : ''}
        ORDER BY created_at DESC

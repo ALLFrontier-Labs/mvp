@@ -139,4 +139,35 @@ export const api = {
       body: JSON.stringify({ provider, params }),
     });
   },
+
+  // ── BYOK — Bring Your Own Keys ──────────────────────────────────────────
+  listKeys: async () => {
+    return apiRequest<{
+      keys: Array<{
+        provider_id: string;
+        provider_name: string;
+        endpoint: string;
+        adapter_type: string;
+        label: string | null;
+        is_active: boolean;
+        last_used_at: string | null;
+        created_at: string;
+        platform_cost_usd: number;
+        key_hint: string;
+      }>;
+    }>('/keys');
+  },
+
+  addKey: async (provider_id: string, api_key: string, label?: string) => {
+    return apiRequest<{ message: string; provider_id: string; byok_active: boolean }>('/keys', {
+      method: 'POST',
+      body: JSON.stringify({ provider_id, api_key, label }),
+    });
+  },
+
+  deleteKey: async (provider_id: string) => {
+    return apiRequest<{ message: string; provider_id: string }>(`/keys/${provider_id}`, {
+      method: 'DELETE',
+    });
+  },
 };

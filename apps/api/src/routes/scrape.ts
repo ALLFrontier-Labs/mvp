@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import { pool }             from '../db/client';
 import { getAdapter }       from '../adapters/index';
-import { decrypt }          from '../services/encryption';
 import { debitLedger, InsufficientFundsError } from '../services/ledger';
 import { calculateCharge }  from '../services/billing';
 import { checkRateLimit }   from '../services/rateLimit';
+import { resolveProviderKey } from '../services/byok';
 import type { LDProvider }  from '../types';
 
 export async function scrapeRoute(app: FastifyInstance) {
@@ -31,33 +31,35 @@ export async function scrapeRoute(app: FastifyInstance) {
     if (!pr.rows[0]) return reply.code(404).send({ error: 'provider_not_found' });
     const provider = pr.rows[0] as LDProvider;
 
-    // Charge = exact wholesale cost, zero markup
-    const charge = calculateCharge(parseFloat(provider.cost_per_call_usd));
+    // BYOK: use user's own key if available — zero platform cost
+    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId);
+    const charge = isByok ? 0 : calculateCharge(parseFloat(provider.cost_per_call_usd));
 
     // Insert job record
     const jr = await pool.query(
-      `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd)
-       VALUES ($1, $2, 'scrape', $3, 'pending', $4) RETURNING id`,
-      [user.id, providerId, JSON.stringify(params), charge]
+      `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd, is_byok)
+       VALUES ($1, $2, 'scrape', $3, 'pending', $4, $5) RETURNING id`,
+      [user.id, providerId, JSON.stringify(params), charge, isByok]
     );
     const jobId = jr.rows[0].id;
 
-    // Deduct wallet — SELECT FOR UPDATE
-    try {
-      await debitLedger(
-        user.id, charge, providerId, jobId,
-        `${provider.name} scrape — ${params.url || params.actor_id || 'request'}`
-      );
-    } catch (err: any) {
-      await pool.query(`DELETE FROM jobs WHERE id = $1`, [jobId]);
-      if (err instanceof InsufficientFundsError)
-        return reply.code(402).send({ error: 'insufficient_balance', required_usd: charge });
-      throw err;
+    // Deduct wallet only for platform-key calls
+    if (!isByok) {
+      try {
+        await debitLedger(
+          user.id, charge, providerId, jobId,
+          `${provider.name} scrape — ${params.url || params.actor_id || 'request'}`
+        );
+      } catch (err: any) {
+        await pool.query(`DELETE FROM jobs WHERE id = $1`, [jobId]);
+        if (err instanceof InsufficientFundsError)
+          return reply.code(402).send({ error: 'insufficient_balance', required_usd: charge });
+        throw err;
+      }
     }
 
-    // Call adapter
+    // Call adapter with resolved key (BYOK or platform)
     const adapter = getAdapter(provider.adapter_type);
-    const apiKey  = decrypt(provider.api_key_encrypted);
     const started = Date.now();
 
     try {

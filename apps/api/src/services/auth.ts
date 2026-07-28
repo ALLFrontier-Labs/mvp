@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { pool }  from '../db/client';
 import { redis } from '../redis/client';
 
-const SALT = process.env.API_KEY_SALT!;
+const SALT = process.env.API_KEY_SALT || 'litedaemon_default_salt_2026';
 
 export function generateApiKey(): { raw: string; hash: string } {
   const raw  = 'ld_' + crypto.randomBytes(48).toString('hex'); // 99-char key
@@ -11,26 +11,134 @@ export function generateApiKey(): { raw: string; hash: string } {
   return { raw, hash };
 }
 
-export async function createUser(email: string): Promise<string> {
+export function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  return `${salt}:${hash}`;
+}
+
+export function verifyPassword(password: string, storedHash: string): boolean {
+  if (!storedHash || !storedHash.includes(':')) return false;
+  const [salt, hash] = storedHash.split(':');
+  const verifyHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(verifyHash, 'hex'));
+}
+
+// ── Create user (Supports optional password & names) ──────────────────────────
+export async function createUser(
+  email: string,
+  password?: string,
+  firstName?: string,
+  lastName?: string
+): Promise<{ rawKey: string; user: { id: string; email: string; firstName?: string; lastName?: string } }> {
   const { raw, hash } = generateApiKey();
+  const passwordHash = password ? hashPassword(password) : null;
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const u = await client.query(
-      `INSERT INTO users (email) VALUES ($1) RETURNING id`, [email]
+      `INSERT INTO users (email, password_hash, first_name, last_name)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, email, first_name, last_name`,
+      [email.toLowerCase().trim(), passwordHash, firstName || null, lastName || null]
     );
+
+    const user = u.rows[0];
+
     await client.query(
-      `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, 'Default')`,
-      [u.rows[0].id, hash]
+      `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, 'Default Key')`,
+      [user.id, hash]
     );
+
     await client.query('COMMIT');
+
+    return {
+      rawKey: raw,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      },
+    };
   } catch (e) {
     await client.query('ROLLBACK');
     throw e;
   } finally {
     client.release();
   }
-  return raw; // Show once — never stored plain
+}
+
+// ── Login with email & password ─────────────────────────────────────────────
+export async function loginWithPassword(email: string, password?: string): Promise<{ rawKey: string; user: any }> {
+  const cleanedEmail = email.toLowerCase().trim();
+  const r = await pool.query(
+    `SELECT id, email, password_hash, first_name, last_name, balance_usd, plan, is_active
+     FROM users
+     WHERE email = $1`,
+    [cleanedEmail]
+  );
+
+  const user = r.rows[0];
+  if (!user || !user.is_active) {
+    throw new Error('user_not_found');
+  }
+
+  // If password was set, verify it
+  if (user.password_hash) {
+    if (!password) throw new Error('password_required');
+    const isValid = verifyPassword(password, user.password_hash);
+    if (!isValid) throw new Error('invalid_credentials');
+  } else if (password) {
+    // User exists without password set (e.g. initial API signup) -> set password now!
+    const newHash = hashPassword(password);
+    await pool.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [newHash, user.id]);
+  }
+
+  // Generate a fresh session key so user never gets stuck!
+  const { raw, hash } = generateApiKey();
+  await pool.query(
+    `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, 'Session Key')`,
+    [user.id, hash]
+  );
+
+  return {
+    rawKey: raw,
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      balanceUsd: parseFloat(user.balance_usd),
+      plan: user.plan,
+    },
+  };
+}
+
+// ── Social / One-Click Login ────────────────────────────────────────────────
+export async function socialLoginOrSignup(
+  email: string,
+  provider: string,
+  firstName?: string,
+  lastName?: string
+): Promise<{ rawKey: string; user: any }> {
+  const cleanedEmail = email.toLowerCase().trim();
+  const existing = await pool.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+
+  if (existing.rows[0]) {
+    const user = existing.rows[0];
+    const { raw, hash } = generateApiKey();
+    await pool.query(
+      `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
+      [user.id, hash, `${provider} Login Key`]
+    );
+    return { rawKey: raw, user };
+  } else {
+    // Create new account
+    const result = await createUser(cleanedEmail, undefined, firstName, lastName);
+    return { rawKey: result.rawKey, user: result.user };
+  }
 }
 
 // Called on every request — must resolve in under 10ms

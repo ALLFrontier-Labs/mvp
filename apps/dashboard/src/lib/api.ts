@@ -53,10 +53,10 @@ export const api = {
     }>('/providers');
   },
 
-  signup: async (email: string) => {
-    return apiRequest<{ api_key: string; message: string }>('/auth/signup', {
+  signup: async (email: string, password?: string, firstName?: string, lastName?: string) => {
+    return apiRequest<{ api_key: string; user: any; message: string }>('/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, password, firstName, lastName }),
     });
   },
 
@@ -168,6 +168,22 @@ export const api = {
   deleteKey: async (provider_id: string) => {
     return apiRequest<{ message: string; provider_id: string }>(`/keys/${provider_id}`, {
       method: 'DELETE',
+    });
+  },
+
+  // ── Auth Endpoints ──────────────────────────────────────────────────────
+
+  login: async (email: string, password?: string) => {
+    return apiRequest<{ api_key: string; user: any; message: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  socialAuth: async (provider: 'github' | 'google' | 'metamask', email?: string, firstName?: string, lastName?: string) => {
+    return apiRequest<{ api_key: string; user: any; message: string }>('/auth/social', {
+      method: 'POST',
+      body: JSON.stringify({ provider, email, firstName, lastName }),
     });
   },
 };

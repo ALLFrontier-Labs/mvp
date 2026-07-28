@@ -207,7 +207,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="mt-4 text-[11px] text-slate-500 flex items-center gap-1 font-mono">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>4 Endpoints Active</span>
+            <span>5 Endpoints Active</span>
           </div>
         </div>
 
@@ -237,10 +237,10 @@ export const Dashboard: React.FC = () => {
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
           <Terminal className="w-5 h-5 text-emerald-400" />
-          <span>Unified Endpoints & Providers</span>
+          <span>Unified Endpoints &amp; Providers</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           
           <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
@@ -249,6 +249,15 @@ export const Dashboard: React.FC = () => {
             </div>
             <p className="text-xs text-slate-400">Firecrawl, Jina AI, Apify, Spider Cloud</p>
             <div className="text-[11px] text-slate-500 font-mono">Output: Markdown + Metadata</div>
+          </div>
+
+          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs font-bold uppercase text-amber-400">POST /v1/document</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">2 Providers</span>
+            </div>
+            <p className="text-xs text-slate-400">Firecrawl Parse, LlamaParse</p>
+            <div className="text-[11px] text-slate-500 font-mono">Output: Markdown + JSON Schema</div>
           </div>
 
           <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
@@ -266,7 +275,7 @@ export const Dashboard: React.FC = () => {
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300">2 Providers</span>
             </div>
             <p className="text-xs text-slate-400">Browserbase, Steel Browser</p>
-            <div className="text-[11px] text-slate-500 font-mono">Output: CDP & Debug URL</div>
+            <div className="text-[11px] text-slate-500 font-mono">Output: CDP &amp; Debug URL</div>
           </div>
 
           <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">

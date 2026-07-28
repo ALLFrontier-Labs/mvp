@@ -12,6 +12,7 @@ export async function scrapeRoute(app: FastifyInstance) {
   app.post('/v1/scrape', async (req, reply) => {
     const user = req.user;
     const { provider: providerId = 'auto', params = {} } = req.body as any;
+    const overrideKey = (req.headers['x-provider-key'] || req.headers['x-api-key-override']) as string | undefined;
 
     // Rate limit
     const rl = await checkRateLimit(user.id, user.plan);
@@ -24,7 +25,7 @@ export async function scrapeRoute(app: FastifyInstance) {
     // ── AUTO routing — try cheapest live provider first ─────────────────────
     if (!providerId || providerId === 'auto') {
       try {
-        const { result, provider, isByok, charge, duration_ms } = await autoRun('scrape', params, user.id);
+        const { result, provider, isByok, charge, duration_ms } = await autoRun('scrape', params, user.id, overrideKey);
 
         // Debit wallet (skip if BYOK)
         if (!isByok && charge > 0) {
@@ -68,7 +69,7 @@ export async function scrapeRoute(app: FastifyInstance) {
     if (!pr.rows[0]) return reply.code(404).send({ error: 'provider_not_found' });
     const provider = pr.rows[0] as LDProvider;
 
-    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId);
+    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId, overrideKey);
     const charge = isByok ? 0 : calculateCharge(parseFloat(provider.cost_per_call_usd));
 
     const jr = await pool.query(

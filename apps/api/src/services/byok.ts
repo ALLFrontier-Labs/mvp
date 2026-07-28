@@ -12,7 +12,14 @@ export async function resolveProviderKey(
   userId: string,
   platformEncryptedKey: string,
   providerId: string,
+  overrideKey?: string,
 ): Promise<ResolvedKey> {
+  // Priority 1: Per-request header key override (e.g. X-Provider-Key)
+  if (overrideKey && overrideKey.trim().length > 0) {
+    return { apiKey: overrideKey.trim(), isByok: true };
+  }
+
+  // Priority 2: Stored BYOK vault key for user
   const r = await pool.query(
     `SELECT api_key_encrypted FROM user_provider_keys
      WHERE user_id = $1 AND provider_id = $2 AND is_active = true`,
@@ -29,6 +36,7 @@ export async function resolveProviderKey(
     return { apiKey: decrypt(r.rows[0].api_key_encrypted), isByok: true };
   }
 
+  // Priority 3: Fallback to LiteDaemon platform key
   return { apiKey: decrypt(platformEncryptedKey), isByok: false };
 }
 

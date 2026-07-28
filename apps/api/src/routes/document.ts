@@ -13,6 +13,7 @@ export async function documentRoute(app: FastifyInstance) {
     const user = req.user;
     const body = (req.body || {}) as any;
     const { provider: providerId = 'auto', params = {} } = body;
+    const overrideKey = (req.headers['x-provider-key'] || req.headers['x-api-key-override']) as string | undefined;
 
     // Normalizing parameters (supports top-level file_url/file_b64/format/schema or nested params)
     const mergedParams = {
@@ -45,7 +46,7 @@ export async function documentRoute(app: FastifyInstance) {
     // ── AUTO Routing Path ───────────────────────────────────────────────────
     if (!providerId || providerId === 'auto') {
       try {
-        const { result, provider, isByok, charge, duration_ms } = await autoRun('document', mergedParams, user.id);
+        const { result, provider, isByok, charge, duration_ms } = await autoRun('document', mergedParams, user.id, overrideKey);
 
         if (!isByok && charge > 0) {
           try {
@@ -115,7 +116,7 @@ export async function documentRoute(app: FastifyInstance) {
 
     const provider = pr.rows[0] as LDProvider;
 
-    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId);
+    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId, overrideKey);
     const charge = isByok ? 0 : calculateCharge(parseFloat(provider.cost_per_call_usd));
 
     const jr = await pool.query(

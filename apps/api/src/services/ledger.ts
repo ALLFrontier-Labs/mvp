@@ -18,6 +18,9 @@ export async function debitLedger(
   jobId:       string,
   description: string
 ): Promise<void> {
+  // BYOK or $0 call — strictly skip wallet debit & ledger entry
+  if (!amountUsd || amountUsd <= 0) return;
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

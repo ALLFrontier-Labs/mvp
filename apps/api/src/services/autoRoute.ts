@@ -33,6 +33,7 @@ export async function autoRun(
   endpoint: string,
   params:   Record<string, any>,
   userId:   string,
+  overrideKey?: string,
 ): Promise<AutoRouteResult> {
   const providers = await getLiveProviders(endpoint);
 
@@ -42,7 +43,7 @@ export async function autoRun(
   const errors: string[] = [];
 
   for (const provider of providers) {
-    const { apiKey, isByok } = await resolveProviderKey(userId, provider.api_key_encrypted, provider.id);
+    const { apiKey, isByok } = await resolveProviderKey(userId, provider.api_key_encrypted, provider.id, overrideKey);
     const adapter = getAdapter(provider.adapter_type);
     const started = Date.now();
 

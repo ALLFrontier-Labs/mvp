@@ -12,6 +12,7 @@ export async function searchRoute(app: FastifyInstance) {
   app.post('/v1/search', async (req, reply) => {
     const user = req.user;
     const { provider: providerId = 'auto', params = {} } = req.body as any;
+    const overrideKey = (req.headers['x-provider-key'] || req.headers['x-api-key-override']) as string | undefined;
 
     if (!params.query)
       return reply.code(422).send({ error: 'validation_error', fields: ['params.query is required'] });
@@ -26,7 +27,7 @@ export async function searchRoute(app: FastifyInstance) {
     // ── AUTO routing ────────────────────────────────────────────────────────
     if (!providerId || providerId === 'auto') {
       try {
-        const { result, provider, isByok, charge, duration_ms } = await autoRun('search', params, user.id);
+        const { result, provider, isByok, charge, duration_ms } = await autoRun('search', params, user.id, overrideKey);
 
         if (!isByok && charge > 0) {
           try {
@@ -65,7 +66,7 @@ export async function searchRoute(app: FastifyInstance) {
     if (!pr.rows[0]) return reply.code(404).send({ error: 'provider_not_found' });
     const provider = pr.rows[0] as LDProvider;
 
-    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId);
+    const { apiKey, isByok } = await resolveProviderKey(user.id, provider.api_key_encrypted, providerId, overrideKey);
     const charge = isByok ? 0 : calculateCharge(parseFloat(provider.cost_per_call_usd));
 
     const jr = await pool.query(

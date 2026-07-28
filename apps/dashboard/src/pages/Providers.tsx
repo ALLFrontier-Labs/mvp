@@ -97,13 +97,30 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { code: 'import math\nprint(f"Pi calculated: {math.pi}")' },
     iconBg: 'from-fuchsia-500/20 to-purple-500/20 text-fuchsia-400 border-fuchsia-500/30',
   },
+  firecrawl_parse: {
+    description: 'Parse local or hosted PDF, DOCX, and XLSX files directly into LLM-ready markdown or structured JSON.',
+    website: 'https://firecrawl.dev',
+    latency: '~1.5s',
+    capabilities: ['PDF to Markdown', 'DOCX / XLSX Parsing', 'JSON Schema Extraction', 'OCR Support'],
+    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
+    iconBg: 'from-orange-600/20 to-red-500/20 text-orange-400 border-orange-500/30',
+  },
+  llamaparse: {
+    description: 'Advanced document parsing engine for complex PDF tables, forms, and multi-page documents.',
+    website: 'https://llamaindex.ai',
+    latency: '~1.2s',
+    capabilities: ['LlamaIndex Parser', 'Table Extraction', 'PDF & PPTX Support', 'Structured Data'],
+    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
+    iconBg: 'from-blue-600/20 to-indigo-500/20 text-blue-400 border-blue-500/30',
+  },
 };
 
 const ENDPOINT_BADGE: Record<string, { label: string; text: string; bg: string; border: string }> = {
-  scrape:  { label: '/v1/scrape',  text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-  search:  { label: '/v1/search',  text: 'text-teal-400',    bg: 'bg-teal-500/10',    border: 'border-teal-500/20' },
-  browser: { label: '/v1/browser', text: 'text-cyan-400',    bg: 'bg-cyan-500/10',    border: 'border-cyan-500/20' },
-  execute: { label: '/v1/execute', text: 'text-purple-400',  bg: 'bg-purple-500/10',  border: 'border-purple-500/20' },
+  scrape:   { label: '/v1/scrape',   text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  search:   { label: '/v1/search',   text: 'text-teal-400',    bg: 'bg-teal-500/10',    border: 'border-teal-500/20' },
+  browser:  { label: '/v1/browser',  text: 'text-cyan-400',    bg: 'bg-cyan-500/10',    border: 'border-cyan-500/20' },
+  execute:  { label: '/v1/execute',  text: 'text-purple-400',  bg: 'bg-purple-500/10',  border: 'border-purple-500/20' },
+  document: { label: '/v1/document', text: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20' },
 };
 
 interface Provider {
@@ -123,7 +140,7 @@ export const Providers: React.FC = () => {
   
   // Filtering & Search
   const [searchQuery, setSearchQuery]   = useState('');
-  const [endpointFilter, setEndpointFilter] = useState<'all' | 'scrape' | 'search' | 'browser' | 'execute'>('all');
+  const [endpointFilter, setEndpointFilter] = useState<'all' | 'scrape' | 'search' | 'browser' | 'execute' | 'document'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'offline'>('all');
   const [sortBy, setSortBy]             = useState<'cost_asc' | 'cost_desc' | 'name' | 'speed'>('cost_asc');
 
@@ -354,6 +371,7 @@ print(response.json())`;
           {[
             { id: 'all', label: 'All Endpoints', count: providers.length },
             { id: 'scrape', label: '/v1/scrape', count: providers.filter(p => p.endpoint === 'scrape').length, color: 'text-emerald-400' },
+            { id: 'document', label: '/v1/document', count: providers.filter(p => p.endpoint === 'document').length, color: 'text-amber-400' },
             { id: 'search', label: '/v1/search', count: providers.filter(p => p.endpoint === 'search').length, color: 'text-teal-400' },
             { id: 'browser', label: '/v1/browser', count: providers.filter(p => p.endpoint === 'browser').length, color: 'text-cyan-400' },
             { id: 'execute', label: '/v1/execute', count: providers.filter(p => p.endpoint === 'execute').length, color: 'text-purple-400' },

@@ -21,7 +21,6 @@ export async function getLiveProviders(endpoint: string): Promise<LDProvider[]> 
     `SELECT * FROM providers
      WHERE endpoint   = $1
        AND is_active  = true
-       AND is_live    = true
      ORDER BY cost_per_call_usd ASC`,
     [endpoint],
   );

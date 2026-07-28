@@ -17,28 +17,33 @@ const PROVIDER_META: Record<string, { description: string; website: string }> = 
   serper:      { description: 'Real-time Google SERP results',     website: 'https://serper.dev' },
   browserbase: { description: 'Cloud Chromium + CDP sessions',     website: 'https://browserbase.com' },
   steel:       { description: 'Anti-detect browser + captcha',     website: 'https://steel.dev' },
-  e2b:         { description: 'Isolated Python/JS code sandbox',   website: 'https://e2b.dev' },
+  e2b:             { description: 'Isolated Python/JS code sandbox',   website: 'https://e2b.dev' },
+  firecrawl_parse: { description: 'PDF, DOCX & XLSX parser to MD/JSON', website: 'https://firecrawl.dev' },
+  llamaparse:      { description: 'LlamaIndex PDF & table parser',      website: 'https://llamaindex.ai' },
 };
 
 const ENDPOINT_BADGE: Record<string, { label: string; text: string; bg: string; border: string }> = {
-  scrape:  { label: '/v1/scrape',  text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-  search:  { label: '/v1/search',  text: 'text-teal-400',    bg: 'bg-teal-500/10',    border: 'border-teal-500/20' },
-  browser: { label: '/v1/browser', text: 'text-cyan-400',    bg: 'bg-cyan-500/10',    border: 'border-cyan-500/20' },
-  execute: { label: '/v1/execute', text: 'text-purple-400',  bg: 'bg-purple-500/10',  border: 'border-purple-500/20' },
+  scrape:   { label: '/v1/scrape',   text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  document: { label: '/v1/document', text: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20' },
+  search:   { label: '/v1/search',   text: 'text-teal-400',    bg: 'bg-teal-500/10',    border: 'border-teal-500/20' },
+  browser:  { label: '/v1/browser',  text: 'text-cyan-400',    bg: 'bg-cyan-500/10',    border: 'border-cyan-500/20' },
+  execute:  { label: '/v1/execute',  text: 'text-purple-400',  bg: 'bg-purple-500/10',  border: 'border-purple-500/20' },
 };
 
-// All 10 providers (static list — shown even if user has no keys yet)
+// All providers (static list — shown even if user has no keys yet)
 const ALL_PROVIDERS = [
-  { id: 'firecrawl',   name: 'Firecrawl',    endpoint: 'scrape' },
-  { id: 'jina',        name: 'Jina AI',       endpoint: 'scrape' },
-  { id: 'apify',       name: 'Apify',         endpoint: 'scrape' },
-  { id: 'spider',      name: 'Spider Cloud',  endpoint: 'scrape' },
-  { id: 'tavily',      name: 'Tavily',        endpoint: 'search' },
-  { id: 'exa',         name: 'Exa AI',        endpoint: 'search' },
-  { id: 'serper',      name: 'Serper',        endpoint: 'search' },
-  { id: 'browserbase', name: 'Browserbase',   endpoint: 'browser' },
-  { id: 'steel',       name: 'Steel Browser', endpoint: 'browser' },
-  { id: 'e2b',         name: 'E2B Sandbox',   endpoint: 'execute' },
+  { id: 'firecrawl',       name: 'Firecrawl',               endpoint: 'scrape' },
+  { id: 'jina',            name: 'Jina AI',                  endpoint: 'scrape' },
+  { id: 'apify',           name: 'Apify',                    endpoint: 'scrape' },
+  { id: 'spider',          name: 'Spider Cloud',             endpoint: 'scrape' },
+  { id: 'firecrawl_parse', name: 'Firecrawl Document Parse', endpoint: 'document' },
+  { id: 'llamaparse',      name: 'LlamaParse',               endpoint: 'document' },
+  { id: 'tavily',          name: 'Tavily',                   endpoint: 'search' },
+  { id: 'exa',             name: 'Exa AI',                   endpoint: 'search' },
+  { id: 'serper',          name: 'Serper',                   endpoint: 'search' },
+  { id: 'browserbase',     name: 'Browserbase',              endpoint: 'browser' },
+  { id: 'steel',           name: 'Steel Browser',            endpoint: 'browser' },
+  { id: 'e2b',             name: 'E2B Sandbox',              endpoint: 'execute' },
 ];
 
 interface ByokKey {
@@ -126,12 +131,13 @@ export const Keys: React.FC = () => {
   const byokCount = byokKeys.length;
 
   // Group by endpoint
-  const GROUPS = ['scrape', 'search', 'browser', 'execute'];
+  const GROUPS = ['scrape', 'document', 'search', 'browser', 'execute'];
   const GROUP_LABELS: Record<string, string> = {
-    scrape: 'Scraping & Web Parsing',
-    search: 'AI & Web Search',
-    browser: 'Cloud Headless Browsers',
-    execute: 'Code Execution Sandboxes',
+    scrape:   'Scraping & Web Parsing',
+    document: 'Document Parsing (PDF, DOCX, XLSX)',
+    search:   'AI & Web Search',
+    browser:  'Cloud Headless Browsers',
+    execute:  'Code Execution Sandboxes',
   };
 
   return (

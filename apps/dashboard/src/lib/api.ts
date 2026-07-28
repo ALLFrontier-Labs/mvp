@@ -140,6 +140,13 @@ export const api = {
     });
   },
 
+  document: async (provider: string = 'auto', params: Record<string, any>) => {
+    return apiRequest('/document', {
+      method: 'POST',
+      body: JSON.stringify({ provider, params }),
+    });
+  },
+
   // ── BYOK — Bring Your Own Keys ──────────────────────────────────────────
   listKeys: async () => {
     return apiRequest<{

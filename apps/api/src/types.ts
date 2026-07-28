@@ -35,7 +35,18 @@ export interface ExecuteResult {
   exit_code: number;
 }
 
-export type UnifiedResult = ScrapeResult | SearchResult | BrowserResult | ExecuteResult;
+export interface DocumentResult {
+  content:          string;
+  format:           'markdown' | 'json';
+  structured_data?: any;
+  metadata: {
+    file_name?:     string;
+    page_count?:    number;
+    source_format?: string;
+  };
+}
+
+export type UnifiedResult = ScrapeResult | SearchResult | BrowserResult | ExecuteResult | DocumentResult;
 
 // ── Adapter return types ──────────────────────────────────────────────────────
 

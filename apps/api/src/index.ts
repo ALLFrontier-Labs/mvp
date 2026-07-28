@@ -15,6 +15,7 @@ import { usageRoute } from './routes/usage';
 import { billingRoute } from './routes/billing';
 import { providersRoute } from './routes/providers';
 import { keysRoute }      from './routes/keys';
+import { documentRoute }  from './routes/document';
 
 Sentry.init({ dsn: process.env.SENTRY_DSN, environment: process.env.NODE_ENV });
 
@@ -51,6 +52,7 @@ async function main() {
   app.register(searchRoute);
   app.register(browserRoute);
   app.register(executeRoute);
+  app.register(documentRoute);
   app.register(jobsRoute);
   app.register(usageRoute);
   app.register(billingRoute);

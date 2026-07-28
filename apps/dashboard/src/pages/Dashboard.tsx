@@ -82,6 +82,78 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
+      {/* New User Onboarding — shown when balance=$0 and no calls yet */}
+      {stats && stats.balance_usd === 0 && stats.total_calls === 0 && !loading && (
+        <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/30 to-slate-900 p-6 md:p-8 space-y-6">
+          <div>
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Zap className="w-5 h-5 text-emerald-400" />
+              Welcome to LiteDaemon! Let's get you started.
+            </h2>
+            <p className="text-slate-400 text-sm mt-1">
+              Replace 4+ provider subscriptions with one prepaid wallet. Three steps to your first call.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                step: '1',
+                icon: Terminal,
+                title: 'Deposit Credits',
+                desc: 'Add $5+ to your prepaid wallet. No monthly commitment.',
+                action: '/billing',
+                actionLabel: 'Deposit Now →',
+                done: false,
+              },
+              {
+                step: '2',
+                icon: Layers,
+                title: 'Browse Providers',
+                desc: '10 providers: scraping, search, browser, code exec. All at wholesale rates.',
+                action: '/providers',
+                actionLabel: 'Browse Catalog →',
+                done: false,
+              },
+              {
+                step: '3',
+                icon: Terminal,
+                title: 'Make Your First Call',
+                desc: 'POST /v1/scrape or /v1/search with provider: "auto" — we pick the best.',
+                action: '/settings',
+                actionLabel: 'Get Code Snippet →',
+                done: false,
+              },
+            ].map(s => (
+              <Link
+                key={s.step}
+                to={s.action}
+                className="group p-5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition-all space-y-3"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center">
+                    {s.step}
+                  </span>
+                  <s.icon className="w-4 h-4 text-emerald-400" />
+                  <span className="font-semibold text-white text-sm">{s.title}</span>
+                </div>
+                <p className="text-slate-400 text-xs leading-relaxed">{s.desc}</p>
+                <span className="text-emerald-400 text-xs font-mono group-hover:underline">{s.actionLabel}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 font-mono text-xs text-slate-400">
+            <span className="text-slate-300 font-semibold">Quick test (after depositing):</span>
+            <pre className="mt-2 text-emerald-300 overflow-x-auto">
+{`curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
+  -H "Authorization: Bearer YOUR_KEY" \\
+  -d '{"params": {"url": "https://example.com"}}'`}
+            </pre>
+          </div>
+        </div>
+      )}
+
       {/* Primary Wallet & Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         

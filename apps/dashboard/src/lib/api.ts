@@ -60,6 +60,18 @@ export const api = {
     });
   },
 
+  getMe: async () => {
+    return apiRequest<{
+      email: string;
+      plan: string;
+      created_at: string;
+      balance_usd: number;
+      total_calls: number;
+      billed_calls: number;
+      total_spent_usd: number;
+    }>('/me');
+  },
+
   getUsage: async () => {
     return apiRequest<{
       total_calls: number;

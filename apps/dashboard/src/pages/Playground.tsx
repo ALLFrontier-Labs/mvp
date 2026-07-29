@@ -26,6 +26,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
+import { PROVIDER_META } from '../data/providers';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Provider {
@@ -107,14 +108,7 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ child
   </div>
 );
 
-const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
-  <textarea
-    {...props}
-    className={`w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all font-mono resize-none ${props.className ?? ''}`}
-  />
-);
-
-// ── Provider Selector (Pure BYOK formatting without hardcoded dollar rates) ──────
+// ── Dynamic Provider Selector with Key Connection State ───────────────────────
 const ProviderSelect: React.FC<{
   providers: Provider[];
   configuredProviderIds: Set<string>;
@@ -122,7 +116,7 @@ const ProviderSelect: React.FC<{
   value: string;
   onChange: (v: string) => void;
 }> = ({ providers, configuredProviderIds, endpoint, value, onChange }) => {
-  const filtered = providers.filter((p) => p.endpoint === endpoint && p.is_live);
+  const filtered = providers.filter((p) => p.endpoint === endpoint);
   const selected = filtered.find((p) => p.id === value);
   const selectedHasKey = selected ? configuredProviderIds.has(selected.id) : true;
 
@@ -134,7 +128,7 @@ const ProviderSelect: React.FC<{
         {filtered.map((p) => {
           const hasKey = configuredProviderIds.has(p.id);
           return (
-            <option key={p.id} value={p.id}>
+            <option key={p.id} value={p.id} disabled={!hasKey}>
               {p.name} {hasKey ? '(Connected)' : '(Key Required)'}
             </option>
           );
@@ -706,7 +700,27 @@ export const Playground: React.FC = () => {
       api.listProviders().catch(() => ({ providers: [] })),
       api.listKeys().catch(() => ({ keys: [] })),
     ]).then(([provData, keysData]) => {
-      setProviders(provData.providers ?? []);
+      let loadedProviders: Provider[] = provData.providers ?? [];
+      
+      // If backend returned fewer providers, build fallback list from PROVIDER_META
+      if (loadedProviders.length === 0) {
+        loadedProviders = Object.entries(PROVIDER_META).map(([id, meta]) => {
+          let ep = 'scrape';
+          if (['tavily', 'serper', 'exa', 'brave', 'serpapi', 'bing', 'google_cse', 'zenserp', 'you', 'perplexity', 'searxng'].includes(id)) ep = 'search';
+          else if (['browserbase', 'steel', 'browserless', 'anchor'].includes(id)) ep = 'browser';
+          else if (['e2b', 'daytona', 'modal', 'fly', 'runpod'].includes(id)) ep = 'execute';
+          else if (['llamaparse', 'unstructured', 'firecrawl_parse', 'diffbot'].includes(id)) ep = 'document';
+          return {
+            id,
+            name: id.charAt(0).toUpperCase() + id.slice(1).replace('_', ' '),
+            endpoint: ep,
+            adapter_type: id,
+            cost_per_call_usd: 0.002,
+            is_live: true,
+          };
+        });
+      }
+      setProviders(loadedProviders);
       setUserKeys(keysData.keys ?? []);
     }).finally(() => setProvidersLoading(false));
   }, []);

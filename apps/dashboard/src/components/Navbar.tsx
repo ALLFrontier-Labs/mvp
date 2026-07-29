@@ -88,14 +88,14 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* User / Action Pills */}
-        <div className="flex items-center space-x-3">
+        {/* User / Action Pills with Explicit Spacing & Breathing Room */}
+        <div className="flex items-center gap-3 ml-4 pl-4 border-l border-slate-800/80">
           {apiKey ? (
             <>
               {/* Wallet Pill */}
               <Link
                 to="/billing"
-                className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/30 transition-colors"
+                className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/30 transition-colors shadow-sm"
               >
                 <Wallet className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs font-mono font-semibold">

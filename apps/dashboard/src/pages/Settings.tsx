@@ -164,7 +164,7 @@ export const Settings: React.FC = () => {
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Gateway Tier</p>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold uppercase">
-                <CreditCard className="w-3 h-3" /> {me.plan}
+                <CreditCard className="w-3 h-3" /> {(me.total_calls || 0) < 1000000 ? '1M Free Tier' : 'Pro Gateway'}
               </span>
             </div>
 

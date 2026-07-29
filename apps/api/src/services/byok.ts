@@ -101,7 +101,7 @@ export async function addByokKey(
 export async function deleteByokKey(userId: string, keyId: string): Promise<boolean> {
   try {
     const r = await pool.query(
-      `DELETE FROM user_provider_keys WHERE id::text = $1 AND user_id = $2 RETURNING id`,
+      `DELETE FROM user_provider_keys WHERE (id::text = $1 OR provider_id = $1) AND user_id = $2 RETURNING id`,
       [keyId, userId],
     );
     return (r.rowCount ?? 0) > 0;

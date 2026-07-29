@@ -216,7 +216,7 @@ print(response.json())`;
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search ${providers.length} providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint...`}
+              placeholder={`Search ${filteredProviders.length} providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint...`}
               className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 font-mono text-xs transition-colors"
             />
             {searchQuery && (

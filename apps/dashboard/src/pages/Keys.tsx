@@ -55,6 +55,7 @@ interface ByokKey {
   platform_cost_usd: number;
   label: string | null;
   is_active: boolean;
+  always_use_this_key?: boolean;   // optional — defaults to false if absent
   last_used_at: string | null;
   created_at: string;
 }
@@ -78,6 +79,7 @@ export const Keys: React.FC = () => {
   const [showKey, setShowKey]         = useState<Record<string, boolean>>({});
   const [saving, setSaving]           = useState<Record<string, boolean>>({});
   const [deleting, setDeleting]       = useState<Record<string, boolean>>({});
+  const [strictLoading, setStrictLoading] = useState<Record<string, boolean>>({});
   const [toasts, setToasts]           = useState<Record<string, string>>({});
 
   const load = async () => {
@@ -126,6 +128,21 @@ export const Keys: React.FC = () => {
       showToast(providerId, `❌ ${e.message || 'Failed to remove key'}`);
     } finally {
       setDeleting(prev => ({ ...prev, [providerId]: false }));
+    }
+  };
+
+  const handleStrictToggle = async (providerId: string, currentStrict: boolean) => {
+    setStrictLoading(prev => ({ ...prev, [providerId]: true }));
+    try {
+      await api.setKeyStrictMode(providerId, !currentStrict);
+      showToast(providerId, !currentStrict
+        ? '🔒 Strict Isolation enabled — no managed fallback'
+        : '🔓 Strict Isolation disabled — managed fallback active');
+      await load();
+    } catch (e: any) {
+      showToast(providerId, `❌ ${e.message || 'Failed to update strict mode'}`);
+    } finally {
+      setStrictLoading(prev => ({ ...prev, [providerId]: false }));
     }
   };
 
@@ -304,32 +321,74 @@ export const Keys: React.FC = () => {
 
                             {/* Existing key info */}
                             {existing && (
-                              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                                <div className="space-y-1">
-                                  <p className="text-[10px] font-mono uppercase text-slate-500">Active BYOK Key</p>
-                                  <p className="font-mono text-sm text-emerald-400">
-                                    {showRaw ? 'sk-••••••••••••••••••••' : 'sk-••••••••••••••••••••'}
-                                    <span className="text-slate-500 text-xs ml-2">(encrypted — never readable)</span>
-                                  </p>
-                                  {existing.label && (
-                                    <p className="text-xs text-slate-400">Label: <span className="text-white">{existing.label}</span></p>
-                                  )}
-                                  <p className="text-[10px] text-slate-500 font-mono">
-                                    Added: {timeAgo(existing.created_at)}
-                                    {existing.last_used_at && ` · Last used: ${timeAgo(existing.last_used_at)}`}
-                                  </p>
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] font-mono uppercase text-slate-500">Active BYOK Key</p>
+                                    <p className="font-mono text-sm text-emerald-400">
+                                      sk-••••••••••••••••••••
+                                      <span className="text-slate-500 text-xs ml-2">(encrypted — never readable)</span>
+                                    </p>
+                                    {existing.label && (
+                                      <p className="text-xs text-slate-400">Label: <span className="text-white">{existing.label}</span></p>
+                                    )}
+                                    <p className="text-[10px] text-slate-500 font-mono">
+                                      Added: {timeAgo(existing.created_at)}
+                                      {existing.last_used_at && ` · Last used: ${timeAgo(existing.last_used_at)}`}
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={() => handleDelete(p.id)}
+                                    disabled={isDeleting}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-mono transition-all"
+                                  >
+                                    {isDeleting
+                                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                      : <Trash2 className="w-3.5 h-3.5" />
+                                    }
+                                    Remove
+                                  </button>
                                 </div>
-                                <button
-                                  onClick={() => handleDelete(p.id)}
-                                  disabled={isDeleting}
-                                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-mono transition-all"
-                                >
-                                  {isDeleting
-                                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                    : <Trash2 className="w-3.5 h-3.5" />
-                                  }
-                                  Remove
-                                </button>
+
+                                {/* Strict Isolation Toggle */}
+                                <div className={`flex items-start justify-between p-3.5 rounded-xl border transition-all ${
+                                  existing.always_use_this_key
+                                    ? 'bg-rose-950/30 border-rose-500/30'
+                                    : 'bg-slate-900/40 border-slate-800/60'
+                                }`}>
+                                  <div className="flex-1 pr-4">
+                                    <div className="flex items-center gap-2">
+                                      <Lock className={`w-3.5 h-3.5 ${existing.always_use_this_key ? 'text-rose-400' : 'text-slate-500'}`} />
+                                      <p className={`text-xs font-semibold ${existing.always_use_this_key ? 'text-rose-300' : 'text-slate-300'}`}>
+                                        Always use this key <span className="font-normal text-slate-500">(Strict Isolation)</span>
+                                      </p>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+                                      {existing.always_use_this_key
+                                        ? '🔒 Requests will fail with 429/401 if your key runs out — no LiteDaemon wallet fallback.'
+                                        : '🔓 If your key hits its quota limit, LiteDaemon will silently fall back to the managed pool.'}
+                                    </p>
+                                  </div>
+                                  {/* Toggle switch */}
+                                  <button
+                                    onClick={() => handleStrictToggle(p.id, existing.always_use_this_key ?? false)}
+                                    disabled={!!strictLoading[p.id]}
+                                    className="relative shrink-0 w-10 h-5.5 focus:outline-none disabled:opacity-50"
+                                    title={existing.always_use_this_key ? 'Disable strict isolation' : 'Enable strict isolation'}
+                                  >
+                                    {strictLoading[p.id] ? (
+                                      <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                                    ) : (
+                                      <div className={`w-10 h-5 rounded-full transition-all duration-200 relative ${
+                                        existing.always_use_this_key ? 'bg-rose-500' : 'bg-slate-700'
+                                      }`}>
+                                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${
+                                          existing.always_use_this_key ? 'left-5' : 'left-0.5'
+                                        }`} />
+                                      </div>
+                                    )}
+                                  </button>
+                                </div>
                               </div>
                             )}
 

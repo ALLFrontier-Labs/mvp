@@ -46,7 +46,11 @@ export async function documentRoute(app: FastifyInstance) {
     // ── AUTO Routing Path ───────────────────────────────────────────────────
     if (!providerId || providerId === 'auto') {
       try {
-        const { result, provider, isByok, charge, duration_ms } = await autoRun('document', mergedParams, user.id, overrideKey);
+        const { result, provider, isByok, charge, duration_ms, routedVia, fallbackReason, walletDeducted } = await autoRun('document', mergedParams, user.id, overrideKey);
+
+        reply.header('X-LiteDaemon-Routed-Via',      routedVia);
+        reply.header('X-LiteDaemon-Fallback-Reason', fallbackReason);
+        reply.header('X-LiteDaemon-Wallet-Deducted', `$${walletDeducted.toFixed(6)}`);
 
         if (!isByok && charge > 0) {
           try {

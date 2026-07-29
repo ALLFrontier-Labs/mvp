@@ -1,7 +1,7 @@
 // routes/keys.ts — BYOK key management endpoints
-import { FastifyInstance }                                    from 'fastify';
-import { pool }                                              from '../db/client';
-import { listByokKeys, upsertByokKey, deleteByokKey }        from '../services/byok';
+import { FastifyInstance }                                        from 'fastify';
+import { pool }                                                  from '../db/client';
+import { listByokKeys, upsertByokKey, deleteByokKey, setStrictMode } from '../services/byok';
 
 export async function keysRoute(app: FastifyInstance) {
 
@@ -13,7 +13,7 @@ export async function keysRoute(app: FastifyInstance) {
 
   // ── POST /v1/keys — Add or replace a BYOK key ──────────────────────────────
   app.post('/v1/keys', async (req, reply) => {
-    const { provider_id, api_key, label } = req.body as any;
+    const { provider_id, api_key, label, strict_mode } = req.body as any;
 
     if (!provider_id || typeof provider_id !== 'string')
       return reply.code(422).send({ error: 'validation_error', message: 'provider_id is required' });
@@ -28,13 +28,33 @@ export async function keysRoute(app: FastifyInstance) {
     if (!pr.rows[0])
       return reply.code(404).send({ error: 'provider_not_found', message: `No active provider with id: ${provider_id}` });
 
-    await upsertByokKey(req.user.id, provider_id, api_key.trim(), label);
+    await upsertByokKey(req.user.id, provider_id, api_key.trim(), label, !!strict_mode);
 
     return reply.code(201).send({
       message:     `BYOK key saved for ${pr.rows[0].name}`,
       provider_id,
       endpoint:    pr.rows[0].endpoint,
       byok_active: true,
+      strict_mode: !!strict_mode,
+    });
+  });
+
+  // ── PATCH /v1/keys/:provider_id/strict — Toggle strict isolation mode ──────
+  app.patch('/v1/keys/:provider_id/strict', async (req, reply) => {
+    const { provider_id } = req.params as { provider_id: string };
+    const { strict } = req.body as { strict: boolean };
+
+    if (typeof strict !== 'boolean')
+      return reply.code(422).send({ error: 'validation_error', message: 'strict must be a boolean' });
+
+    const updated = await setStrictMode(req.user.id, provider_id, strict);
+    if (!updated)
+      return reply.code(404).send({ error: 'key_not_found', message: `No BYOK key found for provider: ${provider_id}` });
+
+    return reply.send({
+      message:     `Strict isolation ${strict ? 'enabled' : 'disabled'} for ${provider_id}`,
+      provider_id,
+      strict_mode: strict,
     });
   });
 

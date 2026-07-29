@@ -178,6 +178,13 @@ export const api = {
     });
   },
 
+  setKeyStrictMode: async (provider_id: string, strict: boolean) => {
+    return apiRequest<{ message: string; provider_id: string; strict_mode: boolean }>(`/keys/${provider_id}/strict`, {
+      method: 'PATCH',
+      body: JSON.stringify({ strict }),
+    });
+  },
+
   // ── Auth Endpoints ──────────────────────────────────────────────────────
 
   login: async (email: string, password?: string) => {

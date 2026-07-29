@@ -27,7 +27,11 @@ export async function searchRoute(app: FastifyInstance) {
     // ── AUTO routing ────────────────────────────────────────────────────────
     if (!providerId || providerId === 'auto') {
       try {
-        const { result, provider, isByok, charge, duration_ms } = await autoRun('search', params, user.id, overrideKey);
+        const { result, provider, isByok, charge, duration_ms, routedVia, fallbackReason, walletDeducted } = await autoRun('search', params, user.id, overrideKey);
+
+        reply.header('X-LiteDaemon-Routed-Via',      routedVia);
+        reply.header('X-LiteDaemon-Fallback-Reason', fallbackReason);
+        reply.header('X-LiteDaemon-Wallet-Deducted', `$${walletDeducted.toFixed(6)}`);
 
         if (!isByok && charge > 0) {
           try {
@@ -38,7 +42,7 @@ export async function searchRoute(app: FastifyInstance) {
             const jobId = jr.rows[0].id;
             await debitLedger(user.id, charge, provider.id, jobId, `${provider.name} search (auto) — ${params.query}`);
             await pool.query(`UPDATE jobs SET status='completed', result=$1, completed_at=NOW() WHERE id=$2`, [JSON.stringify(result), jobId]);
-            return reply.send({ job_id: jobId, status: 'completed', provider: provider.id, provider_auto: true, result, cost_usd: charge, duration_ms });
+            return reply.send({ job_id: jobId, status: 'completed', provider: provider.id, provider_auto: true, result, cost_usd: charge, duration_ms, routed_via: routedVia });
           } catch (err: any) {
             if (err instanceof InsufficientFundsError)
               return reply.code(402).send({ error: 'insufficient_balance', required_usd: charge });
@@ -51,10 +55,11 @@ export async function searchRoute(app: FastifyInstance) {
           );
           const jobId = jr.rows[0].id;
           await pool.query(`UPDATE jobs SET result=$1, completed_at=NOW() WHERE id=$2`, [JSON.stringify(result), jobId]);
-          return reply.send({ job_id: jobId, status: 'completed', provider: provider.id, provider_auto: true, result, cost_usd: 0, duration_ms });
+          return reply.send({ job_id: jobId, status: 'completed', provider: provider.id, provider_auto: true, result, cost_usd: 0, duration_ms, routed_via: routedVia });
         }
       } catch (err: any) {
-        return reply.code(502).send({ error: 'auto_route_failed', message: err.message });
+        const code = (err as any).statusCode === 429 ? 429 : (err as any).code === 'BYOK_STRICT_FAILURE' ? 429 : 502;
+        return reply.code(code).send({ error: 'auto_route_failed', message: err.message, code: (err as any).code });
       }
     }
 

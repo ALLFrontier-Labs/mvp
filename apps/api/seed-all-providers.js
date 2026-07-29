@@ -1,4 +1,4 @@
-// seed-all-providers.js — Seed all 28 production adapters into providers table
+// seed-all-providers.js — Seed all 36 production adapters into providers table
 require('dotenv').config();
 const { Pool } = require('pg');
 
@@ -16,6 +16,8 @@ const PROVIDERS = [
   { id: 'scraperapi',    name: 'ScraperAPI',               endpoint: 'scrape',   adapter: 'scraperapi',  type: 'sync',  cost: 0.002 },
   { id: 'scrapfly',      name: 'Scrapfly',                 endpoint: 'scrape',   adapter: 'scrapfly',    type: 'sync',  cost: 0.003 },
   { id: 'crawl4ai',      name: 'Crawl4AI',                 endpoint: 'scrape',   adapter: 'crawl4ai',    type: 'sync',  cost: 0.001 },
+  { id: 'brightdata',    name: 'BrightData Web Scraper',   endpoint: 'scrape',   adapter: 'brightdata',  type: 'sync',  cost: 0.003 },
+  { id: 'oxylabs',       name: 'Oxylabs Web Scraper',      endpoint: 'scrape',   adapter: 'oxylabs',     type: 'sync',  cost: 0.003 },
 
   // ── Web Search (/v1/search) ───────────────────────────────────────────────
   { id: 'tavily',        name: 'Tavily Search',            endpoint: 'search',   adapter: 'tavily',      type: 'sync',  cost: 0.001 },
@@ -26,6 +28,9 @@ const PROVIDERS = [
   { id: 'bing',          name: 'Bing Search',              endpoint: 'search',   adapter: 'bing',        type: 'sync',  cost: 0.002 },
   { id: 'google_cse',    name: 'Google Custom Search',      endpoint: 'search',   adapter: 'google_cse',  type: 'sync',  cost: 0.002 },
   { id: 'zenserp',       name: 'Zenserp',                  endpoint: 'search',   adapter: 'zenserp',     type: 'sync',  cost: 0.002 },
+  { id: 'you',           name: 'You.com API',              endpoint: 'search',   adapter: 'you',         type: 'sync',  cost: 0.002 },
+  { id: 'perplexity',    name: 'Perplexity Search',        endpoint: 'search',   adapter: 'perplexity',  type: 'sync',  cost: 0.003 },
+  { id: 'searxng',       name: 'SearXNG Open Search',      endpoint: 'search',   adapter: 'searxng',     type: 'sync',  cost: 0.001 },
 
   // ── Headless Browsers (/v1/browser) ───────────────────────────────────────
   { id: 'browserbase',   name: 'Browserbase',              endpoint: 'browser',  adapter: 'browserbase', type: 'sync',  cost: 0.015 },
@@ -42,6 +47,9 @@ const PROVIDERS = [
   // ── Execution Sandboxes (/v1/execute) ─────────────────────────────────────
   { id: 'e2b',           name: 'E2B Sandbox',              endpoint: 'execute',  adapter: 'e2b',         type: 'sync',  cost: 0.003 },
   { id: 'daytona',       name: 'Daytona Sandbox',          endpoint: 'execute',  adapter: 'daytona',     type: 'sync',  cost: 0.003 },
+  { id: 'modal',         name: 'Modal Labs',               endpoint: 'execute',  adapter: 'modal',       type: 'async', cost: 0.005 },
+  { id: 'fly',           name: 'Fly.io Ephemeral',         endpoint: 'execute',  adapter: 'fly',         type: 'sync',  cost: 0.004 },
+  { id: 'runpod',        name: 'RunPod Serverless',        endpoint: 'execute',  adapter: 'runpod',      type: 'async', cost: 0.005 },
 ];
 
 async function seed() {

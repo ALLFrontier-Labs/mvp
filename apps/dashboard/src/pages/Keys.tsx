@@ -32,6 +32,9 @@ const ALL_PROVIDERS: ProviderMeta[] = [
   { id: 'bing',            name: 'Bing Search',              category: 'search',   endpoint: '/v1/search',   description: 'Microsoft Bing Web & News Search API',            website: 'https://azure.microsoft.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
   { id: 'google_cse',      name: 'Google Custom Search',      category: 'search',   endpoint: '/v1/search',   description: 'Google Programmable Search API',                   website: 'https://developers.google.com/custom-search', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
   { id: 'zenserp',         name: 'Zenserp',                  category: 'search',   endpoint: '/v1/search',   description: 'Reliable Google, Bing & YouTube SERP scraping',   website: 'https://zenserp.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'you',           name: 'You.com API',              category: 'search',   endpoint: '/v1/search',   description: 'You.com AI search with live web citations',       website: 'https://you.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'perplexity',    name: 'Perplexity Search',        category: 'search',   endpoint: '/v1/search',   description: 'Sonar online search grounded citations API',      website: 'https://perplexity.ai', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'searxng',       name: 'SearXNG',                  category: 'search',   endpoint: '/v1/search',   description: 'Open-source privacy metasearch aggregator',        website: 'https://searxng.org', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
 
   // Scraping & Data Extraction (/v1/scrape)
   { id: 'firecrawl',       name: 'Firecrawl',                category: 'scrape',   endpoint: '/v1/scrape',   description: 'Turn web pages into LLM-ready markdown',           website: 'https://firecrawl.dev', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
@@ -44,6 +47,8 @@ const ALL_PROVIDERS: ProviderMeta[] = [
   { id: 'scraperapi',      name: 'ScraperAPI',               category: 'scrape',   endpoint: '/v1/scrape',   description: 'Turnkey scraping API with auto IP rotation',       website: 'https://scraperapi.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   { id: 'scrapfly',        name: 'Scrapfly',                 category: 'scrape',   endpoint: '/v1/scrape',   description: 'Full-stack scraping with ASP anti-bot protection', website: 'https://scrapfly.io', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   { id: 'crawl4ai',        name: 'Crawl4AI',                 category: 'scrape',   endpoint: '/v1/scrape',   description: 'Open-source ultra-fast LLM web crawler',          website: 'https://crawl4ai.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'brightdata',      name: 'BrightData Scraper',       category: 'scrape',   endpoint: '/v1/scrape',   description: 'Enterprise web unlocking & residential proxies',   website: 'https://brightdata.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'oxylabs',         name: 'Oxylabs Scraper',          category: 'scrape',   endpoint: '/v1/scrape',   description: 'High-performance AI web unblocker & proxy mesh',   website: 'https://oxylabs.io', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
 
   // Headless Browsers (/v1/browser)
   { id: 'browserbase',     name: 'Browserbase',              category: 'browser',  endpoint: '/v1/browser',  description: 'Cloud Chromium & CDP session infrastructure',     website: 'https://browserbase.com', iconBg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
@@ -54,6 +59,9 @@ const ALL_PROVIDERS: ProviderMeta[] = [
   // Code Execution Sandboxes (/v1/execute)
   { id: 'daytona',         name: 'Daytona Sandbox',          category: 'execute',  endpoint: '/v1/execute',  description: 'Fast cloud dev environment & execution sandbox',  website: 'https://daytona.io', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   { id: 'e2b',             name: 'E2B Sandbox',              category: 'execute',  endpoint: '/v1/execute',  description: 'Secure isolated Python & JS code sandbox for AI',  website: 'https://e2b.dev', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  { id: 'modal',           name: 'Modal Labs',               category: 'execute',  endpoint: '/v1/execute',  description: 'Serverless Python execution & GPU sandboxes',      website: 'https://modal.com', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  { id: 'fly',             name: 'Fly.io Ephemeral',         category: 'execute',  endpoint: '/v1/execute',  description: 'Global MicroVM container execution',              website: 'https://fly.io', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  { id: 'runpod',          name: 'RunPod Serverless',        category: 'execute',  endpoint: '/v1/execute',  description: 'Serverless GPU & CPU code execution infrastructure',website: 'https://runpod.io', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
 
   // Document Parsing (/v1/document)
   { id: 'firecrawl_parse', name: 'Firecrawl Document Parse', category: 'document', endpoint: '/v1/document', description: 'PDF, DOCX & XLSX parser to structured MD/JSON',     website: 'https://firecrawl.dev', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
@@ -61,6 +69,7 @@ const ALL_PROVIDERS: ProviderMeta[] = [
   { id: 'unstructured',    name: 'Unstructured.io',          category: 'document', endpoint: '/v1/document', description: 'Ingest unstructured PDFs, HTML & images for LLMs',website: 'https://unstructured.io', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
   { id: 'diffbot',         name: 'Diffbot Document',         category: 'document', endpoint: '/v1/document', description: 'Computer vision document & article extraction',      website: 'https://diffbot.com', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
 ];
+
 
 
 const CATEGORY_TABS: Array<{ id: EndpointCategory; label: string; icon: React.ElementType }> = [

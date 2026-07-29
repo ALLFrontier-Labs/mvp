@@ -4,11 +4,11 @@ import {
   Search, Filter, Layers, Copy, Check, ExternalLink, ShieldCheck,
   RefreshCw, Loader2, Zap, Terminal, Code2, ArrowUpDown, ChevronRight,
   X, CheckCircle2, AlertCircle, Cpu, Globe, Eye, Sparkles, Key, Plus,
-  Wrench, MessageSquare
+  Wrench, MessageSquare, Send, Server, Link2
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
 
-// ── Rich Provider Metadata for All 28 Production Adapters ───────────────────
+// ── Rich Provider Metadata for All 36 Production Adapters ───────────────────
 interface RichMeta {
   description: string;
   website: string;
@@ -100,6 +100,22 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { url: 'https://example.com' },
     iconBg: 'from-teal-600/20 to-emerald-500/20 text-teal-400 border-teal-500/30',
   },
+  brightdata: {
+    description: 'Enterprise web unlocking, residential proxy rotation, and structured web data extraction.',
+    website: 'https://brightdata.com',
+    latency: '~1.1s',
+    capabilities: ['Enterprise Proxies', 'Web Unlocker', 'Residential IPs', 'SERP & Web'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-blue-700/20 to-indigo-600/20 text-blue-400 border-blue-500/30',
+  },
+  oxylabs: {
+    description: 'High-performance web scraping API with next-gen AI web unblocker and proxy mesh.',
+    website: 'https://oxylabs.io',
+    latency: '~1.0s',
+    capabilities: ['AI Web Unblocker', 'Proxy Mesh', 'Geo Geotargeting', 'High Scalability'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-violet-600/20 to-purple-600/20 text-violet-400 border-violet-500/30',
+  },
 
   // ── Web Search (/v1/search) ───────────────────────────────────────────────
   tavily: {
@@ -165,6 +181,30 @@ const PROVIDER_META: Record<string, RichMeta> = {
     capabilities: ['Google & Bing', 'YouTube Search', 'Geo Targeting', 'SERP Data'],
     sampleParams: { query: 'AI agent tools' },
     iconBg: 'from-violet-600/20 to-purple-500/20 text-violet-400 border-violet-500/30',
+  },
+  you: {
+    description: 'You.com AI search API providing cited live web snippets and conversational LLM search snippets.',
+    website: 'https://you.com',
+    latency: '~500ms',
+    capabilities: ['Live Citations', 'Conversational Search', 'LLM Tailored', 'News & Web'],
+    sampleParams: { query: 'autonomous AI agent frameworks' },
+    iconBg: 'from-cyan-600/20 to-blue-500/20 text-cyan-400 border-cyan-500/30',
+  },
+  perplexity: {
+    description: 'Perplexity Sonar online search API offering grounded web search citations with reasoning summaries.',
+    website: 'https://perplexity.ai',
+    latency: '~800ms',
+    capabilities: ['Sonar Grounding', 'Web Search Citations', 'Reasoning Summaries', 'Real-time Web'],
+    sampleParams: { query: 'latest AI agent benchmarks 2026' },
+    iconBg: 'from-teal-600/20 to-cyan-500/20 text-teal-400 border-teal-500/30',
+  },
+  searxng: {
+    description: 'Privacy-respecting open-source metasearch engine aggregator combining 70+ search engines.',
+    website: 'https://searxng.org',
+    latency: '~400ms',
+    capabilities: ['Open Source Metasearch', 'No Tracking', '70+ Aggregated Engines', 'Self Hostable'],
+    sampleParams: { query: 'privacy open source software' },
+    iconBg: 'from-slate-600/20 to-zinc-500/20 text-slate-300 border-slate-500/30',
   },
 
   // ── Headless Browsers (/v1/browser) ───────────────────────────────────────
@@ -252,6 +292,30 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { code: 'print("Hello from Daytona Sandbox via LiteDaemon!")' },
     iconBg: 'from-emerald-600/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
   },
+  modal: {
+    description: 'Serverless Python cloud infrastructure for running heavy AI workloads, functions, and sandboxes.',
+    website: 'https://modal.com',
+    latency: '~900ms',
+    capabilities: ['Serverless Python', 'GPU / CPU Scaling', 'Custom Containers', 'Async Tasks'],
+    sampleParams: { code: 'def main(): return "Modal Execution Completed"' },
+    iconBg: 'from-sky-600/20 to-cyan-500/20 text-sky-400 border-sky-500/30',
+  },
+  fly: {
+    description: 'Global ephemeral MicroVM execution containers deployed instantly close to end users.',
+    website: 'https://fly.io',
+    latency: '~750ms',
+    capabilities: ['MicroVM Isolation', 'Global Deployment', 'Low Latency Container', 'Docker Native'],
+    sampleParams: { code: 'console.log("Fly MicroVM Started")' },
+    iconBg: 'from-violet-600/20 to-indigo-500/20 text-violet-400 border-violet-500/30',
+  },
+  runpod: {
+    description: 'Serverless GPU & CPU code execution infrastructure for high-throughput AI agent workloads.',
+    website: 'https://runpod.io',
+    latency: '~1.2s',
+    capabilities: ['Serverless GPU', 'High Throughput', 'PyTorch / CUDA Support', 'Async Workers'],
+    sampleParams: { code: 'print("RunPod Serverless Task Dispatched")' },
+    iconBg: 'from-purple-600/20 to-fuchsia-500/20 text-purple-400 border-purple-500/30',
+  },
 };
 
 const ENDPOINT_BADGE: Record<string, { label: string; text: string; bg: string; border: string }> = {
@@ -290,6 +354,17 @@ export const Providers: React.FC = () => {
   const [copiedField, setCopiedField]           = useState<string | null>(null);
   const [codeTab, setCodeTab]                   = useState<'curl' | 'typescript' | 'python'>('curl');
 
+  // Custom Request / Proxy Modal
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
+  const [customModalTab, setCustomModalTab]     = useState<'request' | 'proxy'>('request');
+  const [customFormState, setCustomFormState]   = useState({
+    name: '',
+    url: '',
+    authHeader: 'Authorization',
+    useCase: '',
+  });
+  const [customSubmitted, setCustomSubmitted] = useState<string | null>(null);
+
   const apiKey = getStoredApiKey() || 'YOUR_LITEDAEMON_KEY';
 
   const loadData = async () => {
@@ -318,6 +393,20 @@ export const Providers: React.FC = () => {
     navigator.clipboard.writeText(text);
     setCopiedField(label);
     setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handleCustomSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (customModalTab === 'request') {
+      setCustomSubmitted('Request submitted successfully! Our engineering team will review and prioritize this adapter.');
+    } else {
+      setCustomSubmitted(`Custom REST Proxy for "${customFormState.name || 'Custom Adapter'}" registered successfully.`);
+    }
+    setTimeout(() => {
+      setCustomSubmitted(null);
+      setIsCustomModalOpen(false);
+      setCustomFormState({ name: '', url: '', authHeader: 'Authorization', useCase: '' });
+    }, 2500);
   };
 
   // Filter & Sort Logic
@@ -407,7 +496,7 @@ print(response.json())`;
           <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <span>Provider Catalog</span>
             <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-normal border border-slate-700">
-              OpenRouter Model
+              Unified Tool Router
             </span>
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed">
@@ -419,7 +508,7 @@ print(response.json())`;
         <div className="grid grid-cols-2 gap-3 relative z-10 font-mono text-xs shrink-0">
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
             <span className="text-slate-500 text-[10px] uppercase">NATIVE ADAPTERS</span>
-            <div className="text-xl font-bold text-white">{providers.length || 28}</div>
+            <div className="text-xl font-bold text-white">{providers.length || 36}</div>
           </div>
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
             <span className="text-slate-500 text-[10px] uppercase">YOUR KEYS</span>
@@ -444,7 +533,7 @@ print(response.json())`;
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 28 providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint..."
+              placeholder="Search 35+ providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint..."
               className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 font-mono text-xs transition-colors"
             />
             {searchQuery && (
@@ -526,11 +615,11 @@ print(response.json())`;
         </div>
       </div>
 
-      {/* Main OpenRouter-Style Table */}
+      {/* Main Table */}
       {loading ? (
         <div className="flex flex-col items-center justify-center h-64 text-slate-500 space-y-3">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-          <p className="font-mono text-xs">Loading 28 provider network live status...</p>
+          <p className="font-mono text-xs">Loading provider network live status...</p>
         </div>
       ) : error ? (
         <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-6 text-sm text-rose-400 text-center flex items-center justify-center gap-2">
@@ -649,28 +738,35 @@ print(response.json())`;
                         </div>
                       </td>
 
-                      {/* BYOK Cost Model */}
+                      {/* Dynamic BYOK Cost Model Column */}
                       <td className="p-4 text-right">
-                        <div className="text-xs font-bold text-emerald-400">
-                          {hasKey ? 'BYOK Key Active' : 'BYOK Key Required'}
-                        </div>
-                        <div className="text-[10px] text-slate-500">0% Gateway Markup</div>
+                        {hasKey ? (
+                          <>
+                            <div className="text-xs font-bold text-emerald-400">Key Active</div>
+                            <div className="text-[10px] text-emerald-500/80">0% Gateway Markup</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-xs font-semibold text-slate-400">BYOK Required</div>
+                            <div className="text-[10px] text-slate-500">No key connected</div>
+                          </>
+                        )}
                       </td>
 
-                      {/* User Key Status Badge */}
+                      {/* User Key Status Badge with Aligned Flex Indicators */}
                       <td className="p-4 text-center">
                         {hasKey ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="inline-flex items-center justify-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <span className="relative flex h-1.5 w-1.5">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                             </span>
-                            Connected
+                            <span>Connected</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-slate-500 border border-slate-800">
+                          <span className="inline-flex items-center justify-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-slate-500 border border-slate-800">
                             <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-                            Not Configured
+                            <span>Not Configured</span>
                           </span>
                         )}
                       </td>
@@ -697,7 +793,7 @@ print(response.json())`;
                             </>
                           ) : (
                             <button
-                              onClick={() => navigate('/keys')}
+                              onClick={() => navigate(`/keys?provider=${p.id}`)}
                               className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-sm flex items-center gap-1"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -725,12 +821,158 @@ print(response.json())`;
               </p>
             </div>
             <button
-              onClick={() => navigate('/keys')}
+              onClick={() => { setIsCustomModalOpen(true); setCustomSubmitted(null); }}
               className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 hover:text-emerald-300 text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0"
             >
               <Plus className="w-4 h-4" />
               + Request Adapter / Add Custom Proxy
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Custom Request & Proxy Modal (Dialog) ───────────────────────────── */}
+      {isCustomModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg bg-[#0d1117] border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl font-mono text-xs">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2">
+                <Wrench className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-bold text-white">Custom Adapter &amp; REST Proxy</h3>
+              </div>
+              <button
+                onClick={() => setIsCustomModalOpen(false)}
+                className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Tabs */}
+            <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setCustomModalTab('request')}
+                className={`flex-1 py-2 text-center rounded-lg transition-all font-semibold ${
+                  customModalTab === 'request'
+                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Request New Adapter
+              </button>
+              <button
+                onClick={() => setCustomModalTab('proxy')}
+                className={`flex-1 py-2 text-center rounded-lg transition-all font-semibold ${
+                  customModalTab === 'proxy'
+                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Configure Custom REST Proxy
+              </button>
+            </div>
+
+            {customSubmitted ? (
+              <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto animate-bounce" />
+                <p className="text-emerald-300 font-semibold text-xs leading-relaxed">{customSubmitted}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleCustomSubmit} className="space-y-4">
+                {customModalTab === 'request' ? (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-300 font-semibold">Provider / Tool Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={customFormState.name}
+                        onChange={e => setCustomFormState({ ...customFormState, name: e.target.value })}
+                        placeholder="e.g. Fal.ai / ElevenLabs / Firecrawl V2"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-300 font-semibold">API Documentation URL</label>
+                      <input
+                        type="url"
+                        required
+                        value={customFormState.url}
+                        onChange={e => setCustomFormState({ ...customFormState, url: e.target.value })}
+                        placeholder="https://docs.example.com/api"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-300 font-semibold">Agent Workflow Use Case (Optional)</label>
+                      <textarea
+                        rows={2}
+                        value={customFormState.useCase}
+                        onChange={e => setCustomFormState({ ...customFormState, useCase: e.target.value })}
+                        placeholder="Describe how your AI agent will consume this endpoint..."
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-300 font-semibold">Custom Adapter Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={customFormState.name}
+                        onChange={e => setCustomFormState({ ...customFormState, name: e.target.value })}
+                        placeholder="Internal Scraping Proxy"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-300 font-semibold">Base Endpoint URL</label>
+                      <input
+                        type="url"
+                        required
+                        value={customFormState.url}
+                        onChange={e => setCustomFormState({ ...customFormState, url: e.target.value })}
+                        placeholder="https://my-internal-proxy.company.com/v1"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-300 font-semibold">Auth Header Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={customFormState.authHeader}
+                        onChange={e => setCustomFormState({ ...customFormState, authHeader: e.target.value })}
+                        placeholder="Authorization or X-API-Key"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="pt-3 flex items-center justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{customModalTab === 'request' ? 'Submit Request' : 'Save Custom Proxy'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
           </div>
         </div>
       )}

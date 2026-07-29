@@ -99,11 +99,15 @@ export async function addByokKey(
 
 // ── Delete a BYOK key by ID ──────────────────────────────────────────────────
 export async function deleteByokKey(userId: string, keyId: string): Promise<boolean> {
-  const r = await pool.query(
-    `DELETE FROM user_provider_keys WHERE id = $1 AND user_id = $2 RETURNING id`,
-    [keyId, userId],
-  );
-  return (r.rowCount ?? 0) > 0;
+  try {
+    const r = await pool.query(
+      `DELETE FROM user_provider_keys WHERE id::text = $1 AND user_id = $2 RETURNING id`,
+      [keyId, userId],
+    );
+    return (r.rowCount ?? 0) > 0;
+  } catch (e) {
+    return false;
+  }
 }
 
 // ── Reorder keys within a key_type section ────────────────────────────────────

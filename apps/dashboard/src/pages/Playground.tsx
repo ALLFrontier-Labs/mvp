@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Globe,
   Search,
@@ -20,6 +21,9 @@ import {
   RefreshCw,
   Trash2,
   ChevronUp,
+  Key,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
 
@@ -67,7 +71,6 @@ const TAB_COLORS: Record<string, { active: string; badge: string; btn: string; t
   document: { active: 'bg-amber-500/10 text-amber-300 border-b-2 border-amber-500',       badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',         btn: 'bg-amber-600 hover:bg-amber-500 shadow-amber-500/25',       text: 'text-amber-400',   border: 'border-amber-500/30' },
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
@@ -111,30 +114,47 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
   />
 );
 
-// ── Provider Selector ─────────────────────────────────────────────────────────
+// ── Provider Selector (Pure BYOK formatting without hardcoded dollar rates) ──────
 const ProviderSelect: React.FC<{
   providers: Provider[];
+  configuredProviderIds: Set<string>;
   endpoint: TabId;
   value: string;
   onChange: (v: string) => void;
-}> = ({ providers, endpoint, value, onChange }) => {
+}> = ({ providers, configuredProviderIds, endpoint, value, onChange }) => {
   const filtered = providers.filter((p) => p.endpoint === endpoint && p.is_live);
   const selected = filtered.find((p) => p.id === value);
+  const selectedHasKey = selected ? configuredProviderIds.has(selected.id) : true;
+
   return (
     <div>
       <Label>Provider</Label>
       <Select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="auto">⚡ Auto (cheapest live)</option>
-        {filtered.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name} — ${Number(p.cost_per_call_usd).toFixed(4)}/call
-          </option>
-        ))}
+        <option value="auto">⚡ Auto (Primary + Fallback Chain)</option>
+        {filtered.map((p) => {
+          const hasKey = configuredProviderIds.has(p.id);
+          return (
+            <option key={p.id} value={p.id}>
+              {p.name} {hasKey ? '(Connected)' : '(Key Required)'}
+            </option>
+          );
+        })}
       </Select>
-      {selected && (
-        <p className="mt-1.5 text-xs text-slate-500 font-mono">
-          Provider cost: <span className="text-emerald-400 font-semibold">${Number(selected.cost_per_call_usd).toFixed(4)}</span> per call
-        </p>
+      
+      {value !== 'auto' && selected && (
+        <div className="mt-1.5 text-xs font-mono">
+          {selectedHasKey ? (
+            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              BYOK Key Active — 0% Gateway Markup
+            </span>
+          ) : (
+            <span className="text-amber-400 font-medium flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              BYOK Key Required — <Link to="/keys" className="underline hover:text-amber-300">Add key in Keys tab</Link>
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
@@ -144,9 +164,8 @@ const ProviderSelect: React.FC<{
 const RunButton: React.FC<{
   tab: TabId;
   loading: boolean;
-  cost?: number;
   onClick: () => void;
-}> = ({ tab, loading, cost, onClick }) => {
+}> = ({ tab, loading, onClick }) => {
   const c = TAB_COLORS[tab];
   return (
     <button
@@ -161,9 +180,9 @@ const RunButton: React.FC<{
         <Play className="w-4 h-4 fill-white/70" />
       )}
       {loading ? 'Running…' : 'Run'}
-      {!loading && cost !== undefined && (
+      {!loading && (
         <span className="ml-1 px-2 py-0.5 rounded-md bg-white/10 text-xs font-mono">
-          ${cost.toFixed(4)}/call
+          Free Gateway
         </span>
       )}
     </button>
@@ -192,21 +211,23 @@ const LogCard: React.FC<{
             isOk ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
           }`}
         >
-          {entry.status}
+          {entry.status === 0 ? '500 ERR' : `${entry.status} ${isOk ? 'OK' : ''}`}
         </span>
 
         {/* Endpoint badge */}
         <span className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-mono uppercase font-semibold border ${c.badge}`}>
-          {entry.tab}
+          /v1/{entry.tab}
         </span>
 
         {/* Provider */}
-        <span className="text-xs text-slate-400 font-mono truncate flex-1">via {entry.provider}</span>
+        <span className="text-xs text-slate-300 font-mono truncate flex-1">
+          Routed via {entry.provider} BYOK
+        </span>
 
         {/* Meta */}
         <div className="hidden sm:flex items-center gap-4 shrink-0 text-xs text-slate-500 font-mono">
-          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{entry.latency_ms}ms</span>
-          <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{entry.cost_usd === 0 ? 'BYOK / free' : `$${entry.cost_usd.toFixed(6)}`}</span>
+          <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-teal-400" />{entry.latency_ms}ms</span>
+          <span className="flex items-center gap-1 text-emerald-400"><ShieldCheck className="w-3 h-3" />BYOK / Free Tier</span>
           <span className="text-slate-600">{timeAgo(entry.ts)}</span>
         </div>
 
@@ -221,10 +242,9 @@ const LogCard: React.FC<{
       {/* Expanded body */}
       {entry.expanded && (
         <div className="border-t border-slate-800/60 px-4 py-4 space-y-4">
-          {/* Mobile meta */}
           <div className="flex sm:hidden items-center gap-4 text-xs text-slate-500 font-mono">
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{entry.latency_ms}ms</span>
-            <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{entry.cost_usd === 0 ? 'BYOK / free' : `$${entry.cost_usd.toFixed(6)}`}</span>
+            <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-teal-400" />{entry.latency_ms}ms</span>
+            <span className="flex items-center gap-1 text-emerald-400"><ShieldCheck className="w-3 h-3" />BYOK / Free Tier</span>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -264,13 +284,13 @@ const LogCard: React.FC<{
 // Scrape Form
 const ScrapeForm: React.FC<{
   providers: Provider[];
+  configuredProviderIds: Set<string>;
   onRun: (provider: string, params: any) => void;
   loading: boolean;
-}> = ({ providers, onRun, loading }) => {
+}> = ({ providers, configuredProviderIds, onRun, loading }) => {
   const [url, setUrl] = useState('https://example.com');
-  const [format, setFormat] = useState<'markdown' | 'html'>('markdown');
+  const [format, setFormat] = useState<'markdown' | 'html' | 'text'>('markdown');
   const [provider, setProvider] = useState('auto');
-  const selected = providers.find((p) => p.id === provider && p.endpoint === 'scrape');
 
   return (
     <div className="space-y-5">
@@ -288,28 +308,33 @@ const ScrapeForm: React.FC<{
       <div>
         <Label>Output Format</Label>
         <div className="flex gap-2">
-          {(['markdown', 'html'] as const).map((f) => (
+          {(['markdown', 'html', 'text'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFormat(f)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all capitalize ${
                 format === f
                   ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-sm'
                   : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
               }`}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {f}
             </button>
           ))}
         </div>
       </div>
 
-      <ProviderSelect providers={providers} endpoint="scrape" value={provider} onChange={setProvider} />
+      <ProviderSelect
+        providers={providers}
+        configuredProviderIds={configuredProviderIds}
+        endpoint="scrape"
+        value={provider}
+        onChange={setProvider}
+      />
 
       <RunButton
         tab="scrape"
         loading={loading}
-        cost={selected?.cost_per_call_usd}
         onClick={() => onRun(provider, { url, format })}
       />
     </div>
@@ -319,13 +344,14 @@ const ScrapeForm: React.FC<{
 // Search Form
 const SearchForm: React.FC<{
   providers: Provider[];
+  configuredProviderIds: Set<string>;
   onRun: (provider: string, params: any) => void;
   loading: boolean;
-}> = ({ providers, onRun, loading }) => {
+}> = ({ providers, configuredProviderIds, onRun, loading }) => {
   const [query, setQuery] = useState('');
+  const [depth, setDepth] = useState<'basic' | 'advanced'>('basic');
   const [maxResults, setMaxResults] = useState(5);
   const [provider, setProvider] = useState('auto');
-  const selected = providers.find((p) => p.id === provider && p.endpoint === 'search');
 
   return (
     <div className="space-y-5">
@@ -335,8 +361,27 @@ const SearchForm: React.FC<{
           id="search-query"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. latest AI research papers 2025"
+          placeholder="e.g. latest AI agent benchmarks 2026"
         />
+      </div>
+
+      <div>
+        <Label>Search Depth</Label>
+        <div className="flex gap-2">
+          {(['basic', 'advanced'] as const).map((d) => (
+            <button
+              key={d}
+              onClick={() => setDepth(d)}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all capitalize ${
+                depth === d
+                  ? 'bg-teal-500/15 text-teal-300 border-teal-500/40 shadow-sm'
+                  : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
+              }`}
+            >
+              {d === 'basic' ? 'Basic (Fast)' : 'Advanced (Deep Grounding)'}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div>
@@ -356,13 +401,18 @@ const SearchForm: React.FC<{
         </div>
       </div>
 
-      <ProviderSelect providers={providers} endpoint="search" value={provider} onChange={setProvider} />
+      <ProviderSelect
+        providers={providers}
+        configuredProviderIds={configuredProviderIds}
+        endpoint="search"
+        value={provider}
+        onChange={setProvider}
+      />
 
       <RunButton
         tab="search"
         loading={loading}
-        cost={selected?.cost_per_call_usd}
-        onClick={() => onRun(provider, { query, max_results: maxResults })}
+        onClick={() => onRun(provider, { query, depth, max_results: maxResults })}
       />
     </div>
   );
@@ -371,13 +421,14 @@ const SearchForm: React.FC<{
 // Browser Form
 const BrowserForm: React.FC<{
   providers: Provider[];
+  configuredProviderIds: Set<string>;
   onRun: (provider: string, params: any) => void;
   loading: boolean;
-}> = ({ providers, onRun, loading }) => {
+}> = ({ providers, configuredProviderIds, onRun, loading }) => {
   const [url, setUrl] = useState('https://example.com');
-  const [script, setScript] = useState('');
+  const [viewport, setViewport] = useState<'1280x800' | '1920x1080'>('1280x800');
+  const [stealth, setStealth] = useState(true);
   const [provider, setProvider] = useState('auto');
-  const selected = providers.find((p) => p.id === provider && p.endpoint === 'browser');
 
   return (
     <div className="space-y-5">
@@ -392,24 +443,43 @@ const BrowserForm: React.FC<{
         />
       </div>
 
-      <div>
-        <Label>Automation Script <span className="normal-case text-slate-600 font-normal">(optional)</span></Label>
-        <Textarea
-          id="browser-script"
-          rows={5}
-          value={script}
-          onChange={(e) => setScript(e.target.value)}
-          placeholder={`// Optional Playwright-style actions\nawait page.click('#login-btn');\nawait page.fill('#email', 'user@example.com');`}
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Viewport Size</Label>
+          <Select value={viewport} onChange={(e: any) => setViewport(e.target.value)}>
+            <option value="1280x800">1280 × 800 (Laptop)</option>
+            <option value="1920x1080">1920 × 1080 (Desktop)</option>
+          </Select>
+        </div>
+        <div>
+          <Label>Stealth Anti-Detect</Label>
+          <button
+            type="button"
+            onClick={() => setStealth(!stealth)}
+            className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center justify-center gap-1.5 ${
+              stealth
+                ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40'
+                : 'bg-slate-900/60 text-slate-400 border-slate-700/60'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+            {stealth ? 'Stealth ON' : 'Stealth OFF'}
+          </button>
+        </div>
       </div>
 
-      <ProviderSelect providers={providers} endpoint="browser" value={provider} onChange={setProvider} />
+      <ProviderSelect
+        providers={providers}
+        configuredProviderIds={configuredProviderIds}
+        endpoint="browser"
+        value={provider}
+        onChange={setProvider}
+      />
 
       <RunButton
         tab="browser"
         loading={loading}
-        cost={selected?.cost_per_call_usd}
-        onClick={() => onRun(provider, { url, ...(script.trim() ? { script: script.trim() } : {}) })}
+        onClick={() => onRun(provider, { url, viewport, stealth })}
       />
     </div>
   );
@@ -418,66 +488,59 @@ const BrowserForm: React.FC<{
 // Execute Form
 const ExecuteForm: React.FC<{
   providers: Provider[];
+  configuredProviderIds: Set<string>;
   onRun: (provider: string, params: any) => void;
   loading: boolean;
-}> = ({ providers, onRun, loading }) => {
-  const [code, setCode] = useState(`# Python example\nimport json\n\ndata = {"message": "Hello from LiteDaemon sandbox!"}\nprint(json.dumps(data, indent=2))`);
-  const [language, setLanguage] = useState('python');
+}> = ({ providers, configuredProviderIds, onRun, loading }) => {
+  const [code, setCode] = useState(`# Python 3.10 Sandbox\nimport json\n\ndata = {"status": "success", "message": "Executed inside LiteDaemon sandbox!"}\nprint(json.dumps(data, indent=2))`);
+  const [runtime, setRuntime] = useState<'python3.10' | 'node18'>('python3.10');
   const [provider, setProvider] = useState('auto');
-  const selected = providers.find((p) => p.id === provider && p.endpoint === 'execute');
 
-  const LANGUAGES = [
-    { value: 'python',     label: 'Python' },
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'typescript', label: 'TypeScript' },
-    { value: 'bash',       label: 'Bash' },
-  ];
-
-  const SNIPPETS: Record<string, string> = {
-    python: `# Python example\nimport json\n\ndata = {"message": "Hello from LiteDaemon sandbox!"}\nprint(json.dumps(data, indent=2))`,
-    javascript: `// JavaScript example\nconst data = { message: "Hello from LiteDaemon sandbox!" };\nconsole.log(JSON.stringify(data, null, 2));`,
-    typescript: `// TypeScript example\nconst greet = (name: string): string => \`Hello, \${name}!\`;\nconsole.log(greet("LiteDaemon"));`,
-    bash: `#!/bin/bash\necho "Hello from LiteDaemon sandbox!"\ndate\nuname -a`,
+  const SNIPPETS = {
+    'python3.10': `# Python 3.10 Sandbox\nimport json\n\ndata = {"status": "success", "message": "Executed inside LiteDaemon sandbox!"}\nprint(json.dumps(data, indent=2))`,
+    'node18': `// Node.js 18 Sandbox\nconst data = { status: "success", message: "Executed inside LiteDaemon sandbox!" };\nconsole.log(JSON.stringify(data, null, 2));`,
   };
 
   return (
     <div className="space-y-5">
       <div>
-        <Label>Language</Label>
-        <div className="flex gap-2 flex-wrap">
-          {LANGUAGES.map((l) => (
+        <Label>Execution Runtime</Label>
+        <div className="flex gap-2">
+          {[
+            { id: 'python3.10', label: 'Python 3.10' },
+            { id: 'node18',     label: 'Node.js 18' },
+          ].map((r) => (
             <button
-              key={l.value}
+              key={r.id}
               onClick={() => {
-                setLanguage(l.value);
-                setCode(SNIPPETS[l.value] ?? '');
+                setRuntime(r.id as any);
+                setCode(SNIPPETS[r.id as keyof typeof SNIPPETS]);
               }}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
-                language === l.value
+              className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
+                runtime === r.id
                   ? 'bg-purple-500/15 text-purple-300 border-purple-500/40 shadow-sm'
                   : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
               }`}
             >
-              {l.label}
+              {r.label}
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <Label>Code</Label>
+        <Label>Code Snippet</Label>
         <div className="relative rounded-xl overflow-hidden border border-slate-700/60">
-          {/* Fake editor header */}
           <div className="flex items-center gap-2 px-4 py-2 bg-slate-950/80 border-b border-slate-800/60">
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500/60" />
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500/60" />
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
-            <span className="ml-2 text-xs font-mono text-slate-600">sandbox.{language === 'python' ? 'py' : language === 'javascript' ? 'js' : language === 'typescript' ? 'ts' : 'sh'}</span>
+            <span className="ml-2 text-xs font-mono text-slate-600">sandbox.{runtime.startsWith('python') ? 'py' : 'js'}</span>
             <Code2 className="ml-auto w-3.5 h-3.5 text-slate-600" />
           </div>
           <textarea
             id="execute-code"
-            rows={10}
+            rows={8}
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className="w-full bg-slate-950/60 px-4 py-3 text-sm text-slate-200 font-mono focus:outline-none resize-none"
@@ -486,13 +549,18 @@ const ExecuteForm: React.FC<{
         </div>
       </div>
 
-      <ProviderSelect providers={providers} endpoint="execute" value={provider} onChange={setProvider} />
+      <ProviderSelect
+        providers={providers}
+        configuredProviderIds={configuredProviderIds}
+        endpoint="execute"
+        value={provider}
+        onChange={setProvider}
+      />
 
       <RunButton
         tab="execute"
         loading={loading}
-        cost={selected?.cost_per_call_usd}
-        onClick={() => onRun(provider, { code, language })}
+        onClick={() => onRun(provider, { code, runtime })}
       />
     </div>
   );
@@ -501,19 +569,17 @@ const ExecuteForm: React.FC<{
 // Document Form
 const DocumentForm: React.FC<{
   providers: Provider[];
+  configuredProviderIds: Set<string>;
   onRun: (provider: string, params: any) => void;
   loading: boolean;
-}> = ({ providers, onRun, loading }) => {
+}> = ({ providers, configuredProviderIds, onRun, loading }) => {
   const [mode, setMode] = useState<'url' | 'upload'>('url');
   const [fileUrl, setFileUrl] = useState('');
   const [format, setFormat] = useState<'markdown' | 'json'>('markdown');
-  const [schema, setSchema] = useState('');
   const [provider, setProvider] = useState('auto');
-  const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileB64, setFileB64] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const selected = providers.find((p) => p.id === provider && p.endpoint === 'document');
 
   const handleFile = (file: File) => {
     setFileName(file.name);
@@ -527,7 +593,6 @@ const DocumentForm: React.FC<{
 
   return (
     <div className="space-y-5">
-      {/* Mode Toggle */}
       <div>
         <Label>Input Source</Label>
         <div className="flex gap-2">
@@ -563,31 +628,13 @@ const DocumentForm: React.FC<{
           <Label>Upload File</Label>
           <div
             onClick={() => fileRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragging(false);
-              const f = e.dataTransfer.files[0];
-              if (f) handleFile(f);
-            }}
-            className={`flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
-              dragging
-                ? 'border-amber-500/60 bg-amber-500/5'
-                : 'border-slate-700/60 bg-slate-900/40 hover:border-slate-600 hover:bg-slate-900/60'
-            }`}
+            className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-slate-700/60 bg-slate-900/40 hover:border-slate-600 cursor-pointer transition-all"
           >
-            <FileText className={`w-8 h-8 ${fileName ? 'text-amber-400' : 'text-slate-600'}`} />
+            <FileText className={`w-7 h-7 ${fileName ? 'text-amber-400' : 'text-slate-600'}`} />
             {fileName ? (
-              <div className="text-center">
-                <p className="text-sm font-medium text-amber-300">{fileName}</p>
-                <p className="text-xs text-slate-500 mt-0.5">Click to replace</p>
-              </div>
+              <p className="text-xs font-medium text-amber-300">{fileName}</p>
             ) : (
-              <div className="text-center">
-                <p className="text-sm font-medium text-slate-300">Drop file here or click to browse</p>
-                <p className="text-xs text-slate-500 mt-0.5">PDF, DOCX, XLSX supported</p>
-              </div>
+              <p className="text-xs text-slate-400">Click to upload PDF, DOCX, or XLSX</p>
             )}
             <input
               ref={fileRef}
@@ -607,47 +654,33 @@ const DocumentForm: React.FC<{
             <button
               key={f}
               onClick={() => setFormat(f)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all capitalize ${
                 format === f
                   ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
                   : 'bg-slate-900/60 text-slate-400 border-slate-700/60 hover:border-slate-600'
               }`}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {f === 'json' ? 'Structured JSON' : 'Markdown'}
             </button>
           ))}
         </div>
       </div>
 
-      {format === 'json' && (
-        <div>
-          <Label>Schema <span className="normal-case text-slate-600 font-normal">(optional JSON schema)</span></Label>
-          <Textarea
-            id="document-schema"
-            rows={4}
-            value={schema}
-            onChange={(e) => setSchema(e.target.value)}
-            placeholder={`{\n  "type": "object",\n  "properties": { "title": { "type": "string" } }\n}`}
-          />
-        </div>
-      )}
-
-      <ProviderSelect providers={providers} endpoint="document" value={provider} onChange={setProvider} />
+      <ProviderSelect
+        providers={providers}
+        configuredProviderIds={configuredProviderIds}
+        endpoint="document"
+        value={provider}
+        onChange={setProvider}
+      />
 
       <RunButton
         tab="document"
         loading={loading}
-        cost={selected?.cost_per_call_usd}
         onClick={() => {
           const params: any = { format };
-          if (mode === 'url') {
-            params.file_url = fileUrl;
-          } else if (fileB64) {
-            params.file_b64 = fileB64;
-          }
-          if (schema.trim()) {
-            try { params.schema = JSON.parse(schema.trim()); } catch { params.schema = schema.trim(); }
-          }
+          if (mode === 'url') params.file_url = fileUrl;
+          else if (fileB64) params.file_b64 = fileB64;
           onRun(provider, params);
         }}
       />
@@ -659,20 +692,26 @@ const DocumentForm: React.FC<{
 export const Playground: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('scrape');
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [userKeys, setUserKeys]     = useState<any[]>([]);
   const [providersLoading, setProvidersLoading] = useState(true);
-  const [log, setLog] = useState<LogEntry[]>([]);
-  const [running, setRunning] = useState(false);
+  const [log, setLog]               = useState<LogEntry[]>([]);
+  const [running, setRunning]       = useState(false);
   const [warningDismissed, setWarningDismissed] = useState(() =>
     localStorage.getItem('ld_playground_warning_dismissed') === '1'
   );
 
-  // Load providers
+  // Load providers and BYOK keys
   useEffect(() => {
-    api.listProviders()
-      .then((d) => setProviders(d.providers ?? []))
-      .catch(() => setProviders([]))
-      .finally(() => setProvidersLoading(false));
+    Promise.all([
+      api.listProviders().catch(() => ({ providers: [] })),
+      api.listKeys().catch(() => ({ keys: [] })),
+    ]).then(([provData, keysData]) => {
+      setProviders(provData.providers ?? []);
+      setUserKeys(keysData.keys ?? []);
+    }).finally(() => setProvidersLoading(false));
   }, []);
+
+  const configuredProviderIds = useMemo(() => new Set(userKeys.map(k => k.provider_id)), [userKeys]);
 
   const dismissWarning = () => {
     localStorage.setItem('ld_playground_warning_dismissed', '1');
@@ -776,7 +815,7 @@ export const Playground: React.FC = () => {
             API Playground
           </h1>
           <p className="text-slate-400 text-sm mt-1.5">
-            Test all 5 live endpoints directly from your browser — each call is real, authenticated, and billed.
+            Test all 5 unified endpoints directly from your browser using your connected BYOK keys.
           </p>
         </div>
 
@@ -797,19 +836,19 @@ export const Playground: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Live Warning Banner ───────────────────────────────── */}
+      {/* ── BYOK Gateway Banner ───────────────────────────────── */}
       {!warningDismissed && (
-        <div className="flex items-start gap-4 p-4 rounded-xl bg-amber-950/30 border border-amber-500/30">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-4 p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30">
+          <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-300">Live Production Calls</p>
-            <p className="text-xs text-amber-400/80 mt-0.5 leading-relaxed">
-              Every test here executes a <strong>live production call</strong> and deducts funds from your prepaid wallet balance — this is <strong>not a mock sandbox</strong>. Ensure you have sufficient balance before running calls.
+            <p className="text-sm font-semibold text-emerald-300">Pure BYOK Gateway Execution</p>
+            <p className="text-xs text-emerald-400/80 mt-0.5 leading-relaxed">
+              Live Execution: Playground requests use your connected BYOK provider keys. Gateway routing is 100% free under your monthly tier.
             </p>
           </div>
           <button
             onClick={dismissWarning}
-            className="shrink-0 p-1 rounded-lg hover:bg-amber-500/10 text-amber-500/60 hover:text-amber-400 transition-colors"
+            className="shrink-0 p-1 rounded-lg hover:bg-emerald-500/10 text-emerald-500/60 hover:text-emerald-400 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -856,6 +895,7 @@ export const Playground: React.FC = () => {
                 {activeTab === 'scrape' && (
                   <ScrapeForm
                     providers={providers}
+                    configuredProviderIds={configuredProviderIds}
                     onRun={(p, params) => handleRun('scrape', p, params)}
                     loading={running}
                   />
@@ -863,6 +903,7 @@ export const Playground: React.FC = () => {
                 {activeTab === 'search' && (
                   <SearchForm
                     providers={providers}
+                    configuredProviderIds={configuredProviderIds}
                     onRun={(p, params) => handleRun('search', p, params)}
                     loading={running}
                   />
@@ -870,6 +911,7 @@ export const Playground: React.FC = () => {
                 {activeTab === 'browser' && (
                   <BrowserForm
                     providers={providers}
+                    configuredProviderIds={configuredProviderIds}
                     onRun={(p, params) => handleRun('browser', p, params)}
                     loading={running}
                   />
@@ -877,6 +919,7 @@ export const Playground: React.FC = () => {
                 {activeTab === 'execute' && (
                   <ExecuteForm
                     providers={providers}
+                    configuredProviderIds={configuredProviderIds}
                     onRun={(p, params) => handleRun('execute', p, params)}
                     loading={running}
                   />
@@ -884,6 +927,7 @@ export const Playground: React.FC = () => {
                 {activeTab === 'document' && (
                   <DocumentForm
                     providers={providers}
+                    configuredProviderIds={configuredProviderIds}
                     onRun={(p, params) => handleRun('document', p, params)}
                     loading={running}
                   />

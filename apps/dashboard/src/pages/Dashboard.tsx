@@ -251,45 +251,45 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 2: Monthly Tool Quota */}
+        {/* Card 2: Monthly Requests */}
         <div className="rounded-2xl glass-card p-6 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
-            <span>MONTHLY TOOL CALLS</span>
+            <span>MONTHLY REQUESTS</span>
             <Activity className="w-4 h-4 text-teal-400" />
           </div>
           <div>
             <div className="mt-3 text-3xl font-bold font-mono text-white">
               {totalCalls.toLocaleString()}
             </div>
-            <p className="mt-1 text-[11px] font-mono text-slate-400">
-              {totalCalls.toLocaleString()} / 1,000,000 Free Tier Calls ({freePercentage.toFixed(3)}%)
+            <p className="mt-1.5 text-xs text-slate-400 font-mono">
+              Total Calls this month
             </p>
           </div>
           <div className="mt-4 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
               <Sparkles className="w-3 h-3" />
-              100% Free Active
+              Active Gateway Routing
             </span>
           </div>
         </div>
 
-        {/* Card 3: Total Spent */}
+        {/* Card 3: Total Gateway Usage */}
         <div className="rounded-2xl glass-card p-6 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
-            <span>Total Spent</span>
+            <span>Total Usage</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
             <div className="mt-3 text-3xl font-bold font-mono text-white">
               {stats ? `$${stats.total_spent_usd.toFixed(4)}` : '$0.0000'}
             </div>
-            <p className="mt-1 text-xs text-slate-400">
-              Platform gateway &amp; routing fees
+            <p className="mt-1.5 text-xs text-slate-400 font-mono">
+              Total Gateway Usage
             </p>
           </div>
           <div className="mt-4 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span>100% BYOK Execution</span>
+            <span>BYOK Gateway Routing</span>
           </div>
         </div>
 

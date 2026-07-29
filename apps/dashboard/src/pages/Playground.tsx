@@ -173,12 +173,7 @@ const RunButton: React.FC<{
       ) : (
         <Play className="w-4 h-4 fill-white/70" />
       )}
-      {loading ? 'Running…' : 'Run'}
-      {!loading && (
-        <span className="ml-1 px-2 py-0.5 rounded-md bg-white/10 text-xs font-mono">
-          Free Gateway
-        </span>
-      )}
+      {loading ? 'Running…' : 'Run Request'}
     </button>
   );
 };
@@ -221,7 +216,7 @@ const LogCard: React.FC<{
         {/* Meta */}
         <div className="hidden sm:flex items-center gap-4 shrink-0 text-xs text-slate-500 font-mono">
           <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-teal-400" />{entry.latency_ms}ms</span>
-          <span className="flex items-center gap-1 text-emerald-400"><ShieldCheck className="w-3 h-3" />BYOK / Free Tier</span>
+          <span className="flex items-center gap-1 text-emerald-400"><ShieldCheck className="w-3 h-3" />Direct BYOK</span>
           <span className="text-slate-600">{timeAgo(entry.ts)}</span>
         </div>
 
@@ -238,7 +233,7 @@ const LogCard: React.FC<{
         <div className="border-t border-slate-800/60 px-4 py-4 space-y-4">
           <div className="flex sm:hidden items-center gap-4 text-xs text-slate-500 font-mono">
             <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-teal-400" />{entry.latency_ms}ms</span>
-            <span className="flex items-center gap-1 text-emerald-400"><ShieldCheck className="w-3 h-3" />BYOK / Free Tier</span>
+            <span className="flex items-center gap-1 text-emerald-400"><ShieldCheck className="w-3 h-3" />Direct BYOK</span>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -857,7 +852,7 @@ export const Playground: React.FC = () => {
           <div className="flex-1">
             <p className="text-sm font-semibold text-emerald-300">Pure BYOK Gateway Execution</p>
             <p className="text-xs text-emerald-400/80 mt-0.5 leading-relaxed">
-              Live Execution: Playground requests use your connected BYOK provider keys. Gateway routing is 100% free under your monthly tier.
+              Live Execution: Playground requests route directly through your connected BYOK provider keys.
             </p>
           </div>
           <button

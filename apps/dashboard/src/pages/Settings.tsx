@@ -164,7 +164,7 @@ export const Settings: React.FC = () => {
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Gateway Tier</p>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold uppercase">
-                <CreditCard className="w-3 h-3" /> BYOK Gateway (5% Platform Fee)
+                <CreditCard className="w-3 h-3" /> Developer Gateway
               </span>
             </div>
 
@@ -184,11 +184,11 @@ export const Settings: React.FC = () => {
           </div>
         ) : null}
 
-        {/* 5% Gateway Fee Helper Tooltip Box */}
-        <div className="rounded-xl bg-emerald-950/20 border border-emerald-500/20 p-3.5 text-xs text-slate-300 flex items-start gap-2.5 font-mono">
+        {/* Gateway Info Box */}
+        <div className="rounded-xl bg-slate-900 border border-slate-800 p-3.5 text-xs text-slate-300 flex items-start gap-2.5 font-mono">
           <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            <strong className="text-emerald-300">Instant 5% BYOK Fee Engine:</strong> Bring your own provider keys and pay a flat 5% platform fee based on standard list prices from call #1 ($0 free requests).
+            Connected to LiteDaemon BYOK Gateway. Routing fees are micro-debited automatically from your prepaid wallet balance.
           </p>
         </div>
       </div>

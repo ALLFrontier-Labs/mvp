@@ -253,7 +253,7 @@ export const Billing: React.FC = () => {
         )}
       </div>
 
-      {/* BYOK Gateway Pricing Tier Explainer Card */}
+      {/* BYOK Gateway Usage Card */}
       <div className="rounded-2xl bg-[#0d1117] border border-slate-800 p-6 space-y-4 shadow-xl">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-emerald-400" />
@@ -262,15 +262,15 @@ export const Billing: React.FC = () => {
         <div className="space-y-2.5 text-xs text-slate-300 leading-relaxed font-mono">
           <div className="flex items-start gap-2.5">
             <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span>First <strong className="text-white font-bold">1,000,000 monthly tool requests</strong> are 100% FREE.</span>
+            <span>Zero tool reseller markup – Pay tool providers directly with your BYOK keys.</span>
           </div>
           <div className="flex items-start gap-2.5">
             <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span><strong className="text-white font-bold">5% routing fee</strong> applied on volume past 1M requests/month, auto-deducted from wallet balance.</span>
+            <span>Automatic zero-downtime provider failover &amp; usage analytics.</span>
           </div>
           <div className="flex items-start gap-2.5">
             <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span><strong className="text-white font-bold">Zero per-tool markup</strong> — you pay your tool providers directly with your BYOK keys.</span>
+            <span>Standard gateway routing fee micro-debited per successful request.</span>
           </div>
         </div>
       </div>

@@ -759,9 +759,8 @@ export const Keys: React.FC = () => {
         <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
         <div className="text-xs text-slate-400 space-y-1.5">
           <p className="text-slate-200 font-semibold text-sm">Pure BYOK Tool Gateway</p>
-          <p className="leading-relaxed">
-            LiteDaemon routes tool requests through your active BYOK keys with zero platform reseller markups.
-            Add **Prioritized Keys** for main usage and **Fallback Keys** to automatically handle rate limits (429) or quota errors.
+          <p className="leading-relaxed font-mono">
+            LiteDaemon routes tool requests through your active BYOK keys. Add prioritized and fallback keys per provider for zero-downtime execution.
           </p>
           <p className="text-slate-500 flex items-center gap-1.5 font-mono">
             <Info className="w-3.5 h-3.5" />

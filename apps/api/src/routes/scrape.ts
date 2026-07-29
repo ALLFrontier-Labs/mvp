@@ -19,6 +19,17 @@ export async function scrapeRoute(app: FastifyInstance) {
       return reply.code(429).send({ error: 'rate_limit_exceeded', retry_after: rl.resetAt - Math.floor(Date.now() / 1000) });
     }
 
+    // Pre-check wallet balance prior to proxying (Call #1 Fee Engine)
+    const userRes = await pool.query('SELECT balance_usd FROM users WHERE id = $1', [user.id]);
+    const currentBalance = parseFloat(userRes.rows[0]?.balance_usd || '0');
+    if (currentBalance <= 0) {
+      return reply.code(402).send({
+        error: 'insufficient_balance',
+        message: 'Insufficient prepaid balance to cover 5% BYOK gateway routing fee. Please top up your wallet.',
+        current_balance_usd: currentBalance,
+      });
+    }
+
     try {
       const { result, provider, charge, duration_ms, routedVia, attemptsCount } = await autoRun('scrape', params, user.id, overrideKey);
 
@@ -39,7 +50,7 @@ export async function scrapeRoute(app: FastifyInstance) {
           await debitLedger(user.id, charge, provider.id, jobId, `${provider.name} scrape gateway fee — ${params.url || 'request'}`);
         } catch (err: any) {
           if (err instanceof InsufficientFundsError) {
-            return reply.code(402).send({ error: 'insufficient_balance', required_usd: charge });
+            return reply.code(402).send({ error: 'insufficient_balance', message: err.message, required_usd: charge });
           }
         }
       }

@@ -30,25 +30,38 @@ export async function debitLedger(
       `SELECT id, balance_usd FROM users WHERE id = $1 FOR UPDATE`,
       [userId]
     );
-    if (!lock.rows[0]) throw new Error('User not found');
+    if (!lock.rows[0]) {
+      await client.query('ROLLBACK');
+      throw new Error('User not found');
+    }
 
-    const balance    = parseFloat(lock.rows[0].balance_usd);
-    const required   = Math.round(amountUsd * 1e8) / 1e8; // normalize precision
+    const balance  = parseFloat(lock.rows[0].balance_usd);
+    const required = Math.round(amountUsd * 1e8) / 1e8; // normalize precision
 
     if (balance < required) {
       await client.query('ROLLBACK');
       throw new InsufficientFundsError(
-        `Wallet balance $${balance} is less than required $${required}`
+        `Wallet balance $${balance.toFixed(6)} is less than required $${required.toFixed(6)}`
       );
     }
 
-    const newBalance = Math.round((balance - required) * 1e8) / 1e8;
-
-    // Deduct from wallet
-    await client.query(
-      `UPDATE users SET balance_usd = $1 WHERE id = $2`,
-      [newBalance, userId]
+    // Atomic conditional UPDATE — guarantees protection against concurrent overdrafts
+    const updateRes = await client.query(
+      `UPDATE users
+       SET balance_usd = balance_usd - $1
+       WHERE id = $2 AND balance_usd >= $1
+       RETURNING balance_usd`,
+      [required, userId]
     );
+
+    if (updateRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      throw new InsufficientFundsError(
+        `Atomic debit failed: Wallet balance is less than required $${required.toFixed(6)}`
+      );
+    }
+
+    const newBalance = parseFloat(updateRes.rows[0].balance_usd);
 
     // Append immutable ledger entry — never delete or update these rows
     await client.query(

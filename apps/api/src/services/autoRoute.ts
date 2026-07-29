@@ -71,7 +71,7 @@ export async function autoRun(
 
     const res    = await adapter.run(params, cleanKey);
     const result = (res as any).result ?? res;
-    const charge = calculateCharge(parseFloat(provider.cost_per_call_usd));
+    const charge = calculateCharge(provider.id);
 
     return {
       result,
@@ -104,7 +104,7 @@ export async function autoRun(
       try {
         const res    = await adapter.run(params, keyObj.rawKey);
         const result = (res as any).result ?? res;
-        const charge = calculateCharge(parseFloat(provider.cost_per_call_usd));
+        const charge = calculateCharge(provider.id);
 
         markKeyUsed(keyObj.id);
 

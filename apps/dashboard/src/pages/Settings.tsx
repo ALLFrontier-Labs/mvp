@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Settings as SettingsIcon, Key, Copy, Check, Eye, EyeOff,
   Shield, User, Wallet, Activity, DollarSign, LogOut,
   Loader2, AlertCircle, Calendar, CreditCard, Terminal, RefreshCw,
-  X, CheckCircle2, Zap, FileText, Monitor, Search, Globe
+  X, CheckCircle2, Zap, FileText, Monitor, Search, Globe, Info, Plus
 } from 'lucide-react';
 import { api, getStoredApiKey, setStoredApiKey, clearStoredApiKey } from '../lib/api';
 
@@ -164,7 +164,7 @@ export const Settings: React.FC = () => {
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Gateway Tier</p>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold uppercase">
-                <CreditCard className="w-3 h-3" /> {(me.total_calls || 0) < 1000000 ? '1M Free Tier' : 'Pro Gateway'}
+                <CreditCard className="w-3 h-3" /> BYOK Gateway (5% Platform Fee)
               </span>
             </div>
 
@@ -183,6 +183,14 @@ export const Settings: React.FC = () => {
             </div>
           </div>
         ) : null}
+
+        {/* 5% Gateway Fee Helper Tooltip Box */}
+        <div className="rounded-xl bg-emerald-950/20 border border-emerald-500/20 p-3.5 text-xs text-slate-300 flex items-start gap-2.5 font-mono">
+          <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong className="text-emerald-300">Instant 5% BYOK Fee Engine:</strong> Bring your own provider keys and pay a flat 5% platform fee based on standard list prices from call #1 ($0 free requests).
+          </p>
+        </div>
       </div>
 
       {/* Overhauled Usage & BYOK Metrics Cards */}
@@ -190,21 +198,29 @@ export const Settings: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
           
           {/* Card 1: Prepaid Gateway Credits */}
-          <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-2">
+          <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-3">
             <div className="flex items-center justify-between text-slate-500 text-[10px] uppercase font-bold">
-              <span>Prepaid Gateway Credits</span>
+              <span>Prepaid Gateway Balance</span>
               <Wallet className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-extrabold text-emerald-400">
               ${me.balance_usd.toFixed(4)}
             </div>
-            <div className="text-[10px] text-slate-500">Gateway routing &amp; failovers</div>
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
+              <span className="text-[10px] text-slate-500">Call #1 Fee Engine</span>
+              <Link
+                to="/billing"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                <Plus className="w-3 h-3" /> Add Balance
+              </Link>
+            </div>
           </div>
 
           {/* Card 2: API Calls */}
           <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-2">
             <div className="flex items-center justify-between text-slate-500 text-[10px] uppercase font-bold">
-              <span>Monthly Tool Calls</span>
+              <span>Total Calls Metered</span>
               <Activity className="w-4 h-4 text-teal-400" />
             </div>
             <div className="text-2xl font-extrabold text-white">
@@ -213,16 +229,16 @@ export const Settings: React.FC = () => {
             <div className="text-[10px] text-slate-500">Unified endpoint requests</div>
           </div>
 
-          {/* Card 3: ACTIVE KEYS (Replaced TOTAL SPENT) */}
+          {/* Card 3: Micro-Debited Fees Total */}
           <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-2">
             <div className="flex items-center justify-between text-slate-500 text-[10px] uppercase font-bold">
-              <span>Active Keys</span>
-              <Key className="w-4 h-4 text-amber-400" />
+              <span>Micro-Debited Fees</span>
+              <DollarSign className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-2xl font-extrabold text-amber-400">
-              {userKeysCount} {userKeysCount === 1 ? 'Key' : 'Keys'} Connected
+              ${(me.total_spent_usd || 0).toFixed(4)}
             </div>
-            <div className="text-[10px] text-slate-500">BYOK provider vault keys</div>
+            <div className="text-[10px] text-slate-500">5% BYOK gateway fees total</div>
           </div>
 
         </div>

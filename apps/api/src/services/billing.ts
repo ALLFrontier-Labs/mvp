@@ -1,11 +1,12 @@
-// services/billing.ts
+// services/billing.ts — Lemon Squeezy Integration & 5% Gateway Fee Engine
 import crypto from 'crypto';
 import { creditLedger } from './ledger';
 import { pool } from '../db/client';
+import { calc5PercentFee } from '../config/provider-prices';
 
-// ── CHARGE CALCULATION ────────────────────────────────────────────────────────
-export function calculateCharge(providerCostUsd: number): number {
-  return Math.round(providerCostUsd * 1e8) / 1e8;
+// ── CHARGE CALCULATION (5% BYOK Gateway Fee) ──────────────────────────────────
+export function calculateCharge(providerId: string): number {
+  return calc5PercentFee(providerId);
 }
 
 // ── OPENROUTER STANDARD DEPOSIT FEE CALCULATION ──────────────────────────────
@@ -94,16 +95,20 @@ export async function getCheckoutUrl(userId: string, creditAmount: number): Prom
   return url;
 }
 
-// ── WEBHOOK SIGNATURE VERIFICATION ───────────────────────────────────────────
-export function verifyLSSignature(rawBody: Buffer, signature: string): boolean {
-  const secret   = process.env.LEMONSQUEEZY_WEBHOOK_SECRET!;
-  const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+// ── WEBHOOK SIGNATURE VERIFICATION (HMAC SHA-256) ─────────────────────────────
+export function verifyLSSignature(rawBody: Buffer | string, signature: string): boolean {
+  const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET || '';
+  if (!secret || !signature) return false;
+
+  const buf = typeof rawBody === 'string' ? Buffer.from(rawBody) : rawBody;
+  const computed = crypto.createHmac('sha256', secret).update(buf).digest('hex');
   try {
     return crypto.timingSafeEqual(Buffer.from(computed, 'hex'), Buffer.from(signature, 'hex'));
   } catch { return false; }
 }
 
 // ── HANDLE PAYMENT WEBHOOK ────────────────────────────────────────────────────
+// CRITICAL: Lemon Squeezy total amounts in attributes (total_usd / total) are in CENTS (e.g. 500 = $5.00)
 export async function handleOrderCreated(body: any): Promise<void> {
   const userId       = body?.meta?.custom_data?.user_id;
   const creditAmount = body?.meta?.custom_data?.credit_amount;
@@ -111,11 +116,21 @@ export async function handleOrderCreated(body: any): Promise<void> {
 
   console.log('[Webhook] order_created', { userId, creditAmount, status });
 
-  if (!userId || !creditAmount || status !== 'paid') return;
+  if (!userId || status !== 'paid') return;
 
-  const amountUsd = parseFloat(creditAmount);
-  if (isNaN(amountUsd) || amountUsd <= 0) return;
+  // Lemon Squeezy total cents conversion logic
+  let creditedUsd = 0;
+  const totalCents = body?.data?.attributes?.total_usd ?? body?.data?.attributes?.total;
 
-  await creditLedger(userId, amountUsd, `Wallet top-up — $${amountUsd.toFixed(2)} deposited`);
-  console.log(`[Billing] Credited $${amountUsd} to user ${userId}`);
+  if (typeof totalCents === 'number' && totalCents > 0) {
+    // If total_usd/total in cents is present, divide by 100
+    creditedUsd = totalCents / 100;
+  } else if (creditAmount) {
+    creditedUsd = parseFloat(creditAmount);
+  }
+
+  if (isNaN(creditedUsd) || creditedUsd <= 0) return;
+
+  await creditLedger(userId, creditedUsd, `LemonSqueezy wallet deposit — $${creditedUsd.toFixed(2)} deposited`);
+  console.log(`[Billing] Credited $${creditedUsd.toFixed(2)} to user ${userId}`);
 }

@@ -74,7 +74,7 @@ export const Dashboard: React.FC = () => {
     if (count === 0) {
       return {
         count: 0,
-        badgeText: '0 Keys Configured',
+        badgeText: '0 Keys',
         badgeClass: 'bg-[#0d1117] border-slate-800 text-slate-500',
         providersText: defaultsText,
       };
@@ -100,7 +100,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const scrapeInfo   = useMemo(() => getCategoryKeyInfo('scrape',   'Supports Firecrawl, Jina, Apify & more...'),   [byokKeys]);
-  const documentInfo = useMemo(() => getCategoryKeyInfo('document', 'Supports Firecrawl Parse, LlamaParse & more...'), [byokKeys]);
+  const documentInfo = useMemo(() => getCategoryKeyInfo('document', 'Supports LlamaParse, Unstructured & more...'), [byokKeys]);
   const searchInfo   = useMemo(() => getCategoryKeyInfo('search',   'Supports Tavily, Exa, Serper, Brave & more...'),   [byokKeys]);
   const browserInfo  = useMemo(() => getCategoryKeyInfo('browser',  'Supports Browserbase, Steel & more...'),  [byokKeys]);
   const executeInfo  = useMemo(() => getCategoryKeyInfo('execute',  'Supports Daytona, E2B & more...'),  [byokKeys]);
@@ -307,84 +307,94 @@ export const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-stretch">
           
           {/* Card 1: Scrape */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-emerald-500/40 transition-all space-y-3 block group">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase text-emerald-400">POST /v1/scrape</span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${scrapeInfo.badgeClass}`}>
-                {scrapeInfo.badgeText}
-              </span>
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between h-full group">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">/v1/scrape</span>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${scrapeInfo.badgeClass}`}>
+                  {scrapeInfo.badgeText}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+                {scrapeInfo.providersText}
+              </p>
             </div>
-            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
-              {scrapeInfo.providersText}
-            </p>
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
               Output: Clean Markdown, HTML &amp; Metadata
             </div>
           </Link>
 
           {/* Card 2: Document */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-amber-500/40 transition-all space-y-3 block group">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase text-amber-400">POST /v1/document</span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${documentInfo.badgeClass}`}>
-                {documentInfo.badgeText}
-              </span>
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col justify-between h-full group">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs font-bold text-amber-400 whitespace-nowrap">/v1/document</span>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${documentInfo.badgeClass}`}>
+                  {documentInfo.badgeText}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+                {documentInfo.providersText}
+              </p>
             </div>
-            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
-              {documentInfo.providersText}
-            </p>
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
               Output: Markdown &amp; JSON Schema
             </div>
           </Link>
 
           {/* Card 3: Search */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-teal-500/40 transition-all space-y-3 block group">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase text-teal-400">POST /v1/search</span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${searchInfo.badgeClass}`}>
-                {searchInfo.badgeText}
-              </span>
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-teal-500/40 transition-all flex flex-col justify-between h-full group">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs font-bold text-teal-400 whitespace-nowrap">/v1/search</span>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${searchInfo.badgeClass}`}>
+                  {searchInfo.badgeText}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+                {searchInfo.providersText}
+              </p>
             </div>
-            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
-              {searchInfo.providersText}
-            </p>
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
               Output: Title, URL, Snippet &amp; Raw Results
             </div>
           </Link>
 
           {/* Card 4: Browser */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-cyan-500/40 transition-all space-y-3 block group">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase text-cyan-400">POST /v1/browser</span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${browserInfo.badgeClass}`}>
-                {browserInfo.badgeText}
-              </span>
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col justify-between h-full group">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs font-bold text-cyan-400 whitespace-nowrap">/v1/browser</span>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${browserInfo.badgeClass}`}>
+                  {browserInfo.badgeText}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+                {browserInfo.providersText}
+              </p>
             </div>
-            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
-              {browserInfo.providersText}
-            </p>
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
               Output: CDP Session &amp; Debug Stream URL
             </div>
           </Link>
 
           {/* Card 5: Execute */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-purple-500/40 transition-all space-y-3 block group">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase text-purple-400">POST /v1/execute</span>
-              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${executeInfo.badgeClass}`}>
-                {executeInfo.badgeText}
-              </span>
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-purple-500/40 transition-all flex flex-col justify-between h-full group">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs font-bold text-purple-400 whitespace-nowrap">/v1/execute</span>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${executeInfo.badgeClass}`}>
+                  {executeInfo.badgeText}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+                {executeInfo.providersText}
+              </p>
             </div>
-            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
-              {executeInfo.providersText}
-            </p>
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
               Output: stdout, stderr, execution artifacts
             </div>
           </Link>

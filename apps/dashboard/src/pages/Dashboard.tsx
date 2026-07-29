@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Wallet, 
@@ -13,9 +13,19 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Key
 } from 'lucide-react';
 import { api } from '../lib/api';
+
+interface ByokKeyInfo {
+  id: string;
+  provider_id: string;
+  provider_name: string;
+  endpoint: string;
+  key_type: 'prioritized' | 'fallback';
+  priority_order: number;
+}
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<{
@@ -25,29 +35,75 @@ export const Dashboard: React.FC = () => {
     balance_usd: number;
   } | null>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [byokKeys, setByokKeys] = useState<ByokKeyInfo[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
 
-  const loadUsage = async () => {
+  const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getUsage();
-      setStats(data);
+      const [usageData, keysData] = await Promise.all([
+        api.getUsage().catch(() => null),
+        api.listKeys().catch(() => ({ keys: [] })),
+      ]);
+      if (usageData) setStats(usageData);
+      if (keysData?.keys) setByokKeys(keysData.keys as any);
     } catch (err: any) {
-      setError(err.message || 'Failed to load account usage');
+      setError(err.message || 'Failed to load account data');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadUsage();
+    loadData();
   }, []);
 
   const totalCalls = stats?.total_calls ?? 0;
   const freeTierMax = 1000000;
   const freePercentage = Math.min(100, (totalCalls / freeTierMax) * 100);
+
+  // Helper to dynamically get category key count & formatted provider string
+  const getCategoryKeyInfo = (endpointSlug: string, defaultsText: string) => {
+    const endpointKeys = byokKeys.filter(k => 
+      k.endpoint === endpointSlug || k.endpoint === `/v1/${endpointSlug}`
+    );
+    
+    const count = endpointKeys.length;
+    if (count === 0) {
+      return {
+        count: 0,
+        badgeText: '0 Keys Configured',
+        badgeClass: 'bg-[#0d1117] border-slate-800 text-slate-500',
+        providersText: defaultsText,
+      };
+    }
+
+    const prioritized = endpointKeys.filter(k => k.key_type === 'prioritized');
+    const fallback    = endpointKeys.filter(k => k.key_type === 'fallback');
+
+    const names: string[] = [];
+    prioritized.forEach((k, idx) => {
+      names.push(idx === 0 ? `${k.provider_name} (Primary)` : `${k.provider_name} (Priority ${idx + 1})`);
+    });
+    fallback.forEach(k => {
+      names.push(`${k.provider_name} (Fallback)`);
+    });
+
+    return {
+      count,
+      badgeText: `${count} Active Key${count > 1 ? 's' : ''}`,
+      badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold',
+      providersText: names.join(', '),
+    };
+  };
+
+  const scrapeInfo   = useMemo(() => getCategoryKeyInfo('scrape',   'Supports Firecrawl, Jina, Apify & more...'),   [byokKeys]);
+  const documentInfo = useMemo(() => getCategoryKeyInfo('document', 'Supports Firecrawl Parse, LlamaParse & more...'), [byokKeys]);
+  const searchInfo   = useMemo(() => getCategoryKeyInfo('search',   'Supports Tavily, Exa, Serper, Brave & more...'),   [byokKeys]);
+  const browserInfo  = useMemo(() => getCategoryKeyInfo('browser',  'Supports Browserbase, Steel & more...'),  [byokKeys]);
+  const executeInfo  = useMemo(() => getCategoryKeyInfo('execute',  'Supports Daytona, E2B & more...'),  [byokKeys]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 selection:bg-emerald-500 selection:text-slate-950">
@@ -64,7 +120,7 @@ export const Dashboard: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <button
-            onClick={loadUsage}
+            onClick={loadData}
             disabled={loading}
             className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center space-x-1.5 transition-colors border border-slate-700"
           >
@@ -241,57 +297,97 @@ export const Dashboard: React.FC = () => {
 
       {/* Endpoint Quick Test Grid */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-          <Terminal className="w-5 h-5 text-emerald-400" />
-          <span>Unified Endpoints &amp; Providers</span>
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Terminal className="w-5 h-5 text-emerald-400" />
+            <span>Unified Endpoints &amp; Providers</span>
+          </h2>
+          <Link to="/keys" className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+            <Key className="w-3.5 h-3.5" /> Manage BYOK Keys →
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-emerald-500/30 transition-colors">
+          {/* Card 1: Scrape */}
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-emerald-500/40 transition-all space-y-3 block group">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-emerald-400">POST /v1/scrape</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300">4 Providers</span>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${scrapeInfo.badgeClass}`}>
+                {scrapeInfo.badgeText}
+              </span>
             </div>
-            <p className="text-xs text-slate-400">Firecrawl, Jina AI, Apify, Spider Cloud</p>
-            <div className="text-[11px] text-slate-500 font-mono">Output: Markdown + Metadata</div>
-          </div>
+            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              {scrapeInfo.providersText}
+            </p>
+            <div className="text-[11px] text-slate-500 font-mono">
+              Output: Clean Markdown, HTML &amp; Metadata
+            </div>
+          </Link>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-amber-500/30 transition-colors">
+          {/* Card 2: Document */}
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-amber-500/40 transition-all space-y-3 block group">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-amber-400">POST /v1/document</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">2 Providers</span>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${documentInfo.badgeClass}`}>
+                {documentInfo.badgeText}
+              </span>
             </div>
-            <p className="text-xs text-slate-400">Firecrawl Parse, LlamaParse</p>
-            <div className="text-[11px] text-slate-500 font-mono">Output: Markdown + JSON Schema</div>
-          </div>
+            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              {documentInfo.providersText}
+            </p>
+            <div className="text-[11px] text-slate-500 font-mono">
+              Output: Markdown &amp; JSON Schema
+            </div>
+          </Link>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-teal-500/30 transition-colors">
+          {/* Card 3: Search */}
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-teal-500/40 transition-all space-y-3 block group">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-teal-400">POST /v1/search</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-300">4 Providers</span>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${searchInfo.badgeClass}`}>
+                {searchInfo.badgeText}
+              </span>
             </div>
-            <p className="text-xs text-slate-400">Tavily, Exa AI, Serper.dev, Brave Search</p>
-            <div className="text-[11px] text-slate-500 font-mono">Output: Title, URL, Snippet</div>
-          </div>
+            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              {searchInfo.providersText}
+            </p>
+            <div className="text-[11px] text-slate-500 font-mono">
+              Output: Title, URL, Snippet &amp; Raw Results
+            </div>
+          </Link>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-cyan-500/30 transition-colors">
+          {/* Card 4: Browser */}
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-cyan-500/40 transition-all space-y-3 block group">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-cyan-400">POST /v1/browser</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300">2 Providers</span>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${browserInfo.badgeClass}`}>
+                {browserInfo.badgeText}
+              </span>
             </div>
-            <p className="text-xs text-slate-400">Browserbase, Steel Browser</p>
-            <div className="text-[11px] text-slate-500 font-mono">Output: CDP &amp; Debug URL</div>
-          </div>
+            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              {browserInfo.providersText}
+            </p>
+            <div className="text-[11px] text-slate-500 font-mono">
+              Output: CDP Session &amp; Debug Stream URL
+            </div>
+          </Link>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-purple-500/30 transition-colors">
+          {/* Card 5: Execute */}
+          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-purple-500/40 transition-all space-y-3 block group">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-purple-400">POST /v1/execute</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300">2 Providers</span>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border ${executeInfo.badgeClass}`}>
+                {executeInfo.badgeText}
+              </span>
             </div>
-            <p className="text-xs text-slate-400">Daytona Sandbox, E2B Sandbox</p>
-            <div className="text-[11px] text-slate-500 font-mono">Output: stdout, stderr, exit code</div>
-          </div>
+            <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              {executeInfo.providersText}
+            </p>
+            <div className="text-[11px] text-slate-500 font-mono">
+              Output: stdout, stderr, execution artifacts
+            </div>
+          </Link>
 
         </div>
       </div>

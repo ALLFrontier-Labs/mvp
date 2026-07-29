@@ -32,7 +32,7 @@ const ConditionalFooter: React.FC = () => {
   if (location.pathname === '/') return null;
   return (
     <footer className="border-t border-slate-800/60 py-6 text-center text-xs font-mono text-slate-600">
-      LiteDaemon · OpenRouter for AI Agents &amp; Tools · Zero Markup Infrastructure
+      LiteDaemon · OpenRouter for AI Agents &amp; Tools · Pure BYOK Tool Gateway
     </footer>
   );
 };

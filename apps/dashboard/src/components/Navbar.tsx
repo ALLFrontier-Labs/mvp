@@ -60,7 +60,7 @@ export const Navbar: React.FC = () => {
               LiteDaemon
               <span className="text-[10px] font-mono font-medium uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0</span>
             </span>
-            <span className="block text-[11px] text-slate-400 font-mono">Zero-Margin API Gateway</span>
+            <span className="block text-[11px] text-slate-400 font-mono">BYOK Tool Gateway</span>
           </div>
         </Link>
 

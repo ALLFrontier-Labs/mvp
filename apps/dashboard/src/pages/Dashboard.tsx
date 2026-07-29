@@ -11,7 +11,9 @@ import {
   RefreshCw,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -24,7 +26,7 @@ export const Dashboard: React.FC = () => {
   } | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
   const loadUsage = async () => {
     setLoading(true);
@@ -43,8 +45,12 @@ export const Dashboard: React.FC = () => {
     loadUsage();
   }, []);
 
+  const totalCalls = stats?.total_calls ?? 0;
+  const freeTierMax = 1000000;
+  const freePercentage = Math.min(100, (totalCalls / freeTierMax) * 100);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 selection:bg-emerald-500 selection:text-slate-950">
       
       {/* Welcome Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 shadow-xl">
@@ -53,7 +59,7 @@ export const Dashboard: React.FC = () => {
             Developer Gateway Overview
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Zero margin gateway for Scrape, Search, Browser sessions & Code Execution.
+            Unified BYOK execution gateway &amp; multi-key failover router for AI Agents.
           </p>
         </div>
         <div className="flex items-center space-x-3">
@@ -70,7 +76,7 @@ export const Dashboard: React.FC = () => {
             className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs flex items-center space-x-1.5 transition-all shadow-md shadow-emerald-500/20"
           >
             <Layers className="w-4 h-4" />
-            <span>View 10 Providers</span>
+            <span>View Tool Catalog</span>
           </Link>
         </div>
       </div>
@@ -91,7 +97,7 @@ export const Dashboard: React.FC = () => {
               Welcome to LiteDaemon! Let's get you started.
             </h2>
             <p className="text-slate-400 text-sm mt-1">
-              Replace 4+ provider subscriptions with one prepaid wallet. Three steps to your first call.
+              Add your BYOK API keys for Tavily, Firecrawl, E2B &amp; more to execute agent workflows.
             </p>
           </div>
 
@@ -99,29 +105,29 @@ export const Dashboard: React.FC = () => {
             {[
               {
                 step: '1',
-                icon: Terminal,
-                title: 'Deposit Credits',
-                desc: 'Add $5+ to your prepaid wallet. No monthly commitment.',
-                action: '/billing',
-                actionLabel: 'Deposit Now →',
+                icon: ShieldCheck,
+                title: 'Add Your BYOK Keys',
+                desc: 'Add prioritized & fallback API keys for your search, scraping, browser & sandbox tools.',
+                action: '/keys',
+                actionLabel: 'Manage BYOK Keys →',
                 done: false,
               },
               {
                 step: '2',
                 icon: Layers,
-                title: 'Browse Providers',
-                desc: '10 providers: scraping, search, browser, code exec. All at wholesale rates.',
+                title: 'Browse Tool Catalog',
+                desc: '10+ tool providers across 5 execution endpoints. All using your BYOK keys.',
                 action: '/providers',
-                actionLabel: 'Browse Catalog →',
+                actionLabel: 'Browse Tool Catalog →',
                 done: false,
               },
               {
                 step: '3',
                 icon: Terminal,
                 title: 'Make Your First Call',
-                desc: 'POST /v1/scrape or /v1/search with provider: "auto" — we pick the best.',
-                action: '/settings',
-                actionLabel: 'Get Code Snippet →',
+                desc: 'POST /v1/scrape or /v1/search with provider: "auto" for automated failover.',
+                action: '/playground',
+                actionLabel: 'Open Playground →',
                 done: false,
               },
             ].map(s => (
@@ -144,11 +150,11 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 font-mono text-xs text-slate-400">
-            <span className="text-slate-300 font-semibold">Quick test (after depositing):</span>
+            <span className="text-slate-300 font-semibold">Quick test (after adding a BYOK key):</span>
             <pre className="mt-2 text-emerald-300 overflow-x-auto">
-{`curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
-  -H "Authorization: Bearer YOUR_KEY" \\
-  -d '{"params": {"url": "https://example.com"}}'`}
+{`curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -d '{"params": {"query": "Latest AI agent news"}}'`}
             </pre>
           </div>
         </div>
@@ -157,7 +163,7 @@ export const Dashboard: React.FC = () => {
       {/* Primary Wallet & Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         
-        {/* Wallet Balance Card (Large Green Accent) */}
+        {/* Card 1: Wallet Balance Card */}
         <div className="md:col-span-2 rounded-2xl glass-card border border-emerald-500/30 p-6 flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all pointer-events-none" />
           <div>
@@ -168,8 +174,8 @@ export const Dashboard: React.FC = () => {
             <div className="mt-3 text-4xl font-extrabold font-mono text-emerald-400 tracking-tight">
               {stats ? `$${stats.balance_usd.toFixed(4)}` : '$0.0000'}
             </div>
-            <p className="mt-1 text-xs text-slate-400">
-              Debited at exact wholesale cost — zero platform margin.
+            <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
+              Used for BYOK gateway routing fees, multi-key failover processing &amp; usage fees.
             </p>
           </div>
 
@@ -180,8 +186,6 @@ export const Dashboard: React.FC = () => {
                 <Link
                   key={amt}
                   to={`/billing`}
-                  onClick={() => {}}
-                  state={{ amount: amt }}
                   className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-mono text-xs transition-colors"
                 >
                   +${amt}
@@ -191,27 +195,29 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Total API Calls */}
+        {/* Card 2: Monthly Tool Quota */}
         <div className="rounded-2xl glass-card p-6 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
-            <span>Total Calls</span>
+            <span>MONTHLY TOOL CALLS</span>
             <Activity className="w-4 h-4 text-teal-400" />
           </div>
           <div>
             <div className="mt-3 text-3xl font-bold font-mono text-white">
-              {stats ? stats.total_calls.toLocaleString() : '0'}
+              {totalCalls.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-slate-400">
-              {stats ? `${stats.billed_calls} billed calls` : '0 billed'}
+            <p className="mt-1 text-[11px] font-mono text-slate-400">
+              {totalCalls.toLocaleString()} / 1,000,000 Free Tier Calls ({freePercentage.toFixed(3)}%)
             </p>
           </div>
-          <div className="mt-4 text-[11px] text-slate-500 flex items-center gap-1 font-mono">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>5 Endpoints Active</span>
+          <div className="mt-4 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
+              <Sparkles className="w-3 h-3" />
+              100% Free Active
+            </span>
           </div>
         </div>
 
-        {/* Total Spent */}
+        {/* Card 3: Total Spent */}
         <div className="rounded-2xl glass-card p-6 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
             <span>Total Spent</span>
@@ -222,12 +228,12 @@ export const Dashboard: React.FC = () => {
               {stats ? `$${stats.total_spent_usd.toFixed(4)}` : '$0.0000'}
             </div>
             <p className="mt-1 text-xs text-slate-400">
-              Micro-billed at 8 decimal places
+              Platform gateway &amp; routing fees
             </p>
           </div>
-          <div className="mt-4 text-[11px] text-slate-500 flex items-center gap-1 font-mono">
+          <div className="mt-4 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span>100% Passed to Providers</span>
+            <span>100% BYOK Execution</span>
           </div>
         </div>
 
@@ -242,7 +248,7 @@ export const Dashboard: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
+          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-emerald-500/30 transition-colors">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-emerald-400">POST /v1/scrape</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300">4 Providers</span>
@@ -251,7 +257,7 @@ export const Dashboard: React.FC = () => {
             <div className="text-[11px] text-slate-500 font-mono">Output: Markdown + Metadata</div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
+          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-amber-500/30 transition-colors">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-amber-400">POST /v1/document</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300">2 Providers</span>
@@ -260,16 +266,16 @@ export const Dashboard: React.FC = () => {
             <div className="text-[11px] text-slate-500 font-mono">Output: Markdown + JSON Schema</div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
+          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-teal-500/30 transition-colors">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-teal-400">POST /v1/search</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-300">3 Providers</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-300">4 Providers</span>
             </div>
-            <p className="text-xs text-slate-400">Tavily, Exa AI, Serper.dev</p>
+            <p className="text-xs text-slate-400">Tavily, Exa AI, Serper.dev, Brave Search</p>
             <div className="text-[11px] text-slate-500 font-mono">Output: Title, URL, Snippet</div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
+          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-cyan-500/30 transition-colors">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-cyan-400">POST /v1/browser</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300">2 Providers</span>
@@ -278,7 +284,7 @@ export const Dashboard: React.FC = () => {
             <div className="text-[11px] text-slate-500 font-mono">Output: CDP &amp; Debug URL</div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3">
+          <div className="p-5 rounded-xl bg-[#121620]/70 border border-slate-800 space-y-3 hover:border-purple-500/30 transition-colors">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase text-purple-400">POST /v1/execute</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300">2 Providers</span>

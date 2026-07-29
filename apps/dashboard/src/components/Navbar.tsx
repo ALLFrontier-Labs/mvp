@@ -56,9 +56,8 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
           <div>
-            <span className="font-bold text-lg tracking-tight text-white flex items-center gap-1.5">
+            <span className="font-bold text-lg tracking-tight text-white flex items-center">
               LiteDaemon
-              <span className="text-[10px] font-mono font-medium uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0</span>
             </span>
             <span className="block text-[11px] text-slate-400 font-mono">BYOK Tool Gateway</span>
           </div>

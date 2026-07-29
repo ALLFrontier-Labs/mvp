@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
 
-// ── Rich Provider Metadata ──────────────────────────────────────────────────
+// ── Rich Provider Metadata for All 28 Production Adapters ───────────────────
 interface RichMeta {
   description: string;
   website: string;
@@ -19,6 +19,7 @@ interface RichMeta {
 }
 
 const PROVIDER_META: Record<string, RichMeta> = {
+  // ── Web Scraping (/v1/scrape) ─────────────────────────────────────────────
   firecrawl: {
     description: 'Turn any web page into LLM-ready clean markdown with structured metadata extraction.',
     website: 'https://firecrawl.dev',
@@ -51,6 +52,56 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { url: 'https://example.com', limit: 1 },
     iconBg: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30',
   },
+  scrape_do: {
+    description: 'Scalable proxy-backed web scraper with automatic JavaScript rendering and geo-targeting.',
+    website: 'https://scrape.do',
+    latency: '~800ms',
+    capabilities: ['JS Rendering', 'Geo Proxies', 'Bypass Cloudflare', 'Clean HTML'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-emerald-600/20 to-lime-500/20 text-emerald-400 border-emerald-500/30',
+  },
+  scrapingbee: {
+    description: 'Headless Chrome scraping API with proxy rotation and custom JS execution scripts.',
+    website: 'https://scrapingbee.com',
+    latency: '~1.1s',
+    capabilities: ['Headless Chrome', 'Proxy Rotation', 'JS Snippets', 'Screenshot Support'],
+    sampleParams: { url: 'https://example.com', render_js: true },
+    iconBg: 'from-yellow-600/20 to-amber-500/20 text-yellow-400 border-yellow-500/30',
+  },
+  zenrows: {
+    description: 'Anti-bot bypassing web scraper API designed to handle protected websites effortlessly.',
+    website: 'https://zenrows.com',
+    latency: '~900ms',
+    capabilities: ['Anti-Bot Bypass', 'Residential Proxies', 'CAPTCHA Solver', 'DOM Parsing'],
+    sampleParams: { url: 'https://example.com', js_render: true },
+    iconBg: 'from-indigo-600/20 to-purple-500/20 text-indigo-400 border-indigo-500/30',
+  },
+  scraperapi: {
+    description: 'Turn-key web scraping API handling IP rotation, CAPTCHAs, and headless browsers automatically.',
+    website: 'https://scraperapi.com',
+    latency: '~1.0s',
+    capabilities: ['IP Rotation', 'CAPTCHA Handling', 'Auto Retry', 'HTML Scraper'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-sky-600/20 to-blue-500/20 text-sky-400 border-sky-500/30',
+  },
+  scrapfly: {
+    description: 'Full-stack web scraping platform with Anti-Scraping protection bypass and headless Chrome.',
+    website: 'https://scrapfly.io',
+    latency: '~850ms',
+    capabilities: ['Anti-Scraping Bypass', 'Headless Chrome', 'SSL Fingerprinting', 'Webhook Alerts'],
+    sampleParams: { url: 'https://example.com', asp: true },
+    iconBg: 'from-rose-600/20 to-pink-500/20 text-rose-400 border-rose-500/30',
+  },
+  crawl4ai: {
+    description: 'Open-source, ultra-fast LLM web crawler designed for RAG pipelines & agentic extraction.',
+    website: 'https://crawl4ai.com',
+    latency: '~380ms',
+    capabilities: ['Open Source', 'LLM Tailored', 'Chunking Engine', 'Ultra Low Latency'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-teal-600/20 to-emerald-500/20 text-teal-400 border-teal-500/30',
+  },
+
+  // ── Web Search (/v1/search) ───────────────────────────────────────────────
   tavily: {
     description: 'AI-optimized web search engine purpose-built for autonomous LLM agents and RAG pipelines.',
     website: 'https://tavily.com',
@@ -58,14 +109,6 @@ const PROVIDER_META: Record<string, RichMeta> = {
     capabilities: ['AI Agent Search', 'RAG Optimized', 'Direct Answers', 'Domain Filter'],
     sampleParams: { query: 'latest breakthroughs in AI agents 2026' },
     iconBg: 'from-teal-500/20 to-emerald-500/20 text-teal-400 border-teal-500/30',
-  },
-  exa: {
-    description: 'Neural web search by vector embeddings and semantic similarity across the entire web.',
-    website: 'https://exa.ai',
-    latency: '~700ms',
-    capabilities: ['Neural Embeddings', 'Semantic Similarity', 'Company Data', 'Autoprompt'],
-    sampleParams: { query: 'open source AI gateway projects' },
-    iconBg: 'from-cyan-500/20 to-sky-500/20 text-cyan-400 border-cyan-500/30',
   },
   serper: {
     description: 'Real-time Google SERP search results API returning structured knowledge graphs and news.',
@@ -75,6 +118,14 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { query: 'best web scraping tools 2026' },
     iconBg: 'from-yellow-500/20 to-amber-500/20 text-yellow-400 border-yellow-500/30',
   },
+  exa: {
+    description: 'Neural web search by vector embeddings and semantic similarity across the entire web.',
+    website: 'https://exa.ai',
+    latency: '~700ms',
+    capabilities: ['Neural Embeddings', 'Semantic Similarity', 'Company Data', 'Autoprompt'],
+    sampleParams: { query: 'open source AI gateway projects' },
+    iconBg: 'from-cyan-500/20 to-sky-500/20 text-cyan-400 border-cyan-500/30',
+  },
   brave: {
     description: 'Privacy-first independent web index API for real-time web search results.',
     website: 'https://brave.com/search/api',
@@ -83,6 +134,40 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { query: 'privacy AI agents' },
     iconBg: 'from-teal-500/20 to-sky-500/20 text-teal-400 border-teal-500/30',
   },
+  serpapi: {
+    description: 'Scrape Google, Bing, DuckDuckGo, Baidu, and Yahoo search engines with real-time SERP data.',
+    website: 'https://serpapi.com',
+    latency: '~900ms',
+    capabilities: ['Multi Search Engine', 'SERP Scraper', 'Location Geotarget', 'Raw JSON'],
+    sampleParams: { query: 'AI startups 2026' },
+    iconBg: 'from-green-600/20 to-emerald-500/20 text-green-400 border-green-500/30',
+  },
+  bing: {
+    description: 'Microsoft Bing Search API for global web, news, image, and video search results.',
+    website: 'https://azure.microsoft.com',
+    latency: '~450ms',
+    capabilities: ['Microsoft Index', 'News Search', 'Web Results', 'Azure Infra'],
+    sampleParams: { query: 'enterprise AI development' },
+    iconBg: 'from-blue-600/20 to-cyan-500/20 text-blue-400 border-blue-500/30',
+  },
+  google_cse: {
+    description: 'Google Custom Search Engine API for programmable web search across targeted domains.',
+    website: 'https://developers.google.com/custom-search',
+    latency: '~500ms',
+    capabilities: ['Google Engine', 'Custom Search', 'Domain Pinning', 'Official API'],
+    sampleParams: { query: 'developer tools' },
+    iconBg: 'from-rose-500/20 to-red-500/20 text-rose-400 border-rose-500/30',
+  },
+  zenserp: {
+    description: 'Reliable SERP API offering Google, Bing, DuckDuckGo & YouTube search scraping.',
+    website: 'https://zenserp.com',
+    latency: '~600ms',
+    capabilities: ['Google & Bing', 'YouTube Search', 'Geo Targeting', 'SERP Data'],
+    sampleParams: { query: 'AI agent tools' },
+    iconBg: 'from-violet-600/20 to-purple-500/20 text-violet-400 border-violet-500/30',
+  },
+
+  // ── Headless Browsers (/v1/browser) ───────────────────────────────────────
   browserbase: {
     description: 'Cloud Chromium browser infrastructure offering CDP WebSocket connections and live debugging.',
     website: 'https://browserbase.com',
@@ -99,6 +184,58 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { use_proxy: false, solve_captcha: true },
     iconBg: 'from-indigo-500/20 to-violet-500/20 text-indigo-400 border-indigo-500/30',
   },
+  browserless: {
+    description: 'Serverless headless Chrome cloud for running Puppeteer and Playwright scripts at scale.',
+    website: 'https://browserless.io',
+    latency: '~950ms',
+    capabilities: ['Serverless Chrome', 'Puppeteer & Playwright', 'PDF & Screenshot', 'Cluster Mode'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-cyan-600/20 to-teal-500/20 text-cyan-400 border-cyan-500/30',
+  },
+  anchor: {
+    description: 'AI-native cloud browser platform designed for autonomous agent session management.',
+    website: 'https://anchorbrowser.io',
+    latency: '~1.1s',
+    capabilities: ['Agentic Browser', 'Session Persist', 'Stealth Mode', 'CDP Connect'],
+    sampleParams: { url: 'https://example.com' },
+    iconBg: 'from-purple-600/20 to-fuchsia-500/20 text-purple-400 border-purple-500/30',
+  },
+
+  // ── Document Parsing (/v1/document) ──────────────────────────────────────
+  llamaparse: {
+    description: 'Advanced document parsing engine for complex PDF tables, forms, and multi-page documents.',
+    website: 'https://llamaindex.ai',
+    latency: '~1.2s',
+    capabilities: ['LlamaIndex Parser', 'Table Extraction', 'PDF & PPTX Support', 'Structured Data'],
+    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
+    iconBg: 'from-blue-600/20 to-indigo-500/20 text-blue-400 border-blue-500/30',
+  },
+  unstructured: {
+    description: 'Ingest and process unstructured PDFs, HTML, DOCX, and images for LLM pipelines.',
+    website: 'https://unstructured.io',
+    latency: '~1.4s',
+    capabilities: ['Multi-Format Ingest', 'OCR Extraction', 'Table Recognition', 'Chunking API'],
+    sampleParams: { file_url: 'https://example.com/sample.pdf' },
+    iconBg: 'from-amber-600/20 to-yellow-500/20 text-amber-400 border-amber-500/30',
+  },
+  firecrawl_parse: {
+    description: 'Parse local or hosted PDF, DOCX, and XLSX files directly into LLM-ready markdown or structured JSON.',
+    website: 'https://firecrawl.dev',
+    latency: '~1.5s',
+    capabilities: ['PDF to Markdown', 'DOCX / XLSX Parsing', 'JSON Schema Extraction', 'OCR Support'],
+    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
+    iconBg: 'from-orange-600/20 to-red-500/20 text-orange-400 border-orange-500/30',
+  },
+  diffbot: {
+    description: 'AI computer vision document and web article extraction into clean JSON knowledge graphs.',
+    website: 'https://diffbot.com',
+    latency: '~1.3s',
+    capabilities: ['Computer Vision', 'Knowledge Graph', 'Automatic Schema', 'Entity Extraction'],
+    sampleParams: { url: 'https://example.com/article' },
+    iconBg: 'from-emerald-600/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
+  },
+
+  // ── Execution Sandboxes (/v1/execute) ─────────────────────────────────────
   e2b: {
     description: 'Secure, isolated cloud code execution sandbox for running untrusted LLM-generated code.',
     website: 'https://e2b.dev',
@@ -114,22 +251,6 @@ const PROVIDER_META: Record<string, RichMeta> = {
     capabilities: ['Python / JS Execution', 'Isolated Container', 'Fast Startup', 'Workspace API'],
     sampleParams: { code: 'print("Hello from Daytona Sandbox via LiteDaemon!")' },
     iconBg: 'from-emerald-600/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  firecrawl_parse: {
-    description: 'Parse local or hosted PDF, DOCX, and XLSX files directly into LLM-ready markdown or structured JSON.',
-    website: 'https://firecrawl.dev',
-    latency: '~1.5s',
-    capabilities: ['PDF to Markdown', 'DOCX / XLSX Parsing', 'JSON Schema Extraction', 'OCR Support'],
-    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
-    iconBg: 'from-orange-600/20 to-red-500/20 text-orange-400 border-orange-500/30',
-  },
-  llamaparse: {
-    description: 'Advanced document parsing engine for complex PDF tables, forms, and multi-page documents.',
-    website: 'https://llamaindex.ai',
-    latency: '~1.2s',
-    capabilities: ['LlamaIndex Parser', 'Table Extraction', 'PDF & PPTX Support', 'Structured Data'],
-    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
-    iconBg: 'from-blue-600/20 to-indigo-500/20 text-blue-400 border-blue-500/30',
   },
 };
 
@@ -298,7 +419,7 @@ print(response.json())`;
         <div className="grid grid-cols-2 gap-3 relative z-10 font-mono text-xs shrink-0">
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
             <span className="text-slate-500 text-[10px] uppercase">NATIVE ADAPTERS</span>
-            <div className="text-xl font-bold text-white">13</div>
+            <div className="text-xl font-bold text-white">{providers.length || 28}</div>
           </div>
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
             <span className="text-slate-500 text-[10px] uppercase">YOUR KEYS</span>
@@ -323,7 +444,7 @@ print(response.json())`;
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint..."
+              placeholder="Search 28 providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint..."
               className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 font-mono text-xs transition-colors"
             />
             {searchQuery && (
@@ -409,7 +530,7 @@ print(response.json())`;
       {loading ? (
         <div className="flex flex-col items-center justify-center h-64 text-slate-500 space-y-3">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-          <p className="font-mono text-xs">Loading provider network live status...</p>
+          <p className="font-mono text-xs">Loading 28 provider network live status...</p>
         </div>
       ) : error ? (
         <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-6 text-sm text-rose-400 text-center flex items-center justify-center gap-2">
@@ -498,7 +619,7 @@ print(response.json())`;
                       {/* Capabilities Pills */}
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1.5 max-w-xs">
-                          {meta.capabilities.slice(0, 3).map((cap, i) => (
+                          {(meta.capabilities || []).slice(0, 3).map((cap, i) => (
                             <span
                               key={i}
                               className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300"
@@ -506,9 +627,9 @@ print(response.json())`;
                               {cap}
                             </span>
                           ))}
-                          {meta.capabilities.length > 3 && (
+                          {(meta.capabilities || []).length > 3 && (
                             <span className="px-1.5 py-0.5 rounded bg-slate-900 text-[10px] text-slate-500">
-                              +{meta.capabilities.length - 3}
+                              +{(meta.capabilities || []).length - 3}
                             </span>
                           )}
                         </div>
@@ -517,7 +638,7 @@ print(response.json())`;
                       {/* Latency & Mode */}
                       <td className="p-4 text-slate-300">
                         <div className="flex items-center space-x-1.5">
-                          <span className="text-white font-semibold">{meta.latency}</span>
+                          <span className="text-white font-semibold">{meta.latency || '~800ms'}</span>
                           <span className={`text-[9px] uppercase px-1.5 py-0.2 rounded border font-bold ${
                             p.response_type === 'async'
                               ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
@@ -694,7 +815,7 @@ print(response.json())`;
             <div className="space-y-2">
               <h3 className="text-xs font-mono font-bold uppercase text-slate-400">Supported Capabilities</h3>
               <div className="flex flex-wrap gap-2">
-                {PROVIDER_META[selectedProvider.id]?.capabilities.map((cap, i) => (
+                {(PROVIDER_META[selectedProvider.id]?.capabilities || []).map((cap, i) => (
                   <span
                     key={i}
                     className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-xs flex items-center gap-1.5"

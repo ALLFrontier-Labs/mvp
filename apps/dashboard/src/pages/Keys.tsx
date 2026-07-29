@@ -23,30 +23,45 @@ interface ProviderMeta {
 }
 
 const ALL_PROVIDERS: ProviderMeta[] = [
-  // Web Search
+  // Web Search (/v1/search)
   { id: 'tavily',          name: 'Tavily',                   category: 'search',   endpoint: '/v1/search',   description: 'AI-optimized web search for RAG & agents',        website: 'https://tavily.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
   { id: 'exa',             name: 'Exa AI',                   category: 'search',   endpoint: '/v1/search',   description: 'Neural search & embedding web retrieval',           website: 'https://exa.ai', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
   { id: 'serper',          name: 'Serper',                   category: 'search',   endpoint: '/v1/search',   description: 'Real-time Google SERP data API',                   website: 'https://serper.dev', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
   { id: 'brave',           name: 'Brave Search',             category: 'search',   endpoint: '/v1/search',   description: 'Privacy-first independent web index API',           website: 'https://brave.com/search/api', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'serpapi',         name: 'SerpAPI',                  category: 'search',   endpoint: '/v1/search',   description: 'Scrape Google, Bing & Yahoo SERP data',            website: 'https://serpapi.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'bing',            name: 'Bing Search',              category: 'search',   endpoint: '/v1/search',   description: 'Microsoft Bing Web & News Search API',            website: 'https://azure.microsoft.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'google_cse',      name: 'Google Custom Search',      category: 'search',   endpoint: '/v1/search',   description: 'Google Programmable Search API',                   website: 'https://developers.google.com/custom-search', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
+  { id: 'zenserp',         name: 'Zenserp',                  category: 'search',   endpoint: '/v1/search',   description: 'Reliable Google, Bing & YouTube SERP scraping',   website: 'https://zenserp.com', iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
 
-  // Scraping & Data Extraction
+  // Scraping & Data Extraction (/v1/scrape)
   { id: 'firecrawl',       name: 'Firecrawl',                category: 'scrape',   endpoint: '/v1/scrape',   description: 'Turn web pages into LLM-ready markdown',           website: 'https://firecrawl.dev', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   { id: 'jina',            name: 'Jina AI Reader',           category: 'scrape',   endpoint: '/v1/scrape',   description: 'Ultra-fast web reader & content extractor',        website: 'https://jina.ai', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   { id: 'apify',           name: 'Apify Actors',             category: 'scrape',   endpoint: '/v1/scrape',   description: 'Async multi-page web crawling actors',            website: 'https://apify.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   { id: 'spider',          name: 'Spider Cloud',             category: 'scrape',   endpoint: '/v1/scrape',   description: 'High-concurrency LLM web crawler',                 website: 'https://spider.cloud', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'scrape_do',       name: 'Scrape.do',                category: 'scrape',   endpoint: '/v1/scrape',   description: 'Scalable proxy scraper with JS rendering',         website: 'https://scrape.do', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'scrapingbee',     name: 'ScrapingBee',              category: 'scrape',   endpoint: '/v1/scrape',   description: 'Headless Chrome scraping API with proxy rotation', website: 'https://scrapingbee.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'zenrows',         name: 'ZenRows',                  category: 'scrape',   endpoint: '/v1/scrape',   description: 'Anti-bot bypassing web scraper API',               website: 'https://zenrows.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'scraperapi',      name: 'ScraperAPI',               category: 'scrape',   endpoint: '/v1/scrape',   description: 'Turnkey scraping API with auto IP rotation',       website: 'https://scraperapi.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'scrapfly',        name: 'Scrapfly',                 category: 'scrape',   endpoint: '/v1/scrape',   description: 'Full-stack scraping with ASP anti-bot protection', website: 'https://scrapfly.io', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+  { id: 'crawl4ai',        name: 'Crawl4AI',                 category: 'scrape',   endpoint: '/v1/scrape',   description: 'Open-source ultra-fast LLM web crawler',          website: 'https://crawl4ai.com', iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
 
-  // Headless Browsers
+  // Headless Browsers (/v1/browser)
   { id: 'browserbase',     name: 'Browserbase',              category: 'browser',  endpoint: '/v1/browser',  description: 'Cloud Chromium & CDP session infrastructure',     website: 'https://browserbase.com', iconBg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
   { id: 'steel',           name: 'Steel Browser',            category: 'browser',  endpoint: '/v1/browser',  description: 'Anti-detect browser cloud for AI agents',          website: 'https://steel.dev', iconBg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+  { id: 'browserless',     name: 'Browserless.io',           category: 'browser',  endpoint: '/v1/browser',  description: 'Serverless headless Chrome cloud for Playwright',  website: 'https://browserless.io', iconBg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+  { id: 'anchor',          name: 'Anchor Browser',           category: 'browser',  endpoint: '/v1/browser',  description: 'AI-native browser session management platform',    website: 'https://anchorbrowser.io', iconBg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
 
-  // Code Execution Sandboxes
+  // Code Execution Sandboxes (/v1/execute)
   { id: 'daytona',         name: 'Daytona Sandbox',          category: 'execute',  endpoint: '/v1/execute',  description: 'Fast cloud dev environment & execution sandbox',  website: 'https://daytona.io', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   { id: 'e2b',             name: 'E2B Sandbox',              category: 'execute',  endpoint: '/v1/execute',  description: 'Secure isolated Python & JS code sandbox for AI',  website: 'https://e2b.dev', iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
 
-  // Document Parsing
+  // Document Parsing (/v1/document)
   { id: 'firecrawl_parse', name: 'Firecrawl Document Parse', category: 'document', endpoint: '/v1/document', description: 'PDF, DOCX & XLSX parser to structured MD/JSON',     website: 'https://firecrawl.dev', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
   { id: 'llamaparse',      name: 'LlamaParse',               category: 'document', endpoint: '/v1/document', description: 'LlamaIndex PDF & table parser for complex docs', website: 'https://llamaindex.ai', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  { id: 'unstructured',    name: 'Unstructured.io',          category: 'document', endpoint: '/v1/document', description: 'Ingest unstructured PDFs, HTML & images for LLMs',website: 'https://unstructured.io', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  { id: 'diffbot',         name: 'Diffbot Document',         category: 'document', endpoint: '/v1/document', description: 'Computer vision document & article extraction',      website: 'https://diffbot.com', iconBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
 ];
+
 
 const CATEGORY_TABS: Array<{ id: EndpointCategory; label: string; icon: React.ElementType }> = [
   { id: 'all',      label: 'All Tools',         icon: Zap },

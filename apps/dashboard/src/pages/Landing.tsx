@@ -3,28 +3,28 @@ import { Link } from 'react-router-dom';
 import {
   Zap, ArrowRight, Check, Copy, ChevronRight, Shield,
   DollarSign, Globe, Cpu, Search, Layout, Code2,
-  Wallet, Key, X, Layers, Activity
+  Wallet, Key, X, Layers, Activity, RefreshCw, Sparkles
 } from 'lucide-react';
 
 // ── Code example snippets ─────────────────────────────────────────────────────
 const CODE_EXAMPLES = {
-  curl: `# ONE key. ALL providers. No subscriptions.
+  curl: `# ONE unified endpoint. 30+ providers. Zero markup.
 curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
   -H "Authorization: Bearer ld_your_key" \\
   -H "Content-Type: application/json" \\
-  -d '{"params": {"url": "https://example.com"}}'
+  -d '{"provider": "firecrawl", "params": {"url": "https://example.com"}}'
 
-# Search (auto-picks Serper / Tavily / Exa)
+# Search (routes via Tavily / Exa / Serper BYOK)
 curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
   -H "Authorization: Bearer ld_your_key" \\
-  -d '{"params": {"query": "latest AI news"}}'
+  -d '{"provider": "tavily", "params": {"query": "latest AI news 2026"}}'
 
-# Cloud browser session
-curl -X POST https://mvp-production-c1e8.up.railway.app/v1/browser \\
+# Code execution sandbox
+curl -X POST https://mvp-production-c1e8.up.railway.app/v1/execute \\
   -H "Authorization: Bearer ld_your_key" \\
-  -d '{"provider": "browserbase", "params": {}}'`,
+  -d '{"provider": "e2b", "params": {"code": "print(\\"Hello Sandbox!\\")"}}'`,
 
-  typescript: `// npm install nothing — just fetch
+  typescript: `// Standard fetch — no SDK required
 const BASE = "https://mvp-production-c1e8.up.railway.app";
 const KEY  = "ld_your_key";
 
@@ -33,18 +33,18 @@ const headers = {
   "Content-Type":  "application/json",
 };
 
-// Scrape any URL — LiteDaemon picks cheapest live provider
+// Scrape any URL via BYOK provider
 const { result } = await fetch(\`\${BASE}/v1/scrape\`, {
   method: "POST",
   headers,
-  body: JSON.stringify({ params: { url: "https://example.com" } }),
+  body: JSON.stringify({ provider: "firecrawl", params: { url: "https://example.com" } }),
 }).then(r => r.json());
 
-// Search
+// Search web
 const { result: searchResult } = await fetch(\`\${BASE}/v1/search\`, {
   method: "POST",
   headers,
-  body: JSON.stringify({ params: { query: "AI news 2026" } }),
+  body: JSON.stringify({ provider: "tavily", params: { query: "AI agents 2026" } }),
 }).then(r => r.json());`,
 
   python: `import requests
@@ -53,33 +53,38 @@ BASE = "https://mvp-production-c1e8.up.railway.app"
 KEY  = "ld_your_key"
 H    = {"Authorization": f"Bearer {KEY}"}
 
-# Scrape any URL — auto picks cheapest available provider
+# Scrape web page
 res = requests.post(f"{BASE}/v1/scrape",
-    headers=H, json={"params": {"url": "https://example.com"}})
+    headers=H, json={"provider": "firecrawl", "params": {"url": "https://example.com"}})
 print(res.json()["result"]["markdown"])
 
-# Search — auto picks Serper, Tavily, or Exa
-res = requests.post(f"{BASE}/v1/search",
-    headers=H, json={"params": {"query": "AI agents 2026"}})
+# Execute code sandbox
+res = requests.post(f"{BASE}/v1/execute",
+    headers=H, json={"provider": "e2b", "params": {"code": "print('Hello!')"}})
 print(res.json()["result"])`,
 };
 
 const PROVIDERS = [
-  { name: 'Firecrawl',    cat: 'Scraping',  cost: '$0.003', dot: 'bg-emerald-400', icon: '🔥' },
-  { name: 'Jina AI',      cat: 'Scraping',  cost: '$0.001', dot: 'bg-emerald-400', icon: '⚡' },
-  { name: 'Spider',       cat: 'Crawling',  cost: '$0.002', dot: 'bg-emerald-400', icon: '🕷️' },
-  { name: 'Apify',        cat: 'Crawling',  cost: '$0.005', dot: 'bg-emerald-400', icon: '🤖' },
-  { name: 'Tavily',       cat: 'Search',    cost: '$0.001', dot: 'bg-emerald-400', icon: '🔍' },
-  { name: 'Exa AI',       cat: 'Search',    cost: '$0.002', dot: 'bg-emerald-400', icon: '🧠' },
-  { name: 'Serper',       cat: 'Search',    cost: '$0.001', dot: 'bg-emerald-400', icon: '📊' },
-  { name: 'Browserbase',  cat: 'Browser',   cost: '$0.015', dot: 'bg-emerald-400', icon: '🌐' },
-  { name: 'Steel',        cat: 'Browser',   cost: '$0.015', dot: 'bg-amber-400',   icon: '🛡️' },
-  { name: 'E2B Sandbox',  cat: 'Execute',   cost: '$0.008', dot: 'bg-slate-500',   icon: '💻' },
+  { name: 'Firecrawl',    cat: 'Scraping',  cost: 'BYOK', dot: 'bg-emerald-400', icon: '🔥' },
+  { name: 'Jina AI',      cat: 'Scraping',  cost: 'BYOK', dot: 'bg-emerald-400', icon: '⚡' },
+  { name: 'Apify',        cat: 'Crawling',  cost: 'BYOK', dot: 'bg-emerald-400', icon: '🤖' },
+  { name: 'Spider Cloud', cat: 'Crawling',  cost: 'BYOK', dot: 'bg-emerald-400', icon: '🕷️' },
+  { name: 'Tavily',       cat: 'Search',    cost: 'BYOK', dot: 'bg-teal-400',    icon: '🔍' },
+  { name: 'Exa AI',       cat: 'Search',    cost: 'BYOK', dot: 'bg-teal-400',    icon: '🧠' },
+  { name: 'Serper.dev',   cat: 'Search',    cost: 'BYOK', dot: 'bg-teal-400',    icon: '📊' },
+  { name: 'Browserbase',  cat: 'Browser',   cost: 'BYOK', dot: 'bg-cyan-400',    icon: '🌐' },
+  { name: 'Steel Browser',cat: 'Browser',   cost: 'BYOK', dot: 'bg-cyan-400',    icon: '🛡️' },
+  { name: 'E2B Sandbox',  cat: 'Execute',   cost: 'BYOK', dot: 'bg-purple-400',  icon: '💻' },
+  { name: 'Daytona',      cat: 'Execute',   cost: 'BYOK', dot: 'bg-purple-400',  icon: '⚡' },
+  { name: 'LlamaParse',   cat: 'Document',  cost: 'BYOK', dot: 'bg-amber-400',   icon: '📄' },
+  { name: 'Unstructured', cat: 'Document',  cost: 'BYOK', dot: 'bg-amber-400',   icon: '📂' },
+  { name: 'BrightData',   cat: 'Scraping',  cost: 'BYOK', dot: 'bg-emerald-400', icon: '🌐' },
+  { name: 'Perplexity',   cat: 'Search',    cost: 'BYOK', dot: 'bg-teal-400',    icon: '✨' },
 ];
 
 export const Landing: React.FC = () => {
   const [codeTab, setCodeTab] = useState<'curl' | 'typescript' | 'python'>('curl');
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]   = useState(false);
 
   const copyCode = () => {
     navigator.clipboard.writeText(CODE_EXAMPLES[codeTab]);
@@ -88,7 +93,7 @@ export const Landing: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0d14] text-slate-100 overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0d14] text-slate-100 overflow-x-hidden font-sans">
 
       {/* ── Top Navigation ──────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-50 border-b border-slate-800/60 bg-[#0a0d14]/80 backdrop-blur-md">
@@ -99,18 +104,18 @@ export const Landing: React.FC = () => {
             </div>
             <span className="font-bold text-white text-sm tracking-tight">LiteDaemon</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/providers" className="text-slate-400 hover:text-white text-sm transition-colors hidden sm:block">
+          <div className="flex items-center gap-4 font-mono text-xs">
+            <Link to="/providers" className="text-slate-400 hover:text-white transition-colors hidden sm:block">
               Browse Providers
             </Link>
-            <Link to="/auth" className="text-slate-400 hover:text-white text-sm transition-colors">
+            <Link to="/auth" className="text-slate-400 hover:text-white transition-colors">
               Sign In
             </Link>
             <Link
               to="/auth"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all shadow-md shadow-emerald-500/20"
             >
-              Get API Key <ArrowRight className="w-3 h-3" />
+              Get API Key <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -132,45 +137,45 @@ export const Landing: React.FC = () => {
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
-            One Wallet.{' '}
+            One Gateway.{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
-              Every AI Tool.
+              30+ AI Tools.
             </span>
-            <br />Zero Markup.
+            <br />Zero Platform Markup.
           </h1>
 
           <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            Stop juggling 4+ provider subscriptions and API keys. Deposit once into LiteDaemon, call one consistent API, and we route to Firecrawl, Tavily, Browserbase, E2B and 6 more — automatically.
+            Stop managing scattered API subscriptions. Route through your own API keys across 30+ tools with zero platform markup and automatic multi-key failover handling.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 font-mono text-sm">
             <Link
               to="/auth"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-xl shadow-emerald-500/25"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all shadow-xl shadow-emerald-500/25"
             >
               <Key className="w-4 h-4" />
-              Get API Key — Free to Start
+              Get Started for Free
             </Link>
             <Link
               to="/providers"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm border border-slate-700 transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold border border-slate-700 transition-all"
             >
-              <Layers className="w-4 h-4" />
-              Browse 10 Providers
+              <Layers className="w-4 h-4 text-emerald-400" />
+              Explore 30+ Providers
               <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
             </Link>
           </div>
 
           {/* Quick trust stats */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-500">
+          <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-slate-400">
             {[
-              { icon: Activity, text: '9 Providers Live' },
-              { icon: DollarSign, text: 'From $0.001 / call' },
-              { icon: Shield, text: 'Zero Platform Markup' },
-              { icon: Wallet, text: 'Pay-as-you-go wallet' },
+              { icon: Activity, text: '30+ Providers Live' },
+              { icon: Shield,   text: '0% Platform Markup' },
+              { icon: Key,      text: 'BYOK Support' },
+              { icon: RefreshCw,text: 'Zero-Downtime Failovers' },
             ].map(({ icon: Icon, text }) => (
-              <span key={text} className="flex items-center gap-1.5">
-                <Icon className="w-3.5 h-3.5 text-emerald-400" />
+              <span key={text} className="flex items-center gap-2">
+                <Icon className="w-4 h-4 text-emerald-400" />
                 {text}
               </span>
             ))}
@@ -199,12 +204,12 @@ export const Landing: React.FC = () => {
                 { service: 'Browserbase', cost: '$99/mo', detail: 'browser session subscription' },
                 { service: 'E2B',         cost: '$25/mo', detail: 'code execution subscription' },
               ].map(s => (
-                <li key={s.service} className="flex items-center justify-between p-3 rounded-xl bg-rose-950/20 border border-rose-500/10">
+                <li key={s.service} className="flex items-center justify-between p-3 rounded-xl bg-rose-950/20 border border-rose-500/10 font-mono text-xs">
                   <div>
                     <span className="font-semibold text-rose-300">{s.service}</span>
-                    <span className="text-slate-500 text-xs ml-2">{s.detail}</span>
+                    <span className="text-slate-500 text-xs ml-2 font-sans">{s.detail}</span>
                   </div>
-                  <span className="text-rose-400 font-mono font-bold text-xs">{s.cost}</span>
+                  <span className="text-rose-400 font-bold">{s.cost}</span>
                 </li>
               ))}
             </ul>
@@ -212,7 +217,7 @@ export const Landing: React.FC = () => {
               <div className="flex justify-between"><span>Monthly cost</span><span className="text-rose-400 font-bold">$165+/mo</span></div>
               <div className="flex justify-between"><span>API keys to manage</span><span className="text-rose-400 font-bold">4+ keys</span></div>
               <div className="flex justify-between"><span>Credit cards</span><span className="text-rose-400 font-bold">4 bills</span></div>
-              <div className="flex justify-between"><span>Wasted unused credits</span><span className="text-rose-400 font-bold">Always</span></div>
+              <div className="flex justify-between"><span>Rate limit outages</span><span className="text-rose-400 font-bold">Frequent</span></div>
             </div>
           </div>
 
@@ -224,10 +229,10 @@ export const Landing: React.FC = () => {
             </div>
             <ul className="space-y-3 text-sm">
               {[
-                { text: '1 LiteDaemon API key',       sub: 'works for all 10 providers' },
-                { text: '1 prepaid wallet',            sub: 'deposit any amount from $5' },
-                { text: 'Pay per call, not per month', sub: 'only pay for what you use' },
-                { text: 'Auto-routing',                sub: 'picks cheapest live provider' },
+                { text: '1 Master API Key',            sub: 'works across 30+ providers & AI tools' },
+                { text: 'Bring Your Own Keys (BYOK)',  sub: '0% platform reseller markup' },
+                { text: 'Unified REST endpoints',     sub: '/v1/scrape, /v1/search, /v1/browser, etc.' },
+                { text: 'Multi-key Failover Routing',  sub: 'auto-switch on 429 or provider errors' },
               ].map(s => (
                 <li key={s.text} className="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/10">
                   <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
@@ -239,10 +244,10 @@ export const Landing: React.FC = () => {
               ))}
             </ul>
             <div className="pt-3 border-t border-emerald-500/10 space-y-1 text-xs text-slate-500 font-mono">
-              <div className="flex justify-between"><span>Example: 100 scrapes + 50 searches</span><span className="text-emerald-400 font-bold">~$0.35</span></div>
-              <div className="flex justify-between"><span>API keys to manage</span><span className="text-emerald-400 font-bold">1 key</span></div>
-              <div className="flex justify-between"><span>Subscriptions</span><span className="text-emerald-400 font-bold">$0</span></div>
-              <div className="flex justify-between"><span>Unused credits wasted</span><span className="text-emerald-400 font-bold">Never</span></div>
+              <div className="flex justify-between"><span>Supported Tool Adapters</span><span className="text-emerald-400 font-bold">36 Native</span></div>
+              <div className="flex justify-between"><span>Master Key</span><span className="text-emerald-400 font-bold">1 Key</span></div>
+              <div className="flex justify-between"><span>Gateway Markup</span><span className="text-emerald-400 font-bold">0%</span></div>
+              <div className="flex justify-between"><span>Zero-Downtime Failover</span><span className="text-emerald-400 font-bold">Automatic</span></div>
             </div>
           </div>
         </div>
@@ -252,37 +257,37 @@ export const Landing: React.FC = () => {
       <section className="max-w-5xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-white mb-3">Live in 3 Steps</h2>
-          <p className="text-slate-400 font-mono text-sm">No SDK. No SDK. No SDK. Just fetch.</p>
+          <p className="text-slate-400 font-mono text-sm">No complex SDKs. Just clean REST requests.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
               step: '01',
-              icon: Wallet,
-              title: 'Deposit',
-              desc: 'Sign up with email. Deposit any amount from $5 into your prepaid wallet. No monthly commitment.',
+              icon: Key,
+              title: 'Connect Your Keys',
+              desc: 'Add your provider API keys to the LiteDaemon vault (Firecrawl, Tavily, E2B, etc.). All keys are encrypted with AES-256.',
               color: 'text-emerald-400',
               bg: 'bg-emerald-500/10 border-emerald-500/20',
             },
             {
               step: '02',
-              icon: Key,
-              title: 'Get Your Key',
-              desc: 'Copy your single ld_... API key. Use it to call /v1/scrape, /v1/search, /v1/browser, or /v1/execute.',
+              icon: Zap,
+              title: 'Call Unified Endpoints',
+              desc: 'Send requests to /v1/scrape, /v1/search, /v1/browser, or /v1/execute using your single Master Bearer Token.',
               color: 'text-teal-400',
               bg: 'bg-teal-500/10 border-teal-500/20',
             },
             {
               step: '03',
-              icon: Zap,
-              title: 'We Route & Bill',
-              desc: 'LiteDaemon routes to the cheapest live provider. Your wallet is micro-debited only for successful calls.',
+              icon: RefreshCw,
+              title: 'Automated Failover',
+              desc: 'If a primary provider rate limits or errors out, LiteDaemon instantly routes through your backup chain with 0% markup.',
               color: 'text-cyan-400',
               bg: 'bg-cyan-500/10 border-cyan-500/20',
             },
           ].map(s => (
-            <div key={s.step} className="relative rounded-2xl bg-[#121620] border border-slate-800 p-6 space-y-4">
+            <div key={s.step} className="relative rounded-2xl bg-[#121620] border border-slate-800 p-6 space-y-4 shadow-xl">
               <span className="absolute top-4 right-4 font-mono text-xs text-slate-700 font-bold">{s.step}</span>
               <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${s.bg}`}>
                 <s.icon className={`w-5 h-5 ${s.color}`} />
@@ -300,7 +305,7 @@ export const Landing: React.FC = () => {
           <h2 className="text-3xl font-bold text-white mb-3">
             One Endpoint Replaces Four SDKs
           </h2>
-          <p className="text-slate-400 text-sm">No provider-specific SDKs. Just standard HTTP. Works in any language.</p>
+          <p className="text-slate-400 text-sm">No provider-specific SDKs. Just standard HTTP requests across all 30+ providers.</p>
         </div>
 
         <div className="rounded-2xl bg-[#080b10] border border-slate-800 overflow-hidden shadow-2xl">
@@ -335,9 +340,9 @@ export const Landing: React.FC = () => {
 
       {/* ── Provider Network Grid ────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-white mb-3">10 Providers. One Wallet.</h2>
-          <p className="text-slate-400 text-sm">All priced at wholesale rates. No negotiation. No markup.</p>
+        <div className="text-center mb-10 space-y-2">
+          <h2 className="text-3xl font-bold text-white">30+ Providers. One Gateway.</h2>
+          <p className="text-slate-400 text-sm">Unified execution across scraping, search, browser, document, and sandbox providers.</p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -356,30 +361,30 @@ export const Landing: React.FC = () => {
             </div>
           ))}
         </div>
-        <p className="text-center text-slate-600 font-mono text-xs mt-6">
-          + BYOK (Bring Your Own Keys) — use your own provider keys for $0.00 wallet cost
+        <p className="text-center text-slate-500 font-mono text-xs mt-6">
+          + Bring Your Own Keys (BYOK) — 0% platform reseller markup
         </p>
       </section>
 
       {/* ── Pricing Transparency ────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="rounded-2xl bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-500/20 p-8 md:p-12">
+        <div className="rounded-2xl bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-500/20 p-8 md:p-12 shadow-2xl">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
               <Shield className="w-3.5 h-3.5" />
-              Zero Markup Guarantee
+              Pure BYOK Gateway
             </div>
-            <h2 className="text-3xl font-bold text-white">You Pay Exactly What We Pay</h2>
-            <p className="text-slate-400 leading-relaxed">
-              LiteDaemon is a transparent pass-through gateway. We charge you exactly the wholesale cost each provider charges us — not a cent more. Our revenue comes from infrastructure efficiency, not margin stacking.
+            <h2 className="text-3xl font-bold text-white">0% Platform Reseller Markup</h2>
+            <p className="text-slate-400 leading-relaxed text-sm">
+              LiteDaemon operates as a pure BYOK infrastructure router. Requests use your own direct provider credentials. We never charge hidden markups or force expensive monthly provider reseller bundles.
             </p>
             <div className="grid grid-cols-3 gap-4 text-center font-mono text-xs pt-4">
               {[
-                { label: 'Platform Markup', value: '0%', color: 'text-emerald-400' },
-                { label: 'Hidden Fees', value: 'None', color: 'text-emerald-400' },
-                { label: 'Subscription Required', value: 'Never', color: 'text-emerald-400' },
+                { label: 'Platform Reseller Markup', value: '0%', color: 'text-emerald-400' },
+                { label: 'Supported Providers', value: '30+', color: 'text-emerald-400' },
+                { label: 'Free Tier Monthly Calls', value: '1M', color: 'text-emerald-400' },
               ].map(s => (
-                <div key={s.label} className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/10">
+                <div key={s.label} className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/10">
                   <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>
                   <div className="text-slate-500 text-[10px] mt-1">{s.label}</div>
                 </div>
@@ -390,22 +395,23 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-20 text-center">
-        <h2 className="text-4xl font-extrabold text-white mb-4">
-          Ready to simplify your stack?
+      <section className="max-w-5xl mx-auto px-6 py-20 text-center space-y-6">
+        <h2 className="text-4xl font-extrabold text-white">
+          Ready to unify your AI agent tools?
         </h2>
-        <p className="text-slate-400 mb-10 text-lg">
-          Get your API key in 10 seconds. Deposit $5. Start calling 10 AI infrastructure providers instantly.
+        <p className="text-slate-400 max-w-xl mx-auto text-base">
+          Get your Master API Key in seconds. Connect your BYOK provider keys and enable automatic failover routing.
         </p>
-        <Link
-          to="/auth"
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-all shadow-2xl shadow-emerald-500/25"
-        >
-          <Zap className="w-5 h-5" />
-          Get Your Free API Key
-          <ArrowRight className="w-5 h-5" />
-        </Link>
-        <p className="text-slate-600 text-xs font-mono mt-4">No credit card required to sign up. No subscription ever.</p>
+        <div>
+          <Link
+            to="/auth"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-all shadow-2xl shadow-emerald-500/25"
+          >
+            <Zap className="w-5 h-5" />
+            Get Started for Free
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
@@ -414,7 +420,7 @@ export const Landing: React.FC = () => {
           <Zap className="w-3.5 h-3.5 text-emerald-400" />
           <span className="text-slate-400 font-semibold">LiteDaemon</span>
         </div>
-        Unified BYOK Infrastructure Gateway for AI Agents · v1.0
+        Unified BYOK Infrastructure Gateway for AI Agents
       </footer>
     </div>
   );

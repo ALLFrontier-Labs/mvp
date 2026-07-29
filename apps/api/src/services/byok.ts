@@ -79,7 +79,7 @@ export async function addByokKey(
   const r = await pool.query(
     `INSERT INTO user_provider_keys (user_id, provider_id, api_key_encrypted, key_type, priority_order, label)
      VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id, provider_id, key_type, priority_order, label, is_active, last_used_at, created_at`,
+     RETURNING id::text AS id, provider_id, key_type, priority_order, label, is_active, last_used_at, created_at`,
     [userId, providerId, encrypted, keyType, nextOrder, label ?? null],
   );
 
@@ -124,7 +124,7 @@ export async function reorderByokKeys(
       await client.query(
         `UPDATE user_provider_keys
          SET priority_order = $1
-         WHERE id = $2 AND user_id = $3 AND provider_id = $4 AND key_type = $5`,
+         WHERE id::text = $2 AND user_id = $3 AND provider_id = $4 AND key_type = $5`,
         [i, orderedIds[i], userId, providerId, keyType],
       );
     }
@@ -141,7 +141,7 @@ export async function reorderByokKeys(
 export async function listByokKeys(userId: string) {
   const r = await pool.query(
     `SELECT
-       upk.id,
+       upk.id::text AS id,
        upk.provider_id,
        upk.key_type,
        upk.priority_order,

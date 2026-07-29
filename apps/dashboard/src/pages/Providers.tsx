@@ -7,324 +7,7 @@ import {
   Wrench, MessageSquare, Send, Server, Link2
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
-
-// ── Rich Provider Metadata for All 36 Production Adapters ───────────────────
-interface RichMeta {
-  description: string;
-  website: string;
-  latency: string;
-  capabilities: string[];
-  sampleParams: Record<string, any>;
-  iconBg: string;
-}
-
-const PROVIDER_META: Record<string, RichMeta> = {
-  // ── Web Scraping (/v1/scrape) ─────────────────────────────────────────────
-  firecrawl: {
-    description: 'Turn any web page into LLM-ready clean markdown with structured metadata extraction.',
-    website: 'https://firecrawl.dev',
-    latency: '~1.2s',
-    capabilities: ['Markdown Output', 'Metadata Extraction', 'Clean Text', 'LLM Optimized'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-orange-500/20 to-amber-500/20 text-orange-400 border-orange-500/30',
-  },
-  jina: {
-    description: 'Blazing-fast web reader & markdown extractor optimized for minimal token overhead.',
-    website: 'https://jina.ai',
-    latency: '~450ms',
-    capabilities: ['Ultra Fast', 'Reader API', 'Token Optimized', 'Clean Markdown'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  apify: {
-    description: 'Async actor execution for large scale, multi-page crawling and dataset exports.',
-    website: 'https://apify.com',
-    latency: '~3.5s',
-    capabilities: ['Async Actor', 'Multi-Page Crawl', 'Dataset Export', 'Headless Scraper'],
-    sampleParams: { actor_id: 'apify/website-content-crawler', url: 'https://example.com' },
-    iconBg: 'from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30',
-  },
-  spider: {
-    description: 'High-concurrency cloud crawler & scraper with automatic bot detection bypass.',
-    website: 'https://spider.cloud',
-    latency: '~650ms',
-    capabilities: ['High Concurrency', 'Cloud Crawler', 'Anti-Bot Bypass', 'Fast JSON/MD'],
-    sampleParams: { url: 'https://example.com', limit: 1 },
-    iconBg: 'from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30',
-  },
-  scrape_do: {
-    description: 'Scalable proxy-backed web scraper with automatic JavaScript rendering and geo-targeting.',
-    website: 'https://scrape.do',
-    latency: '~800ms',
-    capabilities: ['JS Rendering', 'Geo Proxies', 'Bypass Cloudflare', 'Clean HTML'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-emerald-600/20 to-lime-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  scrapingbee: {
-    description: 'Headless Chrome scraping API with proxy rotation and custom JS execution scripts.',
-    website: 'https://scrapingbee.com',
-    latency: '~1.1s',
-    capabilities: ['Headless Chrome', 'Proxy Rotation', 'JS Snippets', 'Screenshot Support'],
-    sampleParams: { url: 'https://example.com', render_js: true },
-    iconBg: 'from-yellow-600/20 to-amber-500/20 text-yellow-400 border-yellow-500/30',
-  },
-  zenrows: {
-    description: 'Anti-bot bypassing web scraper API designed to handle protected websites effortlessly.',
-    website: 'https://zenrows.com',
-    latency: '~900ms',
-    capabilities: ['Anti-Bot Bypass', 'Residential Proxies', 'CAPTCHA Solver', 'DOM Parsing'],
-    sampleParams: { url: 'https://example.com', js_render: true },
-    iconBg: 'from-indigo-600/20 to-purple-500/20 text-indigo-400 border-indigo-500/30',
-  },
-  scraperapi: {
-    description: 'Turn-key web scraping API handling IP rotation, CAPTCHAs, and headless browsers automatically.',
-    website: 'https://scraperapi.com',
-    latency: '~1.0s',
-    capabilities: ['IP Rotation', 'CAPTCHA Handling', 'Auto Retry', 'HTML Scraper'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-sky-600/20 to-blue-500/20 text-sky-400 border-sky-500/30',
-  },
-  scrapfly: {
-    description: 'Full-stack web scraping platform with Anti-Scraping protection bypass and headless Chrome.',
-    website: 'https://scrapfly.io',
-    latency: '~850ms',
-    capabilities: ['Anti-Scraping Bypass', 'Headless Chrome', 'SSL Fingerprinting', 'Webhook Alerts'],
-    sampleParams: { url: 'https://example.com', asp: true },
-    iconBg: 'from-rose-600/20 to-pink-500/20 text-rose-400 border-rose-500/30',
-  },
-  crawl4ai: {
-    description: 'Open-source, ultra-fast LLM web crawler designed for RAG pipelines & agentic extraction.',
-    website: 'https://crawl4ai.com',
-    latency: '~380ms',
-    capabilities: ['Open Source', 'LLM Tailored', 'Chunking Engine', 'Ultra Low Latency'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-teal-600/20 to-emerald-500/20 text-teal-400 border-teal-500/30',
-  },
-  brightdata: {
-    description: 'Enterprise web unlocking, residential proxy rotation, and structured web data extraction.',
-    website: 'https://brightdata.com',
-    latency: '~1.1s',
-    capabilities: ['Enterprise Proxies', 'Web Unlocker', 'Residential IPs', 'SERP & Web'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-blue-700/20 to-indigo-600/20 text-blue-400 border-blue-500/30',
-  },
-  oxylabs: {
-    description: 'High-performance web scraping API with next-gen AI web unblocker and proxy mesh.',
-    website: 'https://oxylabs.io',
-    latency: '~1.0s',
-    capabilities: ['AI Web Unblocker', 'Proxy Mesh', 'Geo Geotargeting', 'High Scalability'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-violet-600/20 to-purple-600/20 text-violet-400 border-violet-500/30',
-  },
-
-  // ── Web Search (/v1/search) ───────────────────────────────────────────────
-  tavily: {
-    description: 'AI-optimized web search engine purpose-built for autonomous LLM agents and RAG pipelines.',
-    website: 'https://tavily.com',
-    latency: '~550ms',
-    capabilities: ['AI Agent Search', 'RAG Optimized', 'Direct Answers', 'Domain Filter'],
-    sampleParams: { query: 'latest breakthroughs in AI agents 2026' },
-    iconBg: 'from-teal-500/20 to-emerald-500/20 text-teal-400 border-teal-500/30',
-  },
-  serper: {
-    description: 'Real-time Google SERP search results API returning structured knowledge graphs and news.',
-    website: 'https://serper.dev',
-    latency: '~350ms',
-    capabilities: ['Google SERP', 'Real-time News', 'Knowledge Graph', 'Fast JSON'],
-    sampleParams: { query: 'best web scraping tools 2026' },
-    iconBg: 'from-yellow-500/20 to-amber-500/20 text-yellow-400 border-yellow-500/30',
-  },
-  exa: {
-    description: 'Neural web search by vector embeddings and semantic similarity across the entire web.',
-    website: 'https://exa.ai',
-    latency: '~700ms',
-    capabilities: ['Neural Embeddings', 'Semantic Similarity', 'Company Data', 'Autoprompt'],
-    sampleParams: { query: 'open source AI gateway projects' },
-    iconBg: 'from-cyan-500/20 to-sky-500/20 text-cyan-400 border-cyan-500/30',
-  },
-  brave: {
-    description: 'Privacy-first independent web index API for real-time web search results.',
-    website: 'https://brave.com/search/api',
-    latency: '~400ms',
-    capabilities: ['Web Index', 'Independent Search', 'Privacy First', 'Fast Results'],
-    sampleParams: { query: 'privacy AI agents' },
-    iconBg: 'from-teal-500/20 to-sky-500/20 text-teal-400 border-teal-500/30',
-  },
-  serpapi: {
-    description: 'Scrape Google, Bing, DuckDuckGo, Baidu, and Yahoo search engines with real-time SERP data.',
-    website: 'https://serpapi.com',
-    latency: '~900ms',
-    capabilities: ['Multi Search Engine', 'SERP Scraper', 'Location Geotarget', 'Raw JSON'],
-    sampleParams: { query: 'AI startups 2026' },
-    iconBg: 'from-green-600/20 to-emerald-500/20 text-green-400 border-green-500/30',
-  },
-  bing: {
-    description: 'Microsoft Bing Search API for global web, news, image, and video search results.',
-    website: 'https://azure.microsoft.com',
-    latency: '~450ms',
-    capabilities: ['Microsoft Index', 'News Search', 'Web Results', 'Azure Infra'],
-    sampleParams: { query: 'enterprise AI development' },
-    iconBg: 'from-blue-600/20 to-cyan-500/20 text-blue-400 border-blue-500/30',
-  },
-  google_cse: {
-    description: 'Google Custom Search Engine API for programmable web search across targeted domains.',
-    website: 'https://developers.google.com/custom-search',
-    latency: '~500ms',
-    capabilities: ['Google Engine', 'Custom Search', 'Domain Pinning', 'Official API'],
-    sampleParams: { query: 'developer tools' },
-    iconBg: 'from-rose-500/20 to-red-500/20 text-rose-400 border-rose-500/30',
-  },
-  zenserp: {
-    description: 'Reliable SERP API offering Google, Bing, DuckDuckGo & YouTube search scraping.',
-    website: 'https://zenserp.com',
-    latency: '~600ms',
-    capabilities: ['Google & Bing', 'YouTube Search', 'Geo Targeting', 'SERP Data'],
-    sampleParams: { query: 'AI agent tools' },
-    iconBg: 'from-violet-600/20 to-purple-500/20 text-violet-400 border-violet-500/30',
-  },
-  you: {
-    description: 'You.com AI search API providing cited live web snippets and conversational LLM search snippets.',
-    website: 'https://you.com',
-    latency: '~500ms',
-    capabilities: ['Live Citations', 'Conversational Search', 'LLM Tailored', 'News & Web'],
-    sampleParams: { query: 'autonomous AI agent frameworks' },
-    iconBg: 'from-cyan-600/20 to-blue-500/20 text-cyan-400 border-cyan-500/30',
-  },
-  perplexity: {
-    description: 'Perplexity Sonar online search API offering grounded web search citations with reasoning summaries.',
-    website: 'https://perplexity.ai',
-    latency: '~800ms',
-    capabilities: ['Sonar Grounding', 'Web Search Citations', 'Reasoning Summaries', 'Real-time Web'],
-    sampleParams: { query: 'latest AI agent benchmarks 2026' },
-    iconBg: 'from-teal-600/20 to-cyan-500/20 text-teal-400 border-teal-500/30',
-  },
-  searxng: {
-    description: 'Privacy-respecting open-source metasearch engine aggregator combining 70+ search engines.',
-    website: 'https://searxng.org',
-    latency: '~400ms',
-    capabilities: ['Open Source Metasearch', 'No Tracking', '70+ Aggregated Engines', 'Self Hostable'],
-    sampleParams: { query: 'privacy open source software' },
-    iconBg: 'from-slate-600/20 to-zinc-500/20 text-slate-300 border-slate-500/30',
-  },
-
-  // ── Headless Browsers (/v1/browser) ───────────────────────────────────────
-  browserbase: {
-    description: 'Cloud Chromium browser infrastructure offering CDP WebSocket connections and live debugging.',
-    website: 'https://browserbase.com',
-    latency: '~1.0s',
-    capabilities: ['Cloud Chromium', 'CDP WebSocket', 'Live Debug URL', 'Session Replay'],
-    sampleParams: { project_id: '1fa26dbc-4084-4cbf-8ba6-0ed47dc7a3ee' },
-    iconBg: 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/30',
-  },
-  steel: {
-    description: 'Anti-detect cloud browser infrastructure with integrated captcha solving and stealth proxies.',
-    website: 'https://steel.dev',
-    latency: '~1.2s',
-    capabilities: ['Anti-Detect Fingerprint', 'Captcha Solver', 'Proxy Support', 'Playwright/Puppeteer'],
-    sampleParams: { use_proxy: false, solve_captcha: true },
-    iconBg: 'from-indigo-500/20 to-violet-500/20 text-indigo-400 border-indigo-500/30',
-  },
-  browserless: {
-    description: 'Serverless headless Chrome cloud for running Puppeteer and Playwright scripts at scale.',
-    website: 'https://browserless.io',
-    latency: '~950ms',
-    capabilities: ['Serverless Chrome', 'Puppeteer & Playwright', 'PDF & Screenshot', 'Cluster Mode'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-cyan-600/20 to-teal-500/20 text-cyan-400 border-cyan-500/30',
-  },
-  anchor: {
-    description: 'AI-native cloud browser platform designed for autonomous agent session management.',
-    website: 'https://anchorbrowser.io',
-    latency: '~1.1s',
-    capabilities: ['Agentic Browser', 'Session Persist', 'Stealth Mode', 'CDP Connect'],
-    sampleParams: { url: 'https://example.com' },
-    iconBg: 'from-purple-600/20 to-fuchsia-500/20 text-purple-400 border-purple-500/30',
-  },
-
-  // ── Document Parsing (/v1/document) ──────────────────────────────────────
-  llamaparse: {
-    description: 'Advanced document parsing engine for complex PDF tables, forms, and multi-page documents.',
-    website: 'https://llamaindex.ai',
-    latency: '~1.2s',
-    capabilities: ['LlamaIndex Parser', 'Table Extraction', 'PDF & PPTX Support', 'Structured Data'],
-    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
-    iconBg: 'from-blue-600/20 to-indigo-500/20 text-blue-400 border-blue-500/30',
-  },
-  unstructured: {
-    description: 'Ingest and process unstructured PDFs, HTML, DOCX, and images for LLM pipelines.',
-    website: 'https://unstructured.io',
-    latency: '~1.4s',
-    capabilities: ['Multi-Format Ingest', 'OCR Extraction', 'Table Recognition', 'Chunking API'],
-    sampleParams: { file_url: 'https://example.com/sample.pdf' },
-    iconBg: 'from-amber-600/20 to-yellow-500/20 text-amber-400 border-amber-500/30',
-  },
-  firecrawl_parse: {
-    description: 'Parse local or hosted PDF, DOCX, and XLSX files directly into LLM-ready markdown or structured JSON.',
-    website: 'https://firecrawl.dev',
-    latency: '~1.5s',
-    capabilities: ['PDF to Markdown', 'DOCX / XLSX Parsing', 'JSON Schema Extraction', 'OCR Support'],
-    sampleParams: { file_url: 'https://example.com/sample.pdf', format: 'markdown' },
-    iconBg: 'from-orange-600/20 to-red-500/20 text-orange-400 border-orange-500/30',
-  },
-  diffbot: {
-    description: 'AI computer vision document and web article extraction into clean JSON knowledge graphs.',
-    website: 'https://diffbot.com',
-    latency: '~1.3s',
-    capabilities: ['Computer Vision', 'Knowledge Graph', 'Automatic Schema', 'Entity Extraction'],
-    sampleParams: { url: 'https://example.com/article' },
-    iconBg: 'from-emerald-600/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
-  },
-
-  // ── Execution Sandboxes (/v1/execute) ─────────────────────────────────────
-  e2b: {
-    description: 'Secure, isolated cloud code execution sandbox for running untrusted LLM-generated code.',
-    website: 'https://e2b.dev',
-    latency: '~800ms',
-    capabilities: ['Python Sandbox', 'Jupyter Kernel', 'Filesystem Access', 'Isolated Container'],
-    sampleParams: { code: 'import math\nprint(f"Pi calculated: {math.pi}")' },
-    iconBg: 'from-fuchsia-500/20 to-purple-500/20 text-fuchsia-400 border-fuchsia-500/30',
-  },
-  daytona: {
-    description: 'Fast, secure cloud code execution environment for AI agents and automated workflows.',
-    website: 'https://daytona.io',
-    latency: '~650ms',
-    capabilities: ['Python / JS Execution', 'Isolated Container', 'Fast Startup', 'Workspace API'],
-    sampleParams: { code: 'print("Hello from Daytona Sandbox via LiteDaemon!")' },
-    iconBg: 'from-emerald-600/20 to-teal-500/20 text-emerald-400 border-emerald-500/30',
-  },
-  modal: {
-    description: 'Serverless Python cloud infrastructure for running heavy AI workloads, functions, and sandboxes.',
-    website: 'https://modal.com',
-    latency: '~900ms',
-    capabilities: ['Serverless Python', 'GPU / CPU Scaling', 'Custom Containers', 'Async Tasks'],
-    sampleParams: { code: 'def main(): return "Modal Execution Completed"' },
-    iconBg: 'from-sky-600/20 to-cyan-500/20 text-sky-400 border-sky-500/30',
-  },
-  fly: {
-    description: 'Global ephemeral MicroVM execution containers deployed instantly close to end users.',
-    website: 'https://fly.io',
-    latency: '~750ms',
-    capabilities: ['MicroVM Isolation', 'Global Deployment', 'Low Latency Container', 'Docker Native'],
-    sampleParams: { code: 'console.log("Fly MicroVM Started")' },
-    iconBg: 'from-violet-600/20 to-indigo-500/20 text-violet-400 border-violet-500/30',
-  },
-  runpod: {
-    description: 'Serverless GPU & CPU code execution infrastructure for high-throughput AI agent workloads.',
-    website: 'https://runpod.io',
-    latency: '~1.2s',
-    capabilities: ['Serverless GPU', 'High Throughput', 'PyTorch / CUDA Support', 'Async Workers'],
-    sampleParams: { code: 'print("RunPod Serverless Task Dispatched")' },
-    iconBg: 'from-purple-600/20 to-fuchsia-500/20 text-purple-400 border-purple-500/30',
-  },
-};
-
-const ENDPOINT_BADGE: Record<string, { label: string; text: string; bg: string; border: string }> = {
-  scrape:   { label: '/v1/scrape',   text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-  search:   { label: '/v1/search',   text: 'text-teal-400',    bg: 'bg-teal-500/10',    border: 'border-teal-500/20' },
-  browser:  { label: '/v1/browser',  text: 'text-cyan-400',    bg: 'bg-cyan-500/10',    border: 'border-cyan-500/20' },
-  execute:  { label: '/v1/execute',  text: 'text-purple-400',  bg: 'bg-purple-500/10',  border: 'border-purple-500/20' },
-  document: { label: '/v1/document', text: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20' },
-};
+import { PROVIDER_META, ENDPOINT_BADGE, RichMeta } from '../data/providers';
 
 interface Provider {
   id: string;
@@ -355,15 +38,15 @@ export const Providers: React.FC = () => {
   const [codeTab, setCodeTab]                   = useState<'curl' | 'typescript' | 'python'>('curl');
 
   // Custom Request / Proxy Modal
-  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-  const [customModalTab, setCustomModalTab]     = useState<'request' | 'proxy'>('request');
-  const [customFormState, setCustomFormState]   = useState({
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [customModalTab, setCustomModalTab]       = useState<'request' | 'proxy'>('request');
+  const [customFormState, setCustomFormState]     = useState({
     name: '',
     url: '',
     authHeader: 'Authorization',
     useCase: '',
   });
-  const [customSubmitted, setCustomSubmitted] = useState<string | null>(null);
+  const [customSubmitted, setCustomSubmitted]   = useState<string | null>(null);
 
   const apiKey = getStoredApiKey() || 'YOUR_LITEDAEMON_KEY';
 
@@ -398,13 +81,13 @@ export const Providers: React.FC = () => {
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (customModalTab === 'request') {
-      setCustomSubmitted('Request submitted successfully! Our engineering team will review and prioritize this adapter.');
+      setCustomSubmitted('Adapter request submitted! Our engineering team will review and prioritize this integration.');
     } else {
-      setCustomSubmitted(`Custom REST Proxy for "${customFormState.name || 'Custom Adapter'}" registered successfully.`);
+      setCustomSubmitted(`Custom REST Proxy for "${customFormState.name || 'Custom Proxy'}" registered successfully.`);
     }
     setTimeout(() => {
       setCustomSubmitted(null);
-      setIsCustomModalOpen(false);
+      setIsRequestModalOpen(false);
       setCustomFormState({ name: '', url: '', authHeader: 'Authorization', useCase: '' });
     }, 2500);
   };
@@ -496,7 +179,7 @@ print(response.json())`;
           <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <span>Provider Catalog</span>
             <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-normal border border-slate-700">
-              Unified Tool Router
+              Unified Tool Gateway
             </span>
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed">
@@ -526,14 +209,14 @@ print(response.json())`;
         {/* Search and Sort Row */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           
-          {/* Search Box */}
+          {/* Dynamic Search Box */}
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 35+ providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint..."
+              placeholder={`Search ${providers.length} providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint...`}
               className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 font-mono text-xs transition-colors"
             />
             {searchQuery && (
@@ -821,7 +504,7 @@ print(response.json())`;
               </p>
             </div>
             <button
-              onClick={() => { setIsCustomModalOpen(true); setCustomSubmitted(null); }}
+              onClick={() => { setIsRequestModalOpen(true); setCustomSubmitted(null); }}
               className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 hover:text-emerald-300 text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0"
             >
               <Plus className="w-4 h-4" />
@@ -832,7 +515,7 @@ print(response.json())`;
       )}
 
       {/* ── Custom Request & Proxy Modal (Dialog) ───────────────────────────── */}
-      {isCustomModalOpen && (
+      {isRequestModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
           <div className="relative w-full max-w-lg bg-[#0d1117] border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl font-mono text-xs">
             
@@ -843,7 +526,7 @@ print(response.json())`;
                 <h3 className="text-base font-bold text-white">Custom Adapter &amp; REST Proxy</h3>
               </div>
               <button
-                onClick={() => setIsCustomModalOpen(false)}
+                onClick={() => setIsRequestModalOpen(false)}
                 className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -860,7 +543,7 @@ print(response.json())`;
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Request New Adapter
+                Request Adapter
               </button>
               <button
                 onClick={() => setCustomModalTab('proxy')}
@@ -870,7 +553,7 @@ print(response.json())`;
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Configure Custom REST Proxy
+                Custom Proxy
               </button>
             </div>
 
@@ -884,7 +567,7 @@ print(response.json())`;
                 {customModalTab === 'request' ? (
                   <>
                     <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Provider / Tool Name</label>
+                      <label className="text-slate-300 font-semibold">Provider Name</label>
                       <input
                         type="text"
                         required
@@ -905,32 +588,11 @@ print(response.json())`;
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Agent Workflow Use Case (Optional)</label>
-                      <textarea
-                        rows={2}
-                        value={customFormState.useCase}
-                        onChange={e => setCustomFormState({ ...customFormState, useCase: e.target.value })}
-                        placeholder="Describe how your AI agent will consume this endpoint..."
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
-                      />
-                    </div>
                   </>
                 ) : (
                   <>
                     <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Custom Adapter Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={customFormState.name}
-                        onChange={e => setCustomFormState({ ...customFormState, name: e.target.value })}
-                        placeholder="Internal Scraping Proxy"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Base Endpoint URL</label>
+                      <label className="text-slate-300 font-semibold">Endpoint Base URL</label>
                       <input
                         type="url"
                         required
@@ -957,7 +619,7 @@ print(response.json())`;
                 <div className="pt-3 flex items-center justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => setIsCustomModalOpen(false)}
+                    onClick={() => setIsRequestModalOpen(false)}
                     className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white"
                   >
                     Cancel

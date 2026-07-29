@@ -86,6 +86,12 @@ export const api = {
       job_id: string;
       status: 'pending' | 'running' | 'completed' | 'failed';
       provider: string;
+      endpoint?: string;
+      duration_ms?: number;
+      routing_type?: string;
+      attempts?: number;
+      params?: any;
+      created_at?: string;
       result?: any;
       cost_usd?: number;
       error?: string;

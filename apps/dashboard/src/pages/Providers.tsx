@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, Filter, Layers, Copy, Check, ExternalLink, ShieldCheck,
   RefreshCw, Loader2, Zap, Terminal, Code2, ArrowUpDown, ChevronRight,
-  X, CheckCircle2, AlertCircle, Cpu, Globe, Eye, Sparkles, Key, Plus
+  X, CheckCircle2, AlertCircle, Cpu, Globe, Eye, Sparkles, Key, Plus,
+  Wrench, MessageSquare
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
 
@@ -296,14 +297,14 @@ print(response.json())`;
         {/* Quick Stat Cards */}
         <div className="grid grid-cols-2 gap-3 relative z-10 font-mono text-xs shrink-0">
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">Supported Providers</span>
+            <span className="text-slate-500 text-[10px] uppercase">NATIVE ADAPTERS</span>
             <div className="text-xl font-bold text-white">13</div>
           </div>
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">Your Configured Keys</span>
+            <span className="text-slate-500 text-[10px] uppercase">YOUR KEYS</span>
             <div className="text-xl font-bold text-emerald-400 flex items-center gap-1.5">
               <Key className="w-4 h-4 text-emerald-400" />
-              {userConfiguredKeysCount} Active
+              {userConfiguredKeysCount} Keys Connected
             </div>
           </div>
         </div>
@@ -428,7 +429,7 @@ print(response.json())`;
           </button>
         </div>
       ) : (
-        <div className="rounded-2xl glass-card border border-slate-800/80 overflow-hidden shadow-2xl">
+        <div className="rounded-2xl glass-card border border-slate-800/80 overflow-hidden shadow-2xl space-y-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs border-collapse">
               <thead>
@@ -535,25 +536,25 @@ print(response.json())`;
                         <div className="text-[10px] text-slate-500">0% Gateway Markup</div>
                       </td>
 
-                      {/* Live / Offline Status */}
+                      {/* User Key Status Badge */}
                       <td className="p-4 text-center">
-                        {p.is_live ? (
+                        {hasKey ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <span className="relative flex h-1.5 w-1.5">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                             </span>
-                            Live
+                            Connected
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-800/80 text-slate-500 border border-slate-700">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-slate-500 border border-slate-800">
                             <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-                            Offline
+                            Not Configured
                           </span>
                         )}
                       </td>
 
-                      {/* Actions Column */}
+                      {/* Action Buttons */}
                       <td className="p-4 pr-6 text-right">
                         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                           {hasKey ? (
@@ -589,6 +590,26 @@ print(response.json())`;
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Full-Width Custom Provider Banner Callout Card */}
+          <div className="p-6 bg-gradient-to-r from-[#0d1117] via-slate-900 to-[#0d1117] border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Wrench className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-sm font-bold text-white">Need a custom tool or unlisted provider?</h4>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                LiteDaemon supports custom REST proxies and custom webhook adapters for internal AI agent workflows.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/keys')}
+              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 hover:text-emerald-300 text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              + Request Adapter / Add Custom Proxy
+            </button>
           </div>
         </div>
       )}

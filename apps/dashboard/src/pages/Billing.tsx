@@ -7,19 +7,20 @@ import {
 import { api } from '../lib/api';
 
 const QUICK_AMOUNTS = [5, 10, 25, 50, 100, 200];
-const LS_FEE_RATE   = 0.055; // 5.5%
-const LS_FEE_FIXED  = 0.50;  // $0.50
 const MIN           = 5;
 const MAX           = 999;
 
-// What user pays to the gateway so wallet gets exactly creditAmount
-function checkoutPrice(credit: number) {
-  return Math.ceil(((credit + LS_FEE_FIXED) / (1 - LS_FEE_RATE)) * 100) / 100;
+// OpenRouter Standard Deposit Fee Formula:
+// depositFee = Math.max(0.80, credit * 0.055)
+// totalToPay = credit + depositFee
+function calcDepositFee(credit: number): number {
+  const fee = Math.max(0.80, credit * 0.055);
+  return Math.round(fee * 100) / 100;
 }
 
-// Fee amount
-function feeAmount(credit: number) {
-  return +(checkoutPrice(credit) - credit).toFixed(2);
+function calcCheckoutPrice(credit: number): number {
+  const fee = calcDepositFee(credit);
+  return Math.round((credit + fee) * 100) / 100;
 }
 
 export const Billing: React.FC = () => {
@@ -38,8 +39,8 @@ export const Billing: React.FC = () => {
   const [rechargeAmount, setRechargeAmount]       = useState('10.00');
 
   const creditNum  = parseFloat(credit) || 0;
-  const payNum     = creditNum >= MIN ? checkoutPrice(creditNum) : 0;
-  const fee        = creditNum >= MIN ? feeAmount(creditNum)     : 0;
+  const fee        = creditNum >= MIN ? calcDepositFee(creditNum)     : 0;
+  const payNum     = creditNum >= MIN ? calcCheckoutPrice(creditNum)  : 0;
   const isValid    = creditNum >= MIN && creditNum <= MAX;
 
   useEffect(() => {
@@ -153,8 +154,8 @@ export const Billing: React.FC = () => {
             </div>
             <div className="flex justify-between text-slate-400 text-xs">
               <span className="flex items-center gap-1">
-                <Info className="w-3 h-3 text-slate-500" />
-                Platform & Deposit Fee (5.5% + $0.50)
+                <Info className="w-3.5 h-3.5 text-slate-500" />
+                Platform & Deposit Fee (5.5%, $0.80 min)
               </span>
               <span>+${fee.toFixed(2)}</span>
             </div>

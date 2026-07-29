@@ -8,18 +8,22 @@ export function calculateCharge(providerCostUsd: number): number {
   return Math.round(providerCostUsd * 1e8) / 1e8;
 }
 
-// ── FEE-INCLUSIVE CHECKOUT PRICE ─────────────────────────────────────────────
-// LemonSqueezy charges 5% + $0.50. We gross up so the user gets exactly their
-// requested credit amount after fees — LiteDaemon keeps $0.00.
-//   checkout_price = (credit_amount + 0.50) / 0.95
+// ── OPENROUTER STANDARD DEPOSIT FEE CALCULATION ──────────────────────────────
+// Formula: depositFee = Math.max(0.80, creditAmount * 0.055)
+// totalToPay = creditAmount + depositFee
+export function calcDepositFee(creditUsd: number): number {
+  const fee = Math.max(0.80, creditUsd * 0.055);
+  return Math.round(fee * 100) / 100;
+}
+
 export function calcCheckoutPrice(creditUsd: number): number {
-  return Math.ceil(((creditUsd + 0.5) / 0.95) * 100) / 100; // round up to nearest cent
+  const fee = calcDepositFee(creditUsd);
+  return Math.round((creditUsd + fee) * 100) / 100;
 }
 
 // ── LEMONSQUEEZY CONFIG ───────────────────────────────────────────────────────
-const STORE_ID  = 440354;
-// Any live variant — we override the price dynamically via custom_price
-const VARIANT_ID = 1954573; // $10 variant as the base template
+const STORE_ID   = 440354;
+const VARIANT_ID = 1954573; // Base variant template
 
 const MIN_TOPUP = 5;   // $5 minimum
 const MAX_TOPUP = 999; // $999 maximum
@@ -39,7 +43,6 @@ export async function getCheckoutUrl(userId: string, creditAmount: number): Prom
     email = r.rows[0]?.email;
   } catch { /* non-fatal */ }
 
-  // Use raw LS REST API — the JS SDK doesn't expose custom_price
   const payload = {
     data: {
       type: 'checkouts',

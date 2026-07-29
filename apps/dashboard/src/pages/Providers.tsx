@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search, Filter, Layers, Copy, Check, ExternalLink, ShieldCheck,
   RefreshCw, Loader2, Zap, Terminal, Code2, ArrowUpDown, ChevronRight,
-  X, CheckCircle2, AlertCircle, Cpu, Globe, Eye, Sparkles
+  X, CheckCircle2, AlertCircle, Cpu, Globe, Eye, Sparkles, Key, Plus
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
 
@@ -73,6 +74,14 @@ const PROVIDER_META: Record<string, RichMeta> = {
     sampleParams: { query: 'best web scraping tools 2026' },
     iconBg: 'from-yellow-500/20 to-amber-500/20 text-yellow-400 border-yellow-500/30',
   },
+  brave: {
+    description: 'Privacy-first independent web index API for real-time web search results.',
+    website: 'https://brave.com/search/api',
+    latency: '~400ms',
+    capabilities: ['Web Index', 'Independent Search', 'Privacy First', 'Fast Results'],
+    sampleParams: { query: 'privacy AI agents' },
+    iconBg: 'from-teal-500/20 to-sky-500/20 text-teal-400 border-teal-500/30',
+  },
   browserbase: {
     description: 'Cloud Chromium browser infrastructure offering CDP WebSocket connections and live debugging.',
     website: 'https://browserbase.com',
@@ -142,29 +151,35 @@ interface Provider {
 }
 
 export const Providers: React.FC = () => {
-  const [providers, setProviders]       = useState<Provider[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [providers, setProviders]   = useState<Provider[]>([]);
+  const [userKeys, setUserKeys]     = useState<any[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState<string | null>(null);
   
   // Filtering & Search
-  const [searchQuery, setSearchQuery]   = useState('');
+  const [searchQuery, setSearchQuery]       = useState('');
   const [endpointFilter, setEndpointFilter] = useState<'all' | 'scrape' | 'search' | 'browser' | 'execute' | 'document'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'offline'>('all');
-  const [sortBy, setSortBy]             = useState<'cost_asc' | 'cost_desc' | 'name' | 'speed'>('cost_asc');
+  const [statusFilter, setStatusFilter]     = useState<'all' | 'live' | 'offline'>('all');
+  const [sortBy, setSortBy]                 = useState<'name' | 'speed'>('name');
 
   // Selected Provider Drawer
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
-  const [copiedField, setCopiedField]   = useState<string | null>(null);
-  const [codeTab, setCodeTab]           = useState<'curl' | 'typescript' | 'python'>('curl');
+  const [copiedField, setCopiedField]           = useState<string | null>(null);
+  const [codeTab, setCodeTab]                   = useState<'curl' | 'typescript' | 'python'>('curl');
 
-  const apiKey = getStoredApiKey() || 'YOUR_API_KEY';
+  const apiKey = getStoredApiKey() || 'YOUR_LITEDAEMON_KEY';
 
-  const loadProviders = async () => {
+  const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.listProviders();
-      setProviders(data.providers);
+      const [providersData, keysData] = await Promise.all([
+        api.listProviders().catch(() => ({ providers: [] })),
+        api.listKeys().catch(() => ({ keys: [] })),
+      ]);
+      setProviders(providersData.providers);
+      setUserKeys(keysData.keys || []);
     } catch (e: any) {
       setError(e.message || 'Failed to load providers catalog');
     } finally {
@@ -172,7 +187,10 @@ export const Providers: React.FC = () => {
     }
   };
 
-  useEffect(() => { loadProviders(); }, []);
+  useEffect(() => { loadData(); }, []);
+
+  const userConfiguredKeysCount = userKeys.length;
+  const configuredProviderIds = useMemo(() => new Set(userKeys.map(k => k.provider_id)), [userKeys]);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -183,12 +201,9 @@ export const Providers: React.FC = () => {
   // Filter & Sort Logic
   const filteredProviders = providers
     .filter(p => {
-      // Endpoint filter
       if (endpointFilter !== 'all' && p.endpoint !== endpointFilter) return false;
-      // Status filter
       if (statusFilter === 'live' && !p.is_live) return false;
       if (statusFilter === 'offline' && p.is_live) return false;
-      // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const meta = PROVIDER_META[p.id];
@@ -201,8 +216,6 @@ export const Providers: React.FC = () => {
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === 'cost_asc') return a.cost_per_call_usd - b.cost_per_call_usd;
-      if (sortBy === 'cost_desc') return b.cost_per_call_usd - a.cost_per_call_usd;
       if (sortBy === 'name') return a.name.localeCompare(b.name);
       if (sortBy === 'speed') {
         const speedA = parseFloat(PROVIDER_META[a.id]?.latency.replace(/[^0-9.]/g, '') || '999');
@@ -212,9 +225,7 @@ export const Providers: React.FC = () => {
       return 0;
     });
 
-  const liveCount    = providers.filter(p => p.is_live).length;
-  const offlineCount = providers.length - liveCount;
-  const lowestCost   = providers.length ? Math.min(...providers.map(p => p.cost_per_call_usd)) : 0.001;
+  const liveCount = providers.filter(p => p.is_live).length;
 
   // Code Snippet Generator
   const generateSnippet = (p: Provider, lang: 'curl' | 'typescript' | 'python') => {
@@ -229,9 +240,7 @@ export const Providers: React.FC = () => {
     }
 
     if (lang === 'typescript') {
-      return `import { api } from '@litedaemon/sdk'; // or standard fetch
-
-const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/${p.endpoint}', {
+      return `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/${p.endpoint}', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ${apiKey}',
@@ -271,7 +280,7 @@ print(response.json())`;
         <div className="space-y-2 max-w-2xl relative z-10">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Zero Platform Markup Guarantee</span>
+            <span>BYOK Infrastructure Router</span>
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <span>Provider Catalog</span>
@@ -280,29 +289,22 @@ print(response.json())`;
             </span>
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed">
-            Unified infrastructure gateway for web scraping, search, browser sessions & execution sandboxes. Pay wholesale rates directly from one prepaid balance.
+            Explore supported scraping, search, browser, and sandbox providers. Connect your API keys to enable automatic failovers.
           </p>
         </div>
 
         {/* Quick Stat Cards */}
-        <div className="grid grid-cols-3 gap-3 relative z-10 font-mono text-xs">
+        <div className="grid grid-cols-2 gap-3 relative z-10 font-mono text-xs shrink-0">
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">Adapters</span>
-            <div className="text-xl font-bold text-white">{providers.length || 10}</div>
+            <span className="text-slate-500 text-[10px] uppercase">Supported Providers</span>
+            <div className="text-xl font-bold text-white">13</div>
           </div>
           <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">Live Status</span>
+            <span className="text-slate-500 text-[10px] uppercase">Your Configured Keys</span>
             <div className="text-xl font-bold text-emerald-400 flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              {liveCount} Active
+              <Key className="w-4 h-4 text-emerald-400" />
+              {userConfiguredKeysCount} Active
             </div>
-          </div>
-          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">Min Cost</span>
-            <div className="text-xl font-bold text-teal-400">${lowestCost.toFixed(4)}</div>
           </div>
         </div>
       </div>
@@ -344,7 +346,6 @@ print(response.json())`;
             >
               <option value="all">All Status ({providers.length})</option>
               <option value="live">Live Only ({liveCount})</option>
-              <option value="offline">Offline ({offlineCount})</option>
             </select>
 
             {/* Sort Dropdown */}
@@ -355,16 +356,14 @@ print(response.json())`;
                 onChange={(e: any) => setSortBy(e.target.value)}
                 className="bg-transparent text-slate-300 focus:outline-none cursor-pointer"
               >
-                <option value="cost_asc">Cost: Low to High</option>
-                <option value="cost_desc">Cost: High to Low</option>
-                <option value="speed">Speed: Fastest First</option>
                 <option value="name">Name: A to Z</option>
+                <option value="speed">Speed: Fastest First</option>
               </select>
             </div>
 
             {/* Refresh */}
             <button
-              onClick={loadProviders}
+              onClick={loadData}
               disabled={loading}
               className="p-2.5 rounded-xl bg-[#121620] hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-colors"
               title="Refresh provider status"
@@ -438,7 +437,7 @@ print(response.json())`;
                   <th className="p-4">Endpoint</th>
                   <th className="p-4">Capabilities</th>
                   <th className="p-4">Latency</th>
-                  <th className="p-4 text-right">Cost / Request</th>
+                  <th className="p-4 text-right">BYOK COST MODEL</th>
                   <th className="p-4 text-center">Status</th>
                   <th className="p-4 pr-6 text-right">Actions</th>
                 </tr>
@@ -451,6 +450,7 @@ print(response.json())`;
                   };
                   const epBadge = ENDPOINT_BADGE[p.endpoint] || ENDPOINT_BADGE.scrape;
                   const isSelected = selectedProvider?.id === p.id;
+                  const hasKey = configuredProviderIds.has(p.id);
 
                   return (
                     <tr
@@ -527,12 +527,12 @@ print(response.json())`;
                         </div>
                       </td>
 
-                      {/* Wholesale Cost */}
+                      {/* BYOK Cost Model */}
                       <td className="p-4 text-right">
-                        <div className="text-sm font-bold text-emerald-400">
-                          ${p.cost_per_call_usd.toFixed(4)}
+                        <div className="text-xs font-bold text-emerald-400">
+                          {hasKey ? 'BYOK Key Active' : 'BYOK Key Required'}
                         </div>
-                        <div className="text-[9px] text-slate-500">per call</div>
+                        <div className="text-[10px] text-slate-500">0% Gateway Markup</div>
                       </td>
 
                       {/* Live / Offline Status */}
@@ -553,16 +553,36 @@ print(response.json())`;
                         )}
                       </td>
 
-                      {/* Action Button */}
+                      {/* Actions Column */}
                       <td className="p-4 pr-6 text-right">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setSelectedProvider(p); }}
-                          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs flex items-center space-x-1 ml-auto border border-slate-700 transition-colors"
-                        >
-                          <Code2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Code</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          {hasKey ? (
+                            <>
+                              <button
+                                onClick={() => navigate('/keys')}
+                                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition-colors flex items-center gap-1"
+                              >
+                                <Key className="w-3 h-3" />
+                                Manage Key
+                              </button>
+                              <button
+                                onClick={() => setSelectedProvider(p)}
+                                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-700 transition-colors flex items-center gap-1"
+                              >
+                                <Code2 className="w-3 h-3 text-emerald-400" />
+                                &lt;/&gt; Code
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => navigate('/keys')}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              Add Key
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -576,13 +596,11 @@ print(response.json())`;
       {/* ── Slide-Over Code & Detail Drawer ────────────────────────────────── */}
       {selectedProvider && (
         <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          {/* Backdrop click dismiss */}
           <div
             className="absolute inset-0"
             onClick={() => setSelectedProvider(null)}
           />
 
-          {/* Drawer Content */}
           <div className="relative w-full max-w-2xl bg-[#0a0d14] border-l border-slate-800 h-full overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl z-10">
             
             {/* Header */}
@@ -630,8 +648,8 @@ print(response.json())`;
                 <div className="text-emerald-400 font-bold">/v1/{selectedProvider.endpoint}</div>
               </div>
               <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Wholesale Cost</span>
-                <div className="text-white font-bold">${selectedProvider.cost_per_call_usd.toFixed(4)}</div>
+                <span className="text-slate-500 text-[10px] uppercase">Billing Model</span>
+                <div className="text-white font-bold">Pure BYOK</div>
               </div>
               <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
                 <span className="text-slate-500 text-[10px] uppercase">Est. Latency</span>
@@ -675,7 +693,6 @@ print(response.json())`;
                   <span>Integration Code Snippet</span>
                 </h3>
 
-                {/* Language Tabs */}
                 <div className="flex items-center space-x-1 bg-[#121620] p-1 rounded-lg border border-slate-800 font-mono text-[11px]">
                   {(['curl', 'typescript', 'python'] as const).map((lang) => (
                     <button
@@ -691,7 +708,6 @@ print(response.json())`;
                 </div>
               </div>
 
-              {/* Code Box */}
               <div className="relative rounded-xl bg-[#080b10] border border-slate-800 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 font-mono text-[10px] text-slate-400">
                   <span>Endpoint: POST /v1/{selectedProvider.endpoint}</span>
@@ -719,14 +735,14 @@ print(response.json())`;
               </div>
             </div>
 
-            {/* Test Call Info */}
+            {/* BYOK Gateway Info */}
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 space-y-1 font-mono">
               <div className="text-slate-200 font-bold flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Zero-Margin Debit Rule</span>
+                <span>Pure BYOK Routing Engine</span>
               </div>
               <p>
-                Sending a request to <code className="text-emerald-400">/v1/{selectedProvider.endpoint}</code> with provider <code className="text-white">"{selectedProvider.id}"</code> debits exactly <strong className="text-white">${selectedProvider.cost_per_call_usd.toFixed(4)}</strong> from your prepaid wallet.
+                Requests sent to <code className="text-emerald-400">/v1/{selectedProvider.endpoint}</code> with provider <code className="text-white">"{selectedProvider.id}"</code> use your configured BYOK keys with 0% platform markup.
               </p>
             </div>
 

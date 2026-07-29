@@ -129,7 +129,7 @@ export const Landing: React.FC = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            OpenRouter for AI Agent Infrastructure
+            Unified BYOK Gateway for AI Infrastructure
           </div>
 
           <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
@@ -415,7 +415,7 @@ export const Landing: React.FC = () => {
           <Zap className="w-3.5 h-3.5 text-emerald-400" />
           <span className="text-slate-400 font-semibold">LiteDaemon</span>
         </div>
-        OpenRouter for AI Agents & Tools · Zero Markup Infrastructure · v1.0
+        Unified BYOK Infrastructure Gateway for AI Agents · v1.0
       </footer>
     </div>
   );

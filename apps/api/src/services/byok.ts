@@ -1,107 +1,148 @@
-// services/byok.ts — Bring Your Own Keys service
+// services/byok.ts — Bring Your Own Keys service (Multi-Key Prioritization & Fallbacks)
 import { pool }             from '../db/client';
 import { encrypt, decrypt } from './encryption';
 
-// ── Resolved key shape ────────────────────────────────────────────────────────
-export interface ResolvedKey {
-  apiKey:     string;
-  isByok:     boolean;
-  strictMode: boolean;   // true = "Always use this key" — no managed fallback
+export type KeyType = 'prioritized' | 'fallback';
+
+export interface UserByokKey {
+  id:             string;
+  provider_id:    string;
+  key_type:       KeyType;
+  priority_order: number;
+  label:          string | null;
+  is_active:      boolean;
+  last_used_at:   string | null;
+  created_at:     string;
+  key_hint:       string;
 }
 
-// ── Resolve the effective API key for a provider (BYOK first, then platform) ─
-export async function resolveProviderKey(
-  userId: string,
-  platformEncryptedKey: string,
-  providerId: string,
-  overrideKey?: string,
-): Promise<ResolvedKey> {
-  // Priority 1: Per-request header key override (e.g. X-Provider-Key)
-  // Header overrides are always treated as strict (caller controls the key)
-  if (overrideKey && overrideKey.trim().length > 0) {
-    return { apiKey: overrideKey.trim(), isByok: true, strictMode: true };
-  }
+export interface DecryptedUserKey {
+  id:             string;
+  provider_id:    string;
+  rawKey:         string;
+  key_type:       KeyType;
+  priority_order: number;
+}
 
-  // Priority 2: Stored BYOK vault key for user
+// ── Get all BYOK keys for a user & provider, sorted by key_type and priority_order
+export async function getProviderKeysForUser(
+  userId:     string,
+  providerId: string,
+): Promise<DecryptedUserKey[]> {
   const r = await pool.query(
-    `SELECT api_key_encrypted, always_use_this_key
+    `SELECT id, provider_id, api_key_encrypted, key_type, priority_order
      FROM user_provider_keys
-     WHERE user_id = $1 AND provider_id = $2 AND is_active = true`,
+     WHERE user_id = $1 AND provider_id = $2 AND is_active = true
+     ORDER BY 
+       CASE WHEN key_type = 'prioritized' THEN 1 ELSE 2 END,
+       priority_order ASC,
+       created_at ASC`,
     [userId, providerId],
   );
 
-  if (r.rows[0]) {
-    // Update last_used_at async — never block the request path
-    pool.query(
-      `UPDATE user_provider_keys SET last_used_at = NOW() WHERE user_id = $1 AND provider_id = $2`,
-      [userId, providerId],
-    ).catch(() => {});
-
-    return {
-      apiKey:     decrypt(r.rows[0].api_key_encrypted),
-      isByok:     true,
-      strictMode: !!r.rows[0].always_use_this_key,
-    };
-  }
-
-  // Priority 3: Fallback to LiteDaemon platform key
-  return { apiKey: decrypt(platformEncryptedKey), isByok: false, strictMode: false };
+  return r.rows.map(row => ({
+    id:             row.id,
+    provider_id:    row.provider_id,
+    rawKey:         decrypt(row.api_key_encrypted),
+    key_type:       row.key_type as KeyType,
+    priority_order: row.priority_order,
+  }));
 }
 
-// ── Add or replace a BYOK key for a provider ─────────────────────────────────
-export async function upsertByokKey(
-  userId: string,
+// ── Touch last_used_at timestamp on key execution ────────────────────────────
+export function markKeyUsed(keyId: string): void {
+  pool.query(
+    `UPDATE user_provider_keys SET last_used_at = NOW() WHERE id = $1`,
+    [keyId],
+  ).catch(() => {});
+}
+
+// ── Add a BYOK key for a provider ─────────────────────────────────────────────
+export async function addByokKey(
+  userId:     string,
   providerId: string,
-  rawKey: string,
-  label?: string,
-  strictMode?: boolean,
-): Promise<void> {
+  rawKey:     string,
+  keyType:    KeyType = 'prioritized',
+  label?:     string,
+): Promise<UserByokKey> {
   const encrypted = encrypt(rawKey);
-  await pool.query(
-    `INSERT INTO user_provider_keys (user_id, provider_id, api_key_encrypted, label, always_use_this_key)
-     VALUES ($1, $2, $3, $4, $5)
-     ON CONFLICT (user_id, provider_id)
-     DO UPDATE SET api_key_encrypted  = EXCLUDED.api_key_encrypted,
-                   label              = EXCLUDED.label,
-                   always_use_this_key = COALESCE($5, user_provider_keys.always_use_this_key),
-                   is_active          = true`,
-    [userId, providerId, encrypted, label ?? null, strictMode ?? false],
+
+  // Calculate next priority_order for this section
+  const orderRes = await pool.query(
+    `SELECT COALESCE(MAX(priority_order), -1) + 1 AS next_order
+     FROM user_provider_keys
+     WHERE user_id = $1 AND provider_id = $2 AND key_type = $3`,
+    [userId, providerId, keyType],
   );
+  const nextOrder = orderRes.rows[0]?.next_order ?? 0;
+
+  const r = await pool.query(
+    `INSERT INTO user_provider_keys (user_id, provider_id, api_key_encrypted, key_type, priority_order, label)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id, provider_id, key_type, priority_order, label, is_active, last_used_at, created_at`,
+    [userId, providerId, encrypted, keyType, nextOrder, label ?? null],
+  );
+
+  const row = r.rows[0];
+  return {
+    id:             row.id,
+    provider_id:    row.provider_id,
+    key_type:       row.key_type as KeyType,
+    priority_order: row.priority_order,
+    label:          row.label,
+    is_active:      row.is_active,
+    last_used_at:   row.last_used_at,
+    created_at:     row.created_at,
+    key_hint:       'sk-••••••••••••••••••••',
+  };
 }
 
-// ── Update strict isolation mode only ────────────────────────────────────────
-export async function setStrictMode(
-  userId: string,
+// ── Delete a BYOK key by ID ──────────────────────────────────────────────────
+export async function deleteByokKey(userId: string, keyId: string): Promise<boolean> {
+  const r = await pool.query(
+    `DELETE FROM user_provider_keys WHERE id = $1 AND user_id = $2 RETURNING id`,
+    [keyId, userId],
+  );
+  return (r.rowCount ?? 0) > 0;
+}
+
+// ── Reorder keys within a key_type section ────────────────────────────────────
+export async function reorderByokKeys(
+  userId:     string,
   providerId: string,
-  strict: boolean,
-): Promise<boolean> {
-  const r = await pool.query(
-    `UPDATE user_provider_keys
-     SET always_use_this_key = $3
-     WHERE user_id = $1 AND provider_id = $2
-     RETURNING id`,
-    [userId, providerId, strict],
-  );
-  return (r.rowCount ?? 0) > 0;
+  keyType:    KeyType,
+  orderedIds: string[],
+): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (let i = 0; i < orderedIds.length; i++) {
+      await client.query(
+        `UPDATE user_provider_keys
+         SET priority_order = $1
+         WHERE id = $2 AND user_id = $3 AND provider_id = $4 AND key_type = $5`,
+        [i, orderedIds[i], userId, providerId, keyType],
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
-// ── Remove a BYOK key ─────────────────────────────────────────────────────────
-export async function deleteByokKey(userId: string, providerId: string): Promise<boolean> {
-  const r = await pool.query(
-    `DELETE FROM user_provider_keys WHERE user_id = $1 AND provider_id = $2 RETURNING id`,
-    [userId, providerId],
-  );
-  return (r.rowCount ?? 0) > 0;
-}
-
-// ── List all BYOK keys for a user (safe — never returns raw or encrypted key) ─
+// ── List all BYOK keys for a user (safe — never exposes raw or encrypted key) ─
 export async function listByokKeys(userId: string) {
   const r = await pool.query(
     `SELECT
+       upk.id,
        upk.provider_id,
+       upk.key_type,
+       upk.priority_order,
        upk.label,
        upk.is_active,
-       upk.always_use_this_key,
        upk.last_used_at,
        upk.created_at,
        p.name              AS provider_name,
@@ -111,21 +152,26 @@ export async function listByokKeys(userId: string) {
      FROM user_provider_keys upk
      JOIN providers p ON p.id = upk.provider_id
      WHERE upk.user_id = $1
-     ORDER BY p.endpoint, p.name`,
+     ORDER BY 
+       p.endpoint, p.name,
+       CASE WHEN upk.key_type = 'prioritized' THEN 1 ELSE 2 END,
+       upk.priority_order ASC`,
     [userId],
   );
+
   return r.rows.map(row => ({
-    provider_id:         row.provider_id,
-    provider_name:       row.provider_name,
-    endpoint:            row.endpoint,
-    adapter_type:        row.adapter_type,
-    label:               row.label,
-    is_active:           row.is_active,
-    always_use_this_key: !!row.always_use_this_key,
-    last_used_at:        row.last_used_at,
-    created_at:          row.created_at,
-    platform_cost_usd:   parseFloat(row.platform_cost_usd),
-    // Never expose the encrypted or raw key — just signal key exists
-    key_hint:            'sk-••••••••••••••••••••',
+    id:                row.id,
+    provider_id:       row.provider_id,
+    provider_name:     row.provider_name,
+    endpoint:          row.endpoint,
+    adapter_type:      row.adapter_type,
+    key_type:          row.key_type as KeyType,
+    priority_order:    row.priority_order,
+    label:             row.label,
+    is_active:         row.is_active,
+    last_used_at:      row.last_used_at,
+    created_at:        row.created_at,
+    platform_cost_usd: parseFloat(row.platform_cost_usd),
+    key_hint:          'sk-••••••••••••••••••••',
   }));
 }

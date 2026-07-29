@@ -151,10 +151,13 @@ export const api = {
   listKeys: async () => {
     return apiRequest<{
       keys: Array<{
+        id: string;
         provider_id: string;
         provider_name: string;
         endpoint: string;
         adapter_type: string;
+        key_type: 'prioritized' | 'fallback';
+        priority_order: number;
         label: string | null;
         is_active: boolean;
         last_used_at: string | null;
@@ -165,25 +168,26 @@ export const api = {
     }>('/keys');
   },
 
-  addKey: async (provider_id: string, api_key: string, label?: string) => {
-    return apiRequest<{ message: string; provider_id: string; byok_active: boolean }>('/keys', {
+  addKey: async (provider_id: string, api_key: string, key_type: 'prioritized' | 'fallback' = 'prioritized', label?: string) => {
+    return apiRequest<{ message: string; key: any }>('/keys', {
       method: 'POST',
-      body: JSON.stringify({ provider_id, api_key, label }),
+      body: JSON.stringify({ provider_id, api_key, key_type, label }),
     });
   },
 
-  deleteKey: async (provider_id: string) => {
-    return apiRequest<{ message: string; provider_id: string }>(`/keys/${provider_id}`, {
+  reorderKeys: async (provider_id: string, key_type: 'prioritized' | 'fallback', ordered_ids: string[]) => {
+    return apiRequest<{ message: string }>('/keys/reorder', {
+      method: 'PUT',
+      body: JSON.stringify({ provider_id, key_type, ordered_ids }),
+    });
+  },
+
+  deleteKey: async (key_id: string) => {
+    return apiRequest<{ message: string; key_id: string }>(`/keys/${key_id}`, {
       method: 'DELETE',
     });
   },
 
-  setKeyStrictMode: async (provider_id: string, strict: boolean) => {
-    return apiRequest<{ message: string; provider_id: string; strict_mode: boolean }>(`/keys/${provider_id}/strict`, {
-      method: 'PATCH',
-      body: JSON.stringify({ strict }),
-    });
-  },
 
   // ── Auth Endpoints ──────────────────────────────────────────────────────
 

@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
           </Link>
 
           <p className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>
-            © {new Date().getFullYear()} LiteDaemon, Inc.
+            © {new Date().getFullYear()} LiteDaemon, Inc
           </p>
         </div>
 

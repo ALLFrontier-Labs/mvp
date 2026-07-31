@@ -94,7 +94,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ onLogout }) =>
               <span>Profile</span>
             </Link>
             <Link
-              to="/dashboard"
+              to="/jobs"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/70 light:hover:bg-zinc-100 transition-colors"
             >

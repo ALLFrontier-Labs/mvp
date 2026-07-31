@@ -19,13 +19,23 @@ export const Header: React.FC = () => {
     navigate('/auth');
   };
 
-  const navLinks = [
-    { label: 'Home',       path: '/' },
-    { label: 'Tools',      path: '/providers' },
-    { label: 'Playground', path: '/playground' },
-    { label: 'Rankings',   path: '/rankings' },
-    { label: 'Docs',       path: '/docs' },
-  ];
+  const navLinks = apiKey
+    ? [
+        { label: 'Keys & Vault', path: '/keys' },
+        { label: 'Logs',         path: '/jobs' },
+        { label: 'Tools',        path: '/providers' },
+        { label: 'Playground',   path: '/playground' },
+        { label: 'Rankings',     path: '/rankings' },
+        { label: 'Settings',     path: '/settings' },
+        { label: 'Docs',         path: '/docs' },
+      ]
+    : [
+        { label: 'Home',       path: '/' },
+        { label: 'Tools',      path: '/providers' },
+        { label: 'Playground', path: '/playground' },
+        { label: 'Rankings',   path: '/rankings' },
+        { label: 'Docs',       path: '/docs' },
+      ];
 
   return (
     <>

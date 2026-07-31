@@ -21,6 +21,7 @@ export const Header: React.FC = () => {
 
   const navLinks = apiKey
     ? [
+        { label: 'Overview',     path: '/dashboard' },
         { label: 'Keys & Vault', path: '/keys' },
         { label: 'Logs',         path: '/jobs' },
         { label: 'Tools',        path: '/providers' },

@@ -46,11 +46,12 @@ export const Navbar: React.FC = () => {
   };
 
   const navItems = [
-    { label: 'Overview',       path: '/dashboard', protected: true },
-    { label: 'Tools & Vault',  path: '/keys',      protected: true },
-    { label: 'Execution Logs', path: '/jobs',      protected: true },
-    { label: 'Docs',           path: '/playground',protected: true },
-    { label: 'Pricing',        path: '/billing',   protected: true },
+    { label: 'Home',       path: '/',           protected: false },
+    { label: 'Tools',      path: '/providers',  protected: false },
+    { label: 'Playground', path: '/playground', protected: true },
+    { label: 'Rankings',   path: '/providers',  protected: false },
+    { label: 'Apps',       path: '/dashboard',  protected: true },
+    { label: 'Docs',       path: '/docs',       protected: false },
   ];
 
   return (

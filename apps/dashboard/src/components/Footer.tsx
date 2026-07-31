@@ -9,7 +9,7 @@ const FOOTER_COLUMNS = [
       { label: 'Playground', to: '/playground' },
       { label: 'Rankings',   to: '/rankings' },
       { label: 'Discover',   to: '/providers' },
-      { label: 'Pricing',    to: '/billing' },
+      { label: 'Pricing',    to: '/pricing' },
     ],
   },
   {

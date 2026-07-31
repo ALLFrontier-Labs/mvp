@@ -4,10 +4,9 @@ import {
   Zap, ArrowRight, Check, Copy, ChevronRight, Shield,
   DollarSign, Globe, Cpu, Search, Layout, Code2,
   Wallet, Key, X, Layers, Activity, RefreshCw, Sparkles, Terminal,
-  Lock, Server, ShieldCheck
+  Lock, Server, ShieldCheck, CheckCircle2, Radio, UserPlus, ArrowUpRight
 } from 'lucide-react';
 
-// ── Code example snippets ─────────────────────────────────────────────────────
 const CODE_EXAMPLES = {
   curl: `# ONE unified endpoint. 30+ providers. 5% platform fee.
 curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
@@ -172,319 +171,208 @@ export const Landing: React.FC = () => {
   const frameworkLines = FRAMEWORK_SNIPPETS[frameworkTab].split('\n');
 
   return (
-    <div className="min-h-screen bg-[#0a0d14] text-slate-100 overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#09090b] text-slate-100 overflow-x-hidden font-sans selection:bg-[#ccff00] selection:text-black">
 
-      {/* ── Top Navigation ──────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 border-b border-slate-800/60 bg-[#0a0d14]/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      {/* ── Top Navigation (OpenRouter Dark Aesthetic) ───────────────────────── */}
+      <nav className="sticky top-0 z-50 border-b border-zinc-800/80 bg-[#09090b]/90 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20">
+              <div className="w-full h-full bg-[#09090b] rounded-[10px] flex items-center justify-center">
+                <Zap className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
+              </div>
             </div>
-            <span className="font-bold text-white text-sm tracking-tight">LiteDaemon</span>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-white text-base tracking-tight font-sans">LiteDaemon</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+            </div>
           </Link>
-          <div className="flex items-center gap-4 font-mono text-xs">
-            <Link to="/providers" className="text-slate-400 hover:text-white transition-colors hidden sm:block">
+
+          <div className="flex items-center gap-6 font-mono text-xs">
+            <Link to="/providers" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">
               Browse Providers
             </Link>
-            <Link to="/auth" className="text-slate-400 hover:text-white transition-colors">
+            <Link to="/auth" className="text-zinc-400 hover:text-white transition-colors">
               Sign In
             </Link>
             <Link
               to="/auth"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all shadow-md shadow-emerald-500/20"
+              className="px-4 py-2 rounded-lg bg-[#ccff00] hover:bg-[#b8e600] text-black font-extrabold transition-all shadow-md shadow-[#ccff00]/10"
             >
-              Get API Key &amp; Add Funds <ArrowRight className="w-3.5 h-3.5" />
+              Get Master Key
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Ambient gradients */}
-        <div className="absolute -top-20 -left-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-40 right-0 w-96 h-96 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto px-6 py-24 sm:py-32 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono mb-8">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            Unified BYOK Gateway (5% Platform Fee)
-          </div>
-
-          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
-            One Gateway.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
-              30+ AI Tools.
-            </span>
-            <br />Flat 5% BYOK Platform Fee.
-          </h1>
-
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            Route 30+ AI tool APIs through your own keys with zero-downtime failovers for a flat 5% platform fee based on list price from call #1.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 font-mono text-sm">
-            <Link
-              to="/auth"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all shadow-xl shadow-emerald-500/25"
-            >
-              <Key className="w-4 h-4" />
-              Get API Key &amp; Add Funds
-            </Link>
-            <Link
-              to="/providers"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold border border-slate-700 transition-all"
-            >
-              <Layers className="w-4 h-4 text-emerald-400" />
-              Explore 30+ Providers
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-            </Link>
-          </div>
-
-          {/* Quick trust stats */}
-          <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-slate-400">
-            {[
-              { icon: Activity, text: '30+ Providers Live' },
-              { icon: Shield,   text: '5% Micro-Fee on BYOK Requests' },
-              { icon: Key,      text: 'BYOK Support' },
-              { icon: RefreshCw,text: 'Zero-Downtime Failovers' },
-            ].map(({ icon: Icon, text }) => (
-              <span key={text} className="flex items-center gap-2">
-                <Icon className="w-4 h-4 text-emerald-400" />
-                {text}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Interactive Comparison Table (Without vs With LiteDaemon) ──────── */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
-        <div className="text-center mb-12 space-y-2">
-          <h2 className="text-3xl font-bold text-white">Manual Setup vs. LiteDaemon BYOK Gateway</h2>
-          <p className="text-slate-400 text-sm">Why agentic developers switch to a single unified tool gateway.</p>
+      {/* ── SPECIFICATION 1: HERO SECTION & COLOR PALETTE ────────────────────── */}
+      <section className="relative pt-20 pb-16 px-6 max-w-5xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-emerald-400 font-mono text-xs mb-6">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          Unified BYOK Tool Gateway • 1,000 Free Monthly Requests
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-[#0d1117] shadow-2xl">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/60 font-mono text-xs uppercase tracking-wider">
-                <th className="p-4 font-bold text-slate-300">Feature / Bottleneck</th>
-                <th className="p-4 font-bold text-rose-400 bg-rose-950/20">Without LiteDaemon (Manual Setup)</th>
-                <th className="p-4 font-bold text-emerald-400 bg-emerald-950/20">With LiteDaemon (BYOK Gateway)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs font-mono">
-              {[
-                {
-                  feature: 'Provider Rate Limits (429s)',
-                  without: 'Agent crashes instantly mid-run & fails customer workflow',
-                  with: 'Automatic zero-downtime failover to backup provider',
-                  color: 'text-emerald-300 font-bold',
-                },
-                {
-                  feature: 'API Integration',
-                  without: '30+ separate SDKs, schemas & custom tool wrappers',
-                  with: '5 predictable endpoints (/v1/scrape, /v1/search, etc.)',
-                  color: 'text-emerald-300 font-bold',
-                },
-                {
-                  feature: 'API Key Management',
-                  without: 'Storing & rotating 10+ raw provider keys in env files',
-                  with: '1 unified LiteDaemon master key for all 30+ tools',
-                  color: 'text-emerald-300 font-bold',
-                },
-                {
-                  feature: 'Observability',
-                  without: 'Logging into 10+ separate provider dashboards to debug',
-                  with: 'Single dashboard for unified execution logs & latency metrics',
-                  color: 'text-emerald-300 font-bold',
-                },
-                {
-                  feature: 'Pricing & Commitment',
-                  without: 'Fixed monthly subscriptions per tool ($165+/mo minimums)',
-                  with: 'Pay 5% routing fee per request via BYOK ($0 monthly subs)',
-                  color: 'text-emerald-300 font-bold',
-                },
-              ].map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="p-4 font-bold text-white whitespace-nowrap">{row.feature}</td>
-                  <td className="p-4 text-rose-300/90 bg-rose-950/10 font-sans">{row.without}</td>
-                  <td className={`p-4 bg-emerald-950/10 font-sans ${row.color}`}>{row.with}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6 max-w-4xl mx-auto">
+          The Unified Gateway for Autonomous Tool Executions
+        </h1>
 
-      {/* ── How It Works ────────────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-white mb-3">Live in 3 Steps</h2>
-          <p className="text-slate-400 font-mono text-sm">No complex SDKs. Just clean REST requests.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              step: '01',
-              icon: Key,
-              title: 'Connect Your Keys',
-              desc: 'Add your provider API keys to the LiteDaemon vault (Firecrawl, Tavily, E2B, etc.). All keys are encrypted with AES-256.',
-              color: 'text-emerald-400',
-              bg: 'bg-emerald-500/10 border-emerald-500/20',
-            },
-            {
-              step: '02',
-              icon: Zap,
-              title: 'Call Unified Endpoints',
-              desc: 'Send requests to /v1/scrape, /v1/search, /v1/browser, or /v1/execute using your single Master Bearer Token.',
-              color: 'text-teal-400',
-              bg: 'bg-teal-500/10 border-teal-500/20',
-            },
-            {
-              step: '03',
-              icon: RefreshCw,
-              title: 'Automated Failover',
-              desc: 'If a primary provider rate limits or errors out, LiteDaemon instantly routes through your backup chain for a flat 5% fee.',
-              color: 'text-cyan-400',
-              bg: 'bg-cyan-500/10 border-cyan-500/20',
-            },
-          ].map(s => (
-            <div key={s.step} className="relative rounded-2xl bg-[#121620] border border-slate-800 p-6 space-y-4 shadow-xl">
-              <span className="absolute top-4 right-4 font-mono text-xs text-slate-700 font-bold">{s.step}</span>
-              <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${s.bg}`}>
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-              <h3 className="font-bold text-white text-lg">{s.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Code Example ────────────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-white mb-3">
-            One Endpoint Replaces Four SDKs
-          </h2>
-          <p className="text-slate-400 text-sm">No provider-specific SDKs. Just standard HTTP requests across all 30+ providers.</p>
-        </div>
-
-        <div className="rounded-2xl bg-[#080b10] border border-slate-800 overflow-hidden shadow-2xl">
-          {/* Tab bar */}
-          <div className="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800">
-            <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg">
-              {(['curl', 'typescript', 'python'] as const).map(lang => (
-                <button
-                  key={lang}
-                  onClick={() => setCodeTab(lang)}
-                  className={`px-3 py-1 rounded-md text-xs font-mono font-semibold transition-colors capitalize ${
-                    codeTab === lang ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {lang === 'typescript' ? 'TypeScript' : lang === 'python' ? 'Python' : 'cURL'}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={copyCode}
-              className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 hover:text-emerald-300"
-            >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <pre className="p-6 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed whitespace-pre">
-            {CODE_EXAMPLES[codeTab]}
-          </pre>
-        </div>
-      </section>
-
-      {/* ── Provider Network Grid ────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-10 space-y-2">
-          <h2 className="text-3xl font-bold text-white">30+ Providers. One Gateway.</h2>
-          <p className="text-slate-400 text-sm">Unified execution across scraping, search, browser, document, and sandbox providers.</p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {PROVIDERS.map(p => (
-            <div
-              key={p.name}
-              className="rounded-xl bg-[#121620] border border-slate-800 hover:border-slate-700 p-4 flex flex-col items-center gap-2 text-center transition-colors group"
-            >
-              <span className="text-2xl">{p.icon}</span>
-              <span className="font-semibold text-white text-xs group-hover:text-emerald-400 transition-colors">{p.name}</span>
-              <span className="text-[10px] text-slate-500">{p.cat}</span>
-              <div className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${p.dot}`} />
-                <span className="font-mono text-[10px] text-emerald-400 font-bold">{p.cost}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="text-center text-slate-500 font-mono text-xs mt-6">
-          + Bring Your Own Keys (BYOK) — Flat 5% platform fee based on standard list prices
+        <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
+          Route agent calls across Tavily, Firecrawl, Browserbase, and E2B through a single master key. Multi-key failover, zero payload logging, no monthly subscriptions.
         </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 font-mono text-xs">
+          <Link
+            to="/auth"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#ccff00] hover:bg-[#b8e600] text-black font-extrabold transition-all shadow-lg shadow-[#ccff00]/10 flex items-center justify-center gap-2"
+          >
+            <Key className="w-4 h-4 text-black" />
+            Get Master Key
+          </Link>
+          <Link
+            to="/providers"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-semibold transition-all flex items-center justify-center gap-2"
+          >
+            <Layers className="w-4 h-4 text-emerald-400" />
+            Explore Supported Tools →
+          </Link>
+        </div>
+
+        {/* ── SPECIFICATION 2: 4 SCALE STAT METRICS BAR ────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 text-left font-mono">
+          {[
+            { metric: '1,000',  label: 'Free Monthly BYOK Calls', icon: Zap,    color: 'text-emerald-400' },
+            { metric: '<15ms',  label: 'Gateway Latency Overhead',icon: Activity,color: 'text-teal-400' },
+            { metric: '10+',    label: 'Supported Tool Providers',icon: Layers,  color: 'text-cyan-400' },
+            { metric: '99.99%', label: 'Failover Route Uptime',  icon: ShieldCheck,color: 'text-yellow-400' },
+          ].map((stat, i) => (
+            <div key={i} className="p-5 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
+              <div className="flex items-center justify-between text-zinc-500">
+                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                <span className="text-[10px] font-bold uppercase">LIVE METRIC</span>
+              </div>
+              <div className="text-3xl font-extrabold text-white tracking-tight">{stat.metric}</div>
+              <div className="text-xs text-zinc-400">{stat.label}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* ── Why LiteDaemon? Section ────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
-        <div className="text-center mb-12 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono mb-2">
-            <Zap className="w-3.5 h-3.5" />
-            Fail-Safe Agent Infrastructure
+      {/* ── SPECIFICATION 3: BENTO GRID FEATURE CARDS ───────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-zinc-800/80">
+        <div className="text-center mb-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-emerald-400 text-xs font-mono">
+            <Cpu className="w-3.5 h-3.5" />
+            High-Performance BYOK Routing Engine
           </div>
-          <h2 className="text-3xl font-extrabold text-white">
-            Why Developers Route Through LiteDaemon?
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+            Built for Scale, Reliability &amp; Privacy
           </h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            The invisible fail-safe gateway for autonomous AI agents.
+          <p className="text-zinc-400 text-sm max-w-xl mx-auto">
+            Everything your autonomous AI agents need to execute search, web scraping, and code sandboxes seamlessly.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-emerald-500/40 p-6 space-y-4 shadow-xl transition-all group">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card 1 */}
+          <div className="p-8 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-4 hover:border-emerald-500/40 transition-all group">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Globe className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-xl font-bold text-white">One API for Any Agent Tool</h3>
+            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+              Connect Tavily, Firecrawl, E2B, and Serper through a single proxy endpoint (`/v1/scrape`, `/v1/search`, `/v1/browser`, `/v1/execute`). Stop managing 15+ separate SDKs in your codebase.
+            </p>
+          </div>
+
+          {/* Card 2 */}
+          <div className="p-8 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-4 hover:border-teal-500/40 transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
               <ShieldCheck className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </div>
-            <h3 className="text-lg font-bold text-white">Zero 429 Rate-Limit Crashes</h3>
-            <p className="text-slate-400 text-xs leading-relaxed font-sans">
-              When a provider rate-limits your agent mid-execution, LiteDaemon's multi-key failover automatically routes to a backup key or secondary provider with 0ms downtime.
+            <h3 className="text-xl font-bold text-white">Automatic Multi-Key Failover</h3>
+            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+              Higher Reliability — Instant key rotation pools to prevent 429 rate limits and provider outages. When a key hits a quota error, LiteDaemon instantly routes through backup keys with 0ms downtime.
             </p>
           </div>
 
-          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-teal-500/40 p-6 space-y-4 shadow-xl transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-              <Key className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          {/* Card 3 */}
+          <div className="p-8 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-4 hover:border-yellow-500/40 transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400">
+              <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </div>
-            <h3 className="text-lg font-bold text-white">1 Unified Master Key</h3>
-            <p className="text-slate-400 text-xs leading-relaxed font-sans">
-              Stop cluttering your .env file with 15+ API keys. Use one single <code className="text-teal-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">ld_live_...</code> key across your entire codebase for searching, scraping, browsers, and sandboxes.
+            <h3 className="text-xl font-bold text-white">1,000 Free BYOK Requests / Mo</h3>
+            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+              No monthly lock-ins or mandatory subscriptions. Enjoy 1,000 free monthly BYOK requests (resets 1st of every month at 00:00 UTC). Pay-as-you-go 5% list-price fee only when scaling.
             </p>
           </div>
 
-          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-cyan-500/40 p-6 space-y-4 shadow-xl transition-all group">
+          {/* Card 4 */}
+          <div className="p-8 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-4 hover:border-cyan-500/40 transition-all group">
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-              <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <Lock className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </div>
-            <h3 className="text-lg font-bold text-white">Zero Code Revamp</h3>
-            <p className="text-slate-400 text-xs leading-relaxed font-sans">
-              Plugs into existing LangChain, CrewAI, AutoGen, or custom Python/TypeScript scripts by updating a single base URL string.
+            <h3 className="text-xl font-bold text-white">Zero-Storage Ephemeral Proxy</h3>
+            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+              Memory-only routing. Prompt, web content, and tool payloads are never logged or stored. AES-256-GCM encrypted vault architecture protects your underlying provider keys at rest.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── SPECIFICATION 4: 3-STEP GETTING STARTED VISUAL ───────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-zinc-800/80">
+        <div className="text-center mb-12 space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-emerald-400 text-xs font-mono">
+            <Terminal className="w-3.5 h-3.5" />
+            Developer Workflow
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+            Get Started in 3 Simple Steps
+          </h2>
+          <p className="text-zinc-400 text-sm">No complex setup. Zero ToS violations.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
+          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-3 relative">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm">
+              1
+            </div>
+            <h3 className="font-bold text-white text-sm font-sans">1. Sign Up</h3>
+            <p className="text-zinc-400 font-sans text-xs leading-relaxed">
+              Create your account in seconds via GitHub or email login to generate your Master API key.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-3 relative">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 font-extrabold flex items-center justify-center text-sm">
+              2
+            </div>
+            <h3 className="font-bold text-white text-sm font-sans">2. Connect BYOK Keys</h3>
+            <p className="text-zinc-400 font-sans text-xs leading-relaxed">
+              Add your provider keys (Tavily, Firecrawl, E2B) into your encrypted vault or top up wallet balance with $5.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-3 relative">
+            <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 font-extrabold flex items-center justify-center text-sm">
+              3
+            </div>
+            <h3 className="font-bold text-white text-sm font-sans">3. Get Master Key &amp; Run</h3>
+            <p className="text-zinc-400 font-sans text-xs leading-relaxed">
+              Swap your tool base URL to <code className="text-yellow-300 font-mono">gateway.litedaemon.com/v1</code> and run your agent.
             </p>
           </div>
         </div>
       </section>
 
       {/* ── Interactive 3-Line Framework Quickstarts Section ────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-zinc-800/80">
         <div className="text-center mb-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
             <Zap className="w-3.5 h-3.5" />
@@ -493,8 +381,8 @@ export const Landing: React.FC = () => {
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
             Plugs Directly Into Your Existing Agent Framework
           </h2>
-          <p className="text-slate-400 text-sm max-w-2xl mx-auto leading-relaxed">
-            Swap your tool base URL or proxy endpoint to <code className="text-emerald-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">https://gateway.litedaemon.com/v1</code> and let LiteDaemon handle BYOK keys, rate limits, and multi-key failover automatically.
+          <p className="text-zinc-400 text-sm max-w-2xl mx-auto leading-relaxed">
+            Swap your tool base URL or proxy endpoint to <code className="text-emerald-300 font-mono bg-zinc-900 px-1.5 py-0.5 rounded">https://gateway.litedaemon.com/v1</code> and let LiteDaemon handle BYOK keys, rate limits, and multi-key failover automatically.
           </p>
         </div>
 
@@ -515,11 +403,11 @@ export const Landing: React.FC = () => {
                 onClick={() => setFrameworkTab(tab.id as FrameworkTab)}
                 className={`px-4 py-2.5 rounded-xl border transition-all whitespace-nowrap font-semibold flex items-center gap-2 ${
                   isActive
-                    ? 'bg-slate-800 text-white border-emerald-500/50 shadow-md shadow-emerald-500/10'
-                    : 'bg-[#121620]/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                    ? 'bg-zinc-800 text-white border-emerald-500/50 shadow-md shadow-emerald-500/10'
+                    : 'bg-[#0d0d0e] text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
                 }`}
               >
-                <Code2 className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <Code2 className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -527,30 +415,28 @@ export const Landing: React.FC = () => {
         </div>
 
         {/* macOS Terminal Window Container */}
-        <div className="rounded-2xl bg-[#080b10] border border-slate-800 overflow-hidden shadow-2xl">
-          {/* Terminal Window Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-slate-900/60 border-b border-slate-800">
+        <div className="rounded-2xl bg-[#050507] border border-zinc-800 overflow-hidden shadow-2xl">
+          <div className="flex items-center justify-between px-4 py-3 bg-zinc-900/80 border-b border-zinc-800">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-rose-500/80" />
               <div className="w-3 h-3 rounded-full bg-amber-500/80" />
               <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              <span className="ml-2 text-xs font-mono text-slate-500">
+              <span className="ml-2 text-xs font-mono text-zinc-500">
                 quickstart.{frameworkTab === 'n8n' ? 'json' : frameworkTab === 'typescript' ? 'ts' : 'py'}
               </span>
             </div>
 
             <button
               onClick={copyFrameworkCode}
-              className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 hover:text-emerald-300 px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 hover:text-emerald-300 px-3 py-1 rounded-lg bg-zinc-800 border border-zinc-700/60 transition-colors"
             >
               {copiedFramework ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedFramework ? 'Copied!' : 'Copy Snippet'}
             </button>
           </div>
 
-          {/* Syntax-Highlighted Code Block with Line Numbers */}
           <pre className="p-6 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed flex">
-            <div className="select-none text-slate-600 text-right pr-4 border-r border-slate-800/80 shrink-0 space-y-1">
+            <div className="select-none text-zinc-600 text-right pr-4 border-r border-zinc-800/80 shrink-0 space-y-1">
               {frameworkLines.map((_, i) => (
                 <div key={i}>{i + 1}</div>
               ))}
@@ -564,104 +450,53 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* ── Enterprise-Grade Security & Vault Architecture ───────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
-        <div className="rounded-2xl bg-gradient-to-b from-[#0d1117] to-[#121620] border border-slate-800 p-8 md:p-12 shadow-2xl space-y-10">
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-              <Lock className="w-3.5 h-3.5" />
-              SOC-2 Ready Architecture • AES-256 Encrypted
-            </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
-              Your API Keys &amp; Data Payloads Never Leave Memory
-            </h2>
-            <p className="text-slate-400 text-sm max-w-2xl mx-auto leading-relaxed">
-              Built with zero-retention ephemeral proxies so your private agent workflows stay private.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-emerald-500/30 transition-colors">
-              <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
-                <Lock className="w-4 h-4" />
-                <span>AES-256-GCM Vault Encryption</span>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed font-sans">
-                Provider API keys stored in your dashboard are encrypted at rest using AES-256-GCM with isolated user-specific decryption keys. Plaintext keys are never exposed.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-teal-500/30 transition-colors">
-              <div className="flex items-center gap-2.5 text-teal-400 font-bold text-sm">
-                <Server className="w-4 h-4" />
-                <span>Ephemeral In-Memory Proxying (Zero Payload Logging)</span>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed font-sans">
-                LiteDaemon is a strict pass-through proxy. Scraped web content, browser execution steps, and search query payloads stream strictly through isolated in-memory pipes. We NEVER save or log payload contents.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-cyan-500/30 transition-colors">
-              <div className="flex items-center gap-2.5 text-cyan-400 font-bold text-sm">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Key Isolation &amp; Restrictive Scopes</span>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed font-sans">
-                Your master <code className="text-cyan-300 font-mono bg-slate-950 px-1 py-0.5 rounded">ld_live_...</code> key only authorizes routing through your encrypted vault. Intercepting a master key provides zero access to underlying provider accounts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── OpenRouter-Style BYOK Pricing Section ──────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-zinc-800/80">
         <div className="text-center mb-12 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-emerald-400 text-xs font-mono">
             <Shield className="w-3.5 h-3.5" />
             100% Pay-As-You-Go • No Upfront Subscriptions
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
             Simple, Transparent BYOK Gateway Pricing
           </h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
+          <p className="text-zinc-400 text-sm max-w-xl mx-auto leading-relaxed">
             Connect your provider keys and route agent executions with zero monthly subscription fees.
           </p>
         </div>
 
-        {/* Pricing Card & Guarantees Container */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           
-          {/* Main OpenRouter-Style Card */}
-          <div className="rounded-2xl bg-gradient-to-b from-[#0d1117] to-[#121620] border border-emerald-500/30 p-8 space-y-6 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+          {/* Main Card */}
+          <div className="rounded-2xl bg-gradient-to-b from-[#0d0d0e] to-[#121215] border border-emerald-500/30 p-8 space-y-6 shadow-2xl flex flex-col justify-between relative overflow-hidden">
             <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-500/20 border-b border-l border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold uppercase rounded-bl-xl">
               1,000 Free Requests / Mo
             </div>
 
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-mono uppercase text-slate-500 tracking-wider">Base Monthly Subscription</p>
+                <p className="text-xs font-mono uppercase text-zinc-500 tracking-wider">Base Monthly Subscription</p>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-5xl font-extrabold text-white font-mono">$0</span>
-                  <span className="text-slate-400 text-sm font-mono">/ month</span>
+                  <span className="text-zinc-400 text-sm font-mono">/ month</span>
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-800 font-mono text-xs">
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-300 font-semibold">Free Allowance</span>
+              <div className="space-y-3 pt-4 border-t border-zinc-800 font-mono text-xs">
+                <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                  <span className="text-zinc-300 font-semibold">Free Allowance</span>
                   <span className="text-emerald-400 font-bold">1,000 Free Requests/mo</span>
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-300 font-semibold">Allowance Reset</span>
-                  <span className="text-slate-400">1st of Month (00:00 UTC)</span>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                  <span className="text-zinc-300 font-semibold">Allowance Reset</span>
+                  <span className="text-zinc-400">1st of Month (00:00 UTC)</span>
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-300 font-semibold">Overage Fee (Post 1k calls)</span>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                  <span className="text-zinc-300 font-semibold">Overage Fee (Post 1k calls)</span>
                   <span className="text-teal-400 font-bold">5% BYOK List-Price Fee</span>
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <span className="text-slate-300 font-semibold">Min Wallet Top-Up</span>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                  <span className="text-zinc-300 font-semibold">Min Wallet Top-Up</span>
                   <span className="text-white font-bold">$5.00 USD</span>
                 </div>
               </div>
@@ -670,19 +505,19 @@ export const Landing: React.FC = () => {
             <div className="pt-4">
               <Link
                 to="/auth"
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#ccff00] hover:bg-[#b8e600] text-black font-extrabold text-sm font-mono transition-all shadow-lg shadow-[#ccff00]/10"
               >
-                <Zap className="w-4 h-4" />
+                <Zap className="w-4 h-4 text-black" />
                 Start with 1,000 Free BYOK Calls
               </Link>
             </div>
           </div>
 
-          {/* High-Trust Guarantees Checklist */}
-          <div className="rounded-2xl bg-[#0d1117] border border-slate-800 p-8 flex flex-col justify-between space-y-6 shadow-xl">
+          {/* Guarantees Checklist */}
+          <div className="rounded-2xl bg-[#0d0d0e] border border-zinc-800 p-8 flex flex-col justify-between space-y-6 shadow-xl">
             <div>
               <h3 className="text-xl font-bold text-white mb-2">High-Trust Gateway Guarantees</h3>
-              <p className="text-slate-400 text-xs leading-relaxed">
+              <p className="text-zinc-400 text-xs leading-relaxed">
                 Everything you need to run high-concurrency autonomous agent workflows safely.
               </p>
             </div>
@@ -706,17 +541,17 @@ export const Landing: React.FC = () => {
                   desc: 'Works out-of-the-box with LangChain, CrewAI, AutoGen, and n8n.',
                 },
               ].map((g, idx) => (
-                <li key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80">
+                <li key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-white block">{g.title}</span>
-                    <span className="text-slate-400 text-xs">{g.desc}</span>
+                    <span className="text-zinc-400 text-xs">{g.desc}</span>
                   </div>
                 </li>
               ))}
             </ul>
 
-            <div className="pt-2 text-slate-500 font-mono text-[11px] flex items-center justify-between border-t border-slate-800/80">
+            <div className="pt-2 text-zinc-500 font-mono text-[11px] flex items-center justify-between border-t border-zinc-800">
               <span>LemonSqueezy Wallet Top-Up</span>
               <span className="text-emerald-400 font-bold">100% BYOK Execution</span>
             </div>
@@ -726,24 +561,84 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-20 text-center space-y-6">
+      <section className="max-w-5xl mx-auto px-6 py-20 text-center space-y-6 border-t border-zinc-800/80">
         <h2 className="text-4xl font-extrabold text-white">
           Ready to unify your AI agent tools?
         </h2>
-        <p className="text-slate-400 max-w-xl mx-auto text-base">
+        <p className="text-zinc-400 max-w-xl mx-auto text-base">
           Get your Master API Key in seconds. Connect your BYOK provider keys and enable automatic failover routing.
         </p>
         <div>
           <Link
             to="/auth"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-all shadow-2xl shadow-emerald-500/25"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#ccff00] hover:bg-[#b8e600] text-black font-extrabold text-base font-mono transition-all shadow-xl shadow-[#ccff00]/10"
           >
-            <Zap className="w-5 h-5" />
-            Get API Key &amp; Add Funds
-            <ArrowRight className="w-5 h-5" />
+            <Key className="w-5 h-5 text-black" />
+            Get Master Key
+            <ArrowRight className="w-5 h-5 text-black" />
           </Link>
         </div>
       </section>
+
+      {/* ── SPECIFICATION 5: ENTERPRISE 4-COLUMN FOOTER ─────────────────────── */}
+      <footer className="border-t border-zinc-800 bg-[#09090b] py-12 px-6 font-mono text-xs text-zinc-400">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Col 1 */}
+          <div className="space-y-4 font-sans">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-emerald-400" />
+              </div>
+              <span className="font-extrabold text-white text-base">LiteDaemon</span>
+            </Link>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-emerald-400 text-[11px] font-mono">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              🟢 All Systems Operational
+            </div>
+            <p className="text-zinc-500 text-xs">
+              © 2026 LiteDaemon Inc. All rights reserved.
+            </p>
+          </div>
+
+          {/* Col 2 */}
+          <div className="space-y-3 font-mono">
+            <h4 className="text-xs font-bold uppercase text-white tracking-wider font-sans">Product</h4>
+            <ul className="space-y-2">
+              <li><Link to="/providers" className="hover:text-white transition-colors">Tools &amp; Providers</Link></li>
+              <li><Link to="/keys" className="hover:text-white transition-colors">BYOK Vault</Link></li>
+              <li><Link to="/providers" className="hover:text-white transition-colors">Multi-Key Failover</Link></li>
+              <li><Link to="/billing" className="hover:text-white transition-colors">Pricing &amp; Limits</Link></li>
+            </ul>
+          </div>
+
+          {/* Col 3 */}
+          <div className="space-y-3 font-mono">
+            <h4 className="text-xs font-bold uppercase text-white tracking-wider font-sans">Documentation</h4>
+            <ul className="space-y-2">
+              <li><Link to="/playground" className="hover:text-white transition-colors">Quickstart Guide</Link></li>
+              <li><Link to="/providers" className="hover:text-white transition-colors">API Reference</Link></li>
+              <li><Link to="/playground" className="hover:text-white transition-colors">Client SDKs</Link></li>
+              <li><Link to="/providers" className="hover:text-white transition-colors">Security Spec</Link></li>
+            </ul>
+          </div>
+
+          {/* Col 4 */}
+          <div className="space-y-3 font-mono">
+            <h4 className="text-xs font-bold uppercase text-white tracking-wider font-sans">Company &amp; Legal</h4>
+            <ul className="space-y-2">
+              <li><Link to="/dashboard" className="hover:text-white transition-colors">About</Link></li>
+              <li><a href="https://status.litedaemon.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors inline-flex items-center gap-1">Status Page <ArrowUpRight className="w-3 h-3 text-zinc-600" /></a></li>
+              <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><a href="https://discord.gg/litedaemon" target="_blank" rel="noreferrer" className="hover:text-white transition-colors inline-flex items-center gap-1">Discord Community <ArrowUpRight className="w-3 h-3 text-zinc-600" /></a></li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+
     </div>
   );
 };

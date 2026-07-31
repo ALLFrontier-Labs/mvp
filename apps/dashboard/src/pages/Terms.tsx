@@ -48,10 +48,10 @@ export const Terms: React.FC = () => {
             </div>
             <div className="space-y-3 text-xs font-mono text-zinc-400">
               <p className="text-zinc-300">
-                • <strong>Free Monthly Allowance:</strong> Every account receives 1,000 free BYOK request proxies per UTC calendar month. Allowance resets automatically on the 1st of every month at 00:00 UTC.
+                • <strong>Free Monthly Allowance:</strong> Every account receives 100 free BYOK request proxies per UTC calendar month. Allowance resets automatically on the 1st of every month at 00:00 UTC.
               </p>
               <p className="text-zinc-300">
-                • <strong>Overage Routing Fee:</strong> Requests exceeding 1,000 calls per month incur a 5% micro-fee based on standard provider list prices.
+                • <strong>Overage Routing Fee:</strong> Requests exceeding 100 calls per month incur a 5% micro-fee based on standard provider list prices.
               </p>
               <p className="text-zinc-300">
                 • <strong>Prepaid Deposits:</strong> Wallet top-ups require a minimum deposit of $5.00 USD processed via Lemon Squeezy. Prepaid balances are non-refundable and do not expire.

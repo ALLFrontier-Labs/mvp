@@ -71,7 +71,7 @@ export const TOOL_REGISTRY: Record<string, ToolDetail> = {
     faqs: [
       {
         question: 'How does LiteDaemon optimize Serper API calls?',
-        answer: 'LiteDaemon automatically handles key rotation across your configured BYOK keys to prevent 429 quota limits, while micro-debiting fees from your wallet after 1,000 free monthly requests.',
+        answer: 'LiteDaemon automatically handles key rotation across your configured BYOK keys to prevent 429 quota limits, while micro-debiting fees from your wallet after 100 free monthly requests.',
       },
       {
         question: 'Is query data stored?',

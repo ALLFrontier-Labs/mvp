@@ -166,12 +166,12 @@ export const Pricing: React.FC = () => {
                 {/* BYOK Key Markup */}
                 <tr>
                   <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>BYOK Connected Key Fee</td>
-                  <td className="p-5 text-center font-bold text-emerald-400">0% Gateway Fee</td>
+                  <td className="p-5 text-center font-bold text-emerald-400">0% (up to 100 calls/mo)</td>
                   <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--accent)' }}>
-                    0% Gateway Fee
+                    5% routing fee per call (post 100 calls)
                   </td>
                   <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    0% Gateway Fee
+                    Volume Fee Discounts
                   </td>
                 </tr>
 

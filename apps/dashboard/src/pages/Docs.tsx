@@ -479,7 +479,7 @@ console.log(result);`,
       />
 
       <Callout type="warning" title="Free Tier Limits">
-        The first <strong>1,000 requests/month</strong> are completely free. After that, a 5% routing fee
+        The first <strong>100 requests/month</strong> are completely free. After that, a 5% routing fee
         applies per request. Top up at <Link to="/billing" className="underline" style={{ color: '#ccff00' }}>/billing</Link>.
       </Callout>
 
@@ -583,7 +583,7 @@ console.log(result);`,
       <H1>Design Principles</H1>
       <P>The core design decisions behind the LiteDaemon gateway.</P>
       <H2>1. BYOK First</H2>
-      <P>You own your API keys. LiteDaemon never charges provider-side fees — you pay the provider directly via your vaulted keys. We charge only a small 5% routing fee after 1,000 free requests.</P>
+      <P>You own your API keys. LiteDaemon never charges provider-side fees — you pay the provider directly via your vaulted keys. We charge only a small 5% routing fee after 100 free requests.</P>
       <H2>2. Zero Persistence</H2>
       <P>Payloads are never stored. No prompt history. No tool call logs. Ephemeral proxying by design.</P>
       <H2>3. Drop-In Compatible</H2>
@@ -1105,7 +1105,7 @@ res = requests.post(
       <div className="my-6 space-y-2">
         {[
           { label: 'Monthly Base Fee',     value: '$0 / month',           highlight: true },
-          { label: 'Free Requests',        value: '1,000 requests/month', highlight: true },
+          { label: 'Free Requests',        value: '100 requests/month',   highlight: true },
           { label: 'Free Period Reset',    value: '1st of each month, 00:00 UTC' },
           { label: 'Overage Routing Fee',  value: '5% of provider list price' },
           { label: 'Minimum Top-Up',       value: '$5.00 USD' },
@@ -1129,12 +1129,12 @@ res = requests.post(
 
       <Callout type="tip" title="Example Cost">
         If you make 5,000 Tavily searches in a month and Tavily charges $0.01/search,
-        LiteDaemon's fee = 4,000 × $0.01 × 5% = <strong>$2.00</strong> total routing fee.
+        LiteDaemon's fee = 4,900 × $0.01 × 5% = <strong>$2.45</strong> total routing fee.
       </Callout>
 
       <H2>Wallet Balance</H2>
       <P>Top up your wallet at <Link to="/billing" className="underline" style={{ color: '#ccff00' }}>/billing</Link>.
-        Minimum deposit is $5. Fees are deducted per request after the 1,000 free requests.</P>
+        Minimum deposit is $5. Fees are deducted per request after the 100 free requests.</P>
     </div>
   ),
 

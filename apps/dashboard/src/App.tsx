@@ -14,6 +14,7 @@ import { Playground }  from './pages/Playground';
 import { Docs }        from './pages/Docs';
 import { Privacy }     from './pages/Privacy';
 import { Terms }       from './pages/Terms';
+import { ToolDetailPage } from './pages/ToolDetailPage';
 import { getStoredApiKey } from './lib/api';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -47,6 +48,8 @@ export const App: React.FC = () => {
             <Route path="/docs/*" element={<Docs />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/tools/*" element={<ToolDetailPage />} />
+            <Route path="/tool/*" element={<ToolDetailPage />} />
 
             <Route
               path="/dashboard"

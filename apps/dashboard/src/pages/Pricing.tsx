@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Check, X, ChevronDown, ArrowRight, HelpCircle,
-  Zap, ShieldCheck, CreditCard, Sparkles
+  Check, X, ChevronDown, Sparkles
 } from 'lucide-react';
+import { getStoredApiKey } from '../lib/api';
 
 interface FAQItem {
   q: string;
@@ -15,16 +15,16 @@ const FAQS: { category: string; items: FAQItem[] }[] = [
     category: 'Billing and Pricing',
     items: [
       {
-        q: 'How are tool executions billed?',
-        a: 'Tool calls are billed on a pay-as-you-go basis past your monthly free allowance. When you connect your own provider API keys (BYOK), LiteDaemon charges 0% gateway markup on your execution volume.',
+        q: 'How does the BYOK (Bring Your Own Key) model work?',
+        a: 'LiteDaemon is a 100% BYOK tool engine gateway. You add your own API keys for Tavily, E2B, Firecrawl, Exa, Browserbase, or any of our 36+ supported tools into your encrypted vault. All tool calls route through your keys with 0% gateway fee markup.',
       },
       {
-        q: 'Do you mark up provider pricing?',
-        a: 'No! When using your own connected BYOK keys for Tavily, E2B, Firecrawl, Exa, Browserbase, or any of our 36+ supported tools, LiteDaemon passes through 100% of native provider rates with zero fee markup up to $25,000/mo list price execution.',
+        q: 'Can I access all 36+ tool engines on the Free Tier?',
+        a: 'Yes! Every developer gets full access to all 36+ search, scraping, browser, code sandbox, document parsing, and embedding engines from day one by bringing their own provider API key.',
       },
       {
-        q: 'How is billing structured for BYOK vs Pay-As-You-Go vs Enterprise?',
-        a: 'Free tier includes 1,000 monthly calls across 10 free tool engines. Pay-As-You-Go grants full access to all 36+ production engines with automated multi-key failover and 0% markup. Enterprise includes custom volume commitments, dedicated proxy pools, and 99.99% uptime SLAs.',
+        q: 'Do you mark up provider execution costs?',
+        a: 'No! When routing requests via your connected BYOK keys, LiteDaemon passes through native provider rates with zero fee markup up to $25,000/mo list price execution.',
       },
       {
         q: 'Are failed or fallback attempts billed?',
@@ -53,7 +53,7 @@ const FAQS: { category: string; items: FAQItem[] }[] = [
     category: 'Reliability and Uptime',
     items: [
       {
-        q: 'What happens if a provider experience an outage or rate limit?',
+        q: 'What happens if a provider experiences an outage or rate limit?',
         a: 'Our intelligent router detects upstream errors in milliseconds and seamlessly rotates to your backup BYOK key or fallback provider adapter within the same HTTP request lifecycle.',
       },
       {
@@ -66,6 +66,8 @@ const FAQS: { category: string; items: FAQItem[] }[] = [
 
 export const Pricing: React.FC = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<string | null>('0-0');
+  const apiKey = getStoredApiKey();
+  const ctaRoute = apiKey ? '/keys' : '/auth';
 
   const toggleFaq = (key: string) => {
     setOpenFaqIndex((prev) => (prev === key ? null : key));
@@ -85,7 +87,7 @@ export const Pricing: React.FC = () => {
 
         <div className="flex items-center justify-center gap-4 pt-4 text-sm font-sans">
           <Link
-            to="/auth"
+            to={ctaRoute}
             className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-sm min-w-[150px] text-center"
             style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
           >
@@ -142,7 +144,7 @@ export const Pricing: React.FC = () => {
                 {/* Platform Fees */}
                 <tr>
                   <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Platform Fees</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>N/A</td>
+                  <td className="p-5 text-center font-bold text-emerald-400">0% BYOK Gateway Fee</td>
                   <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--accent)' }}>
                     0% BYOK Markup
                   </td>
@@ -159,12 +161,12 @@ export const Pricing: React.FC = () => {
                       Explore 36+ engines &rarr;
                     </Link>
                   </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>10+ free tools</td>
+                  <td className="p-5 text-center font-semibold" style={{ color: 'var(--text-primary)' }}>36+ engines (BYOK)</td>
                   <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
-                    36+ engines
+                    36+ engines (BYOK)
                   </td>
                   <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    36+ engines
+                    36+ engines (Dedicated Pools)
                   </td>
                 </tr>
 
@@ -176,12 +178,12 @@ export const Pricing: React.FC = () => {
                       Explore providers &rarr;
                     </Link>
                   </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>4 free providers</td>
+                  <td className="p-5 text-center font-semibold" style={{ color: 'var(--text-primary)' }}>36+ connected providers</td>
                   <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
-                    36+ providers
+                    36+ connected providers
                   </td>
                   <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    36+ providers
+                    36+ connected providers
                   </td>
                 </tr>
 
@@ -214,9 +216,13 @@ export const Pricing: React.FC = () => {
                       Learn more &rarr;
                     </Link>
                   </td>
-                  <td className="p-5 text-center"><X className="w-4 h-4 mx-auto text-zinc-600" /></td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
+                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>Single Key / Provider</td>
+                  <td className="p-5 text-center font-semibold text-emerald-400" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}>
+                    Multi-Key Rotation Pool
+                  </td>
+                  <td className="p-5 text-center font-semibold text-emerald-400">
+                    Multi-Key Rotation Pool + Priority
+                  </td>
                 </tr>
 
                 {/* Budgets & Spend Controls */}
@@ -238,7 +244,7 @@ export const Pricing: React.FC = () => {
                 {/* Payment Options */}
                 <tr>
                   <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Payment Options</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>N/A</td>
+                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>N/A (Free BYOK)</td>
                   <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>Credit card, crypto & more</td>
                   <td className="p-5 text-center font-medium" style={{ color: 'var(--text-primary)' }}>Invoicing options</td>
                 </tr>
@@ -251,7 +257,7 @@ export const Pricing: React.FC = () => {
                       Learn more &rarr;
                     </Link>
                   </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}><X className="w-4 h-4 mx-auto text-zinc-600" /></td>
+                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>1,000 calls / month free</td>
                   <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
                     $25,000 list price inference / month with no fees
                   </td>
@@ -263,8 +269,8 @@ export const Pricing: React.FC = () => {
                 {/* Rate Limits */}
                 <tr>
                   <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Rate Limits</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>50 reqs/day</td>
-                  <td className="p-5 text-center font-medium" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>High global limits</td>
+                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>100 reqs/min</td>
+                  <td className="p-5 text-center font-medium" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>10,000 reqs/min</td>
                   <td className="p-5 text-center font-medium" style={{ color: 'var(--text-primary)' }}>Optional dedicated limits</td>
                 </tr>
 
@@ -281,7 +287,7 @@ export const Pricing: React.FC = () => {
                   <td className="p-5" />
                   <td className="p-5 text-center">
                     <Link
-                      to="/auth"
+                      to={ctaRoute}
                       className="inline-block px-4 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 transition-opacity"
                       style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                     >
@@ -290,11 +296,11 @@ export const Pricing: React.FC = () => {
                   </td>
                   <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}>
                     <Link
-                      to="/billing"
+                      to={ctaRoute}
                       className="inline-block px-4 py-2.5 rounded-xl text-xs font-extrabold shadow-md hover:opacity-90 transition-opacity"
                       style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
                     >
-                      Buy Credits
+                      Connect BYOK Keys
                     </Link>
                   </td>
                   <td className="p-5 text-center">
@@ -387,7 +393,7 @@ export const Pricing: React.FC = () => {
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
-              to="/auth"
+              to={ctaRoute}
               className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-md min-w-[160px]"
               style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
             >

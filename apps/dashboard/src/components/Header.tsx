@@ -65,29 +65,16 @@ export const Header: React.FC = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-3 text-sm">
-            {apiKey ? (
-              <>
-                <ProfileDropdown onLogout={handleLogout} balanceUsd={null} />
-                <Link
-                  to="/keys"
-                  className="bg-[#ccff00] text-black font-semibold px-3.5 py-1.5 rounded-md text-xs hover:bg-yellow-300 transition-colors"
-                >
-                  Get API Key
-                </Link>
-              </>
+          <div className="flex items-center gap-3 text-xs font-medium">
+            {!apiKey ? (
+              <Link
+                to="/auth"
+                className="px-3.5 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-semibold text-xs transition-colors"
+              >
+                Sign Up
+              </Link>
             ) : (
-              <>
-                <Link to="/auth" className="text-zinc-300 hover:text-white font-medium text-xs">
-                  Sign In
-                </Link>
-                <Link
-                  to="/auth"
-                  className="bg-[#ccff00] text-black font-semibold px-3.5 py-1.5 rounded-md text-xs hover:bg-yellow-300 transition-colors"
-                >
-                  Get API Key
-                </Link>
-              </>
+              <ProfileDropdown onLogout={handleLogout} />
             )}
           </div>
         </div>

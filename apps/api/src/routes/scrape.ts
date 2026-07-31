@@ -3,6 +3,7 @@ import { pool }             from '../db/client';
 import { debitLedger, InsufficientFundsError } from '../services/ledger';
 import { checkRateLimit }   from '../services/rateLimit';
 import { autoRun }          from '../services/autoRoute';
+import { preCheckAndEvaluateByok } from '../services/byokPricing';
 
 export async function scrapeRoute(app: FastifyInstance) {
   app.post('/v1/scrape', async (req, reply) => {
@@ -19,38 +20,35 @@ export async function scrapeRoute(app: FastifyInstance) {
       return reply.code(429).send({ error: 'rate_limit_exceeded', retry_after: rl.resetAt - Math.floor(Date.now() / 1000) });
     }
 
-    // Pre-check wallet balance prior to proxying (Call #1 Fee Engine)
-    const userRes = await pool.query('SELECT balance_usd FROM users WHERE id = $1', [user.id]);
-    const currentBalance = parseFloat(userRes.rows[0]?.balance_usd || '0');
-    if (currentBalance <= 0) {
-      return reply.code(402).send({
-        error: 'insufficient_balance',
-        message: 'Insufficient prepaid balance to cover 5% BYOK gateway routing fee. Please top up your wallet.',
-        current_balance_usd: currentBalance,
-      });
+    // Pre-check BYOK monthly allowance & wallet balance
+    const targetProvider = providerId === 'auto' ? 'firecrawl' : providerId;
+    const byokEval = await preCheckAndEvaluateByok(user.id, targetProvider);
+    if (!byokEval.allowed && byokEval.errorResponse) {
+      return reply.code(byokEval.errorResponse.statusCode).send(byokEval.errorResponse.payload);
     }
 
     try {
-      const { result, provider, charge, duration_ms, routedVia, attemptsCount } = await autoRun('scrape', params, user.id, overrideKey);
+      const { result, provider, charge: baseCharge, duration_ms, routedVia, attemptsCount } = await autoRun('scrape', params, user.id, overrideKey);
+      const finalCharge = byokEval.isFreeCall ? 0 : baseCharge;
 
       reply.header('X-LiteDaemon-Routed-Via',       routedVia);
       reply.header('X-LiteDaemon-Key-Attempts',     attemptsCount);
-      reply.header('X-LiteDaemon-Wallet-Deducted',  `$${charge.toFixed(6)}`);
+      reply.header('X-LiteDaemon-Wallet-Deducted',  `$${finalCharge.toFixed(6)}`);
 
       // Record job and debit gateway fee
       const jr = await pool.query(
         `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd, is_byok)
          VALUES ($1, $2, 'scrape', $3, 'completed', $4, true) RETURNING id`,
-        [user.id, provider.id, JSON.stringify(params), charge]
+        [user.id, provider.id, JSON.stringify(params), finalCharge]
       );
       const jobId = jr.rows[0].id;
 
-      if (charge > 0) {
+      if (finalCharge > 0) {
         try {
-          await debitLedger(user.id, charge, provider.id, jobId, `${provider.name} scrape gateway fee — ${params.url || 'request'}`);
+          await debitLedger(user.id, finalCharge, provider.id, jobId, `${provider.name} scrape gateway fee — ${params.url || 'request'}`);
         } catch (err: any) {
           if (err instanceof InsufficientFundsError) {
-            return reply.code(402).send({ error: 'insufficient_balance', message: err.message, required_usd: charge });
+            return reply.code(402).send({ error: 'insufficient_balance', message: err.message, required_usd: finalCharge });
           }
         }
       }
@@ -61,7 +59,7 @@ export async function scrapeRoute(app: FastifyInstance) {
         status: 'completed',
         provider: provider.id,
         result,
-        cost_usd: charge,
+        cost_usd: finalCharge,
         duration_ms,
         routed_via: routedVia,
       });

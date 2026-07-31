@@ -357,31 +357,114 @@ export const Landing: React.FC = () => {
         </p>
       </section>
 
-      {/* ── Pricing Transparency ────────────────────────────────────────────── */}
+      {/* ── OpenRouter-Style BYOK Pricing Section ──────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="rounded-2xl bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-500/20 p-8 md:p-12 shadow-2xl">
-          <div className="max-w-2xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-              <Shield className="w-3.5 h-3.5" />
-              Transparent 5% BYOK Model
+        <div className="text-center mb-12 space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+            <Shield className="w-3.5 h-3.5" />
+            100% Pay-As-You-Go • No Upfront Subscriptions
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+            Simple, Transparent BYOK Gateway Pricing
+          </h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
+            Connect your provider keys and route agent executions with zero monthly subscription fees.
+          </p>
+        </div>
+
+        {/* Pricing Card & Guarantees Container */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          
+          {/* Main OpenRouter-Style Card */}
+          <div className="rounded-2xl bg-gradient-to-b from-[#0d1117] to-[#121620] border border-emerald-500/30 p-8 space-y-6 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-500/20 border-b border-l border-emerald-500/30 text-emerald-300 font-mono text-[10px] font-bold uppercase rounded-bl-xl">
+              1,000 Free Requests / Mo
             </div>
-            <h2 className="text-3xl font-bold text-white">Flat 5% Platform Fee</h2>
-            <p className="text-slate-400 leading-relaxed text-sm">
-              LiteDaemon operates as a pure BYOK infrastructure router. Requests use your own direct provider credentials. Pay a flat 5% platform fee based on standard list prices from call #1.
-            </p>
-            <div className="grid grid-cols-3 gap-4 text-center font-mono text-xs pt-4">
-              {[
-                { label: '0% Wholesale Markup', value: '0%', color: 'text-emerald-400' },
-                { label: '5% BYOK Micro-Fee', value: '5%', color: 'text-emerald-400' },
-                { label: 'Monthly Commitment', value: '$0', color: 'text-emerald-400' },
-              ].map(s => (
-                <div key={s.label} className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/10">
-                  <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>
-                  <div className="text-slate-500 text-[10px] mt-1">{s.label}</div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-mono uppercase text-slate-500 tracking-wider">Base Monthly Subscription</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-5xl font-extrabold text-white font-mono">$0</span>
+                  <span className="text-slate-400 text-sm font-mono">/ month</span>
                 </div>
-              ))}
+              </div>
+
+              <div className="space-y-3 pt-4 border-t border-slate-800 font-mono text-xs">
+                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <span className="text-slate-300 font-semibold">Free Allowance</span>
+                  <span className="text-emerald-400 font-bold">1,000 Free Requests/mo</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <span className="text-slate-300 font-semibold">Allowance Reset</span>
+                  <span className="text-slate-400">1st of Month (00:00 UTC)</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <span className="text-slate-300 font-semibold">Overage Fee (Post 1k calls)</span>
+                  <span className="text-teal-400 font-bold">5% BYOK List-Price Fee</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <span className="text-slate-300 font-semibold">Min Wallet Top-Up</span>
+                  <span className="text-white font-bold">$5.00 USD</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <Link
+                to="/auth"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+              >
+                <Zap className="w-4 h-4" />
+                Start with 1,000 Free BYOK Calls
+              </Link>
             </div>
           </div>
+
+          {/* High-Trust Guarantees Checklist */}
+          <div className="rounded-2xl bg-[#0d1117] border border-slate-800 p-8 flex flex-col justify-between space-y-6 shadow-xl">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">High-Trust Gateway Guarantees</h3>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Everything you need to run high-concurrency autonomous agent workflows safely.
+              </p>
+            </div>
+
+            <ul className="space-y-4 text-xs font-sans">
+              {[
+                {
+                  title: 'Zero monthly lock-in',
+                  desc: 'Pay only for what you proxy past 1,000 free monthly calls.',
+                },
+                {
+                  title: 'Ephemeral memory-only routing',
+                  desc: 'Zero payload, prompt, or web scraping result logging.',
+                },
+                {
+                  title: 'Multi-key rotation pools',
+                  desc: 'Automated 429 rate-limit failovers across prioritized & fallback keys.',
+                },
+                {
+                  title: 'Instant framework integration',
+                  desc: 'Works out-of-the-box with LangChain, CrewAI, AutoGen, and n8n.',
+                },
+              ].map((g, idx) => (
+                <li key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-900/40 border border-slate-800/80">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-white block">{g.title}</span>
+                    <span className="text-slate-400 text-xs">{g.desc}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pt-2 text-slate-500 font-mono text-[11px] flex items-center justify-between border-t border-slate-800/80">
+              <span>LemonSqueezy Wallet Top-Up</span>
+              <span className="text-emerald-400 font-bold">100% BYOK Execution</span>
+            </div>
+          </div>
+
         </div>
       </section>
 

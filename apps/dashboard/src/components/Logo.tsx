@@ -1,14 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Zap } from 'lucide-react';
 
 export const Logo: React.FC = () => {
   return (
-    <Link to="/" className="flex items-center gap-2 group">
-      <div className="w-6 h-6 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-        <Zap className="w-3.5 h-3.5 text-emerald-400" />
-      </div>
-      <span className="text-white font-bold tracking-tight text-lg font-sans">
+    <Link to="/" className="flex items-center group">
+      <svg
+        className="w-6 h-6 text-[#ccff00] drop-shadow-[0_0_8px_rgba(204,255,0,0.6)] transition-transform group-hover:scale-105"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" />
+      </svg>
+      <span className="font-bold text-white tracking-tight text-lg ml-2 font-sans">
         LiteDaemon
       </span>
     </Link>

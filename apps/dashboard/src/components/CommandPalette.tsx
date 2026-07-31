@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Zap,
-  Lock,
   Globe,
   Code2,
   FileText,
@@ -13,14 +12,12 @@ import {
   History,
   FlaskConical,
   Layers,
-  ArrowRight,
-  X
+  ChevronRight
 } from 'lucide-react';
 
 interface CommandItem {
   id: string;
   title: string;
-  subtitle: string;
   category: 'Tools' | 'Vault & Settings' | 'Docs & Features';
   icon: React.ElementType;
   path: string;
@@ -28,21 +25,21 @@ interface CommandItem {
 
 const COMMAND_ITEMS: CommandItem[] = [
   // Tools
-  { id: 'tool-scrape',    title: 'Firecrawl Web Scraper',     subtitle: '/v1/scrape — Extract clean markdown & HTML', category: 'Tools',            icon: Globe,        path: '/playground' },
-  { id: 'tool-search',    title: 'Tavily Search API',         subtitle: '/v1/search — Unified web search results',     category: 'Tools',            icon: Search,       path: '/playground' },
-  { id: 'tool-browser',   title: 'Browserbase CDP Session',   subtitle: '/v1/browser — Remote browser execution',      category: 'Tools',            icon: Zap,          path: '/playground' },
-  { id: 'tool-execute',   title: 'E2B Sandbox Execution',     subtitle: '/v1/execute — Secure python/js execution',   category: 'Tools',            icon: Code2,        path: '/playground' },
-  { id: 'tool-document',  title: 'LlamaParse Document',       subtitle: '/v1/document — PDF & document parsing',      category: 'Tools',            icon: FileText,     path: '/playground' },
+  { id: 'tool-scrape',    title: 'Firecrawl Web Scraper',     category: 'Tools',            icon: Globe,        path: '/playground' },
+  { id: 'tool-search',    title: 'Tavily Search API',         category: 'Tools',            icon: Search,       path: '/playground' },
+  { id: 'tool-browser',   title: 'Browserbase CDP Session',   category: 'Tools',            icon: Zap,          path: '/playground' },
+  { id: 'tool-execute',   title: 'E2B Sandbox Execution',     category: 'Tools',            icon: Code2,        path: '/playground' },
+  { id: 'tool-document',  title: 'LlamaParse Document',       category: 'Tools',            icon: FileText,     path: '/playground' },
 
   // Vault & Settings
-  { id: 'vault-keys',     title: 'BYOK Key Vault',            subtitle: 'Manage prioritized & fallback API keys',       category: 'Vault & Settings', icon: Key,          path: '/keys' },
-  { id: 'vault-billing',  title: 'Credits & Wallet Balance',  subtitle: 'Prepaid wallet top-up & LemonSqueezy billing',  category: 'Vault & Settings', icon: CreditCard,   path: '/billing' },
-  { id: 'vault-settings', title: 'Account Settings',          subtitle: 'Workspace preferences & security settings',    category: 'Vault & Settings', icon: Settings,     path: '/settings' },
+  { id: 'vault-keys',     title: 'BYOK Key Vault',            category: 'Vault & Settings', icon: Key,          path: '/keys' },
+  { id: 'vault-billing',  title: 'Credits & Wallet Balance',  category: 'Vault & Settings', icon: CreditCard,   path: '/billing' },
+  { id: 'vault-settings', title: 'Account Settings',          category: 'Vault & Settings', icon: Settings,     path: '/settings' },
 
   // Docs & Features
-  { id: 'docs-quickstart',title: 'Interactive Playground',    subtitle: 'Test 30+ tools live in browser',              category: 'Docs & Features',  icon: FlaskConical, path: '/playground' },
-  { id: 'docs-catalog',   title: 'Tool Provider Catalog',     subtitle: 'Browse 30+ supported tool adapters',           category: 'Docs & Features',  icon: Layers,       path: '/providers' },
-  { id: 'docs-logs',      title: 'Execution Logs',            subtitle: 'View detailed gateway request history',        category: 'Docs & Features',  icon: History,      path: '/jobs' },
+  { id: 'docs-quickstart',title: 'Interactive Playground',    category: 'Docs & Features',  icon: FlaskConical, path: '/playground' },
+  { id: 'docs-catalog',   title: 'Tool Provider Catalog',     category: 'Docs & Features',  icon: Layers,       path: '/providers' },
+  { id: 'docs-logs',      title: 'Execution Logs',            category: 'Docs & Features',  icon: History,      path: '/jobs' },
 ];
 
 interface CommandPaletteProps {
@@ -57,7 +54,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
   const filteredItems = COMMAND_ITEMS.filter((item) =>
     item.title.toLowerCase().includes(query.toLowerCase()) ||
-    item.subtitle.toLowerCase().includes(query.toLowerCase()) ||
     item.category.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -70,10 +66,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         if (isOpen) onClose();
-        else {
-          setQuery('');
-          // Handled externally or parent state
-        }
       } else if (e.key === 'Escape' && isOpen) {
         onClose();
       } else if (isOpen) {
@@ -107,35 +99,30 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 px-4">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 px-4 font-sans">
       {/* Click outside to close */}
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-xl rounded-2xl bg-[#09090b] border border-zinc-800 shadow-2xl overflow-hidden z-10 font-sans text-slate-100">
+      <div className="relative w-full max-w-xl rounded-xl bg-[#09090b] border border-zinc-800 shadow-2xl overflow-hidden z-10 text-slate-100">
         
-        {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 border-b border-zinc-800/80 bg-zinc-950">
+        {/* A. TOP INPUT BAR */}
+        <div className="flex items-center px-4 py-3 border-b border-zinc-800/80 bg-[#09090b]">
           <Search className="w-4 h-4 text-zinc-400 mr-3 shrink-0" />
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command or search tools, keys, docs..."
+            placeholder="Search..."
             className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none font-sans"
           />
-          {query && (
-            <button onClick={() => setQuery('')} className="p-1 text-zinc-500 hover:text-white mr-1">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-            ESC
+          <span className="text-zinc-500 text-xs px-1.5 py-0.5 rounded bg-zinc-800/60 font-mono shrink-0 ml-2">
+            esc
           </span>
         </div>
 
-        {/* Search Results List */}
-        <div className="max-h-80 overflow-y-auto p-2 space-y-4 font-sans text-xs">
+        {/* B. COMPACT ITEM LIST (STRIPPED DESCRIPTIONS) */}
+        <div className="max-h-80 overflow-y-auto p-2 space-y-3 text-xs">
           {filteredItems.length === 0 ? (
             <div className="p-8 text-center text-zinc-500 font-mono">
               No matching commands or tools found.
@@ -146,7 +133,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
               if (catItems.length === 0) return null;
 
               return (
-                <div key={cat} className="space-y-1">
+                <div key={cat} className="space-y-0.5">
                   <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
                     {cat}
                   </div>
@@ -163,22 +150,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                           onClose();
                         }}
                         onMouseEnter={() => setSelectedIndex(globalIdx)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all text-left ${
+                        className={`w-full py-2.5 px-3 rounded-lg flex items-center justify-between cursor-pointer transition-colors text-left ${
                           isSelected
-                            ? 'bg-zinc-800 text-white border border-emerald-500/40'
-                            : 'text-zinc-300 hover:bg-zinc-900/80 border border-transparent'
+                            ? 'bg-zinc-800 text-white font-medium'
+                            : 'text-zinc-300 hover:bg-zinc-900/80'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg border ${isSelected ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-white text-xs">{item.title}</p>
-                            <p className="text-[11px] text-zinc-400 font-mono">{item.subtitle}</p>
-                          </div>
+                        <div className="flex items-center gap-2.5">
+                          <Icon className={`w-4 h-4 ${isSelected ? 'text-[#ccff00]' : 'text-zinc-400'}`} />
+                          <span className="text-xs">{item.title}</span>
                         </div>
-                        <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-emerald-400' : 'text-zinc-600'}`} />
+                        <ChevronRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#ccff00]' : 'text-zinc-600'}`} />
                       </button>
                     );
                   })}
@@ -188,14 +170,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           )}
         </div>
 
-        {/* Keyboard Navigation Footer */}
-        <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-950 border-t border-zinc-800/80 font-mono text-[10px] text-zinc-500">
-          <div className="flex items-center gap-3">
-            <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">↑↓</kbd> Navigate</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">↵</kbd> Select</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">esc</kbd> Close</span>
+        {/* C. CLEAN FOOTER BAR (FIXED SHORTCUTS) */}
+        <div className="bg-[#09090b] border-t border-zinc-800/80 px-3 py-2 text-xs flex items-center justify-between text-zinc-400 font-sans">
+          <div className="flex items-center">
+            <span className="flex items-center gap-1.5">
+              <kbd className="bg-zinc-800 text-zinc-300 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono">↑↓</kbd> Navigate
+            </span>
+            <span className="flex items-center gap-1.5 ml-3">
+              <kbd className="bg-zinc-800 text-zinc-300 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono">↵</kbd> Select
+            </span>
           </div>
-          <span className="text-emerald-400 font-semibold">LiteDaemon ⌘K</span>
+
+          <kbd className="bg-zinc-800 text-zinc-300 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700 font-mono">
+            ⌘ K
+          </kbd>
         </div>
 
       </div>

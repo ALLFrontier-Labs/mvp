@@ -17,7 +17,6 @@ import { Terms }         from './pages/Terms';
 import { ToolDetailPage } from './pages/ToolDetailPage';
 import { ComparePage }   from './pages/ComparePage';
 import { Rankings }      from './pages/Rankings';
-import { Apps }          from './pages/Apps';
 import { getStoredApiKey } from './lib/api';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,7 +50,6 @@ export const App: React.FC = () => {
             <Route path="/tool/*"    element={<ToolDetailPage />} />
             <Route path="/compare/*" element={<ComparePage />} />
             <Route path="/rankings"  element={<Rankings />} />
-            <Route path="/apps"      element={<Apps />} />
             <Route path="/docs"      element={<Docs />} />
             <Route path="/docs/*"    element={<Docs />} />
             <Route path="/privacy"   element={<Privacy />} />

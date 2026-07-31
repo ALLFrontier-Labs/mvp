@@ -22,7 +22,6 @@ export const Header: React.FC = () => {
     { label: 'Tools',      path: '/providers' },
     { label: 'Playground', path: '/playground' },
     { label: 'Rankings',   path: '/rankings' },
-    { label: 'Apps',       path: '/apps' },
     { label: 'Docs',       path: '/docs' },
   ];
 

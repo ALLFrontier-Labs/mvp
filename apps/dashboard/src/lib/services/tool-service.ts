@@ -543,3 +543,29 @@ export function getRelatedTools(slug: string): ToolDetail[] {
 export function getAllToolSlugs(): string[] {
   return Object.keys(TOOL_REGISTRY);
 }
+
+export interface ComparePreset {
+  title: string;
+  description: string;
+  toolSlugs: string[];
+}
+
+export function getComparePresetsForTool(primaryTool: ToolDetail): ComparePreset[] {
+  return [
+    {
+      title: 'Category Leaders',
+      description: 'Top-rated tools in ' + primaryTool.category,
+      toolSlugs: [primaryTool.slug, ...primaryTool.relatedToolsSlugs].slice(0, 3)
+    },
+    {
+      title: 'Most Affordable',
+      description: 'Lowest cost per 1k executions',
+      toolSlugs: [primaryTool.slug, 'serper/google-search', 'tavily/web-search'].slice(0, 3)
+    },
+    {
+      title: 'Fastest Latency',
+      description: 'Lowest TTFT and round-trip execution',
+      toolSlugs: [primaryTool.slug, 'steel/browser-automation', 'daytona/code-sandbox'].slice(0, 3)
+    }
+  ];
+}

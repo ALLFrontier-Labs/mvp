@@ -240,8 +240,6 @@ export const Landing: React.FC = () => {
 
       {/* ── 3. FEATURED TOOLS & BENTO GRID ──────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-10 space-y-8">
-        
-        {/* Section Header Standard */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center gap-1.5 cursor-pointer font-sans" style={{ color: 'var(--text-primary)' }}>
             Featured Tools <ChevronRight className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
@@ -251,7 +249,6 @@ export const Landing: React.FC = () => {
           </Link>
         </div>
 
-        {/* 2x2 Bento Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-6 rounded-2xl border space-y-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
             <h3 className="text-base font-semibold font-sans" style={{ color: 'var(--text-primary)' }}>One API for Any Tool</h3>
@@ -296,7 +293,6 @@ export const Landing: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Step 1: Signup */}
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -308,7 +304,6 @@ export const Landing: React.FC = () => {
               </p>
             </div>
 
-            {/* User outline & Social Logos Container */}
             <div className="pt-2 space-y-3">
               <div className="pl-1" style={{ color: 'var(--text-muted)' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -335,7 +330,6 @@ export const Landing: React.FC = () => {
             </div>
           </div>
 
-          {/* Step 2: Connect Provider Keys (BYOK) */}
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -367,7 +361,6 @@ export const Landing: React.FC = () => {
             </div>
           </div>
 
-          {/* Step 3: Get Unified Key */}
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -471,6 +464,41 @@ export const Landing: React.FC = () => {
               ))}
             </div>
           </pre>
+        </div>
+      </section>
+
+      {/* ── 6. FEATURED ANNOUNCEMENT CARD (OpenRouter Parity) ─────────────── */}
+      <section className="max-w-4xl mx-auto px-6 py-16">
+        <div 
+          className="p-8 rounded-3xl border flex flex-col md:flex-row items-center gap-8 shadow-xl transition-all"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          {/* Branded Gateway Artwork Graphic */}
+          <div className="shrink-0 w-32 h-32 rounded-2xl bg-gradient-to-tr from-purple-900/60 via-indigo-900/40 to-emerald-900/40 border border-purple-500/30 flex items-center justify-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-purple-500/10 blur-xl group-hover:bg-purple-500/20 transition-all" />
+            <svg className="w-16 h-16 text-purple-400 transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+
+          {/* Announcement Copy */}
+          <div className="space-y-3 flex-1 text-left">
+            <h3 className="text-xl font-bold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              Unified Tool Engine Gateway on LiteDaemon
+            </h3>
+            <p className="text-xs leading-relaxed max-w-xl font-sans" style={{ color: 'var(--text-secondary)' }}>
+              Tool executions run through the dedicated <code className="px-1.5 py-0.5 rounded font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent)' }}>/v1/scrape</code>, <code className="px-1.5 py-0.5 rounded font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent)' }}>/v1/search</code>, and <code className="px-1.5 py-0.5 rounded font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent)' }}>/v1/execute</code> endpoints with zero-overhead BYOK key failover.
+            </p>
+            <div className="flex items-center gap-3 pt-1 text-xs font-mono">
+              <span style={{ color: 'var(--text-muted)' }}>July 31, 2026</span>
+              <span 
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold"
+                style={{ backgroundColor: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)' }}
+              >
+                New
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 

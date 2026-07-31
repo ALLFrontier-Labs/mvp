@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   Zap, ArrowRight, Check, Copy, ChevronRight, Shield,
   DollarSign, Globe, Cpu, Search, Layout, Code2,
-  Wallet, Key, X, Layers, Activity, RefreshCw, Sparkles, Terminal
+  Wallet, Key, X, Layers, Activity, RefreshCw, Sparkles, Terminal,
+  Lock, Server, ShieldCheck
 } from 'lucide-react';
 
 // ── Code example snippets ─────────────────────────────────────────────────────
@@ -379,6 +380,104 @@ export const Landing: React.FC = () => {
                   <div className="text-slate-500 text-[10px] mt-1">{s.label}</div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why LiteDaemon? Section ────────────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+        <div className="text-center mb-12 space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono mb-2">
+            <Zap className="w-3.5 h-3.5" />
+            Fail-Safe Agent Infrastructure
+          </div>
+          <h2 className="text-3xl font-extrabold text-white">
+            Why Developers Route Through LiteDaemon?
+          </h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            The invisible fail-safe gateway for autonomous AI agents.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-emerald-500/40 p-6 space-y-4 shadow-xl transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <ShieldCheck className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Zero 429 Rate-Limit Crashes</h3>
+            <p className="text-slate-400 text-xs leading-relaxed font-sans">
+              When a provider rate-limits your agent mid-execution, LiteDaemon's multi-key failover automatically routes to a backup key or secondary provider with 0ms downtime.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-teal-500/40 p-6 space-y-4 shadow-xl transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+              <Key className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-lg font-bold text-white">1 Unified Master Key</h3>
+            <p className="text-slate-400 text-xs leading-relaxed font-sans">
+              Stop cluttering your .env file with 15+ API keys. Use one single <code className="text-teal-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">ld_live_...</code> key across your entire codebase for searching, scraping, browsers, and sandboxes.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-cyan-500/40 p-6 space-y-4 shadow-xl transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Zero Code Revamp</h3>
+            <p className="text-slate-400 text-xs leading-relaxed font-sans">
+              Plugs into existing LangChain, CrewAI, AutoGen, or custom Python/TypeScript scripts by updating a single base URL string.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Enterprise-Grade Security & Vault Architecture ───────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+        <div className="rounded-2xl bg-gradient-to-b from-[#0d1117] to-[#121620] border border-slate-800 p-8 md:p-12 shadow-2xl space-y-10">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+              <Lock className="w-3.5 h-3.5" />
+              SOC-2 Ready Architecture • AES-256 Encrypted
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+              Your API Keys &amp; Data Payloads Never Leave Memory
+            </h2>
+            <p className="text-slate-400 text-sm max-w-2xl mx-auto leading-relaxed">
+              Built with zero-retention ephemeral proxies so your private agent workflows stay private.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-emerald-500/30 transition-colors">
+              <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
+                <Lock className="w-4 h-4" />
+                <span>AES-256-GCM Vault Encryption</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed font-sans">
+                Provider API keys stored in your dashboard are encrypted at rest using AES-256-GCM with isolated user-specific decryption keys. Plaintext keys are never exposed.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-teal-500/30 transition-colors">
+              <div className="flex items-center gap-2.5 text-teal-400 font-bold text-sm">
+                <Server className="w-4 h-4" />
+                <span>Ephemeral In-Memory Proxying (Zero Payload Logging)</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed font-sans">
+                LiteDaemon is a strict pass-through proxy. Scraped web content, browser execution steps, and search query payloads stream strictly through isolated in-memory pipes. We NEVER save or log payload contents.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-cyan-500/30 transition-colors">
+              <div className="flex items-center gap-2.5 text-cyan-400 font-bold text-sm">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Key Isolation &amp; Restrictive Scopes</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed font-sans">
+                Your master <code className="text-cyan-300 font-mono bg-slate-950 px-1 py-0.5 rounded">ld_live_...</code> key only authorizes routing through your encrypted vault. Intercepting a master key provides zero access to underlying provider accounts.
+              </p>
             </div>
           </div>
         </div>

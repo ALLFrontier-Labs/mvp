@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Zap, ArrowRight, Check, Copy, ChevronRight, Shield,
-  DollarSign, Globe, Cpu, Search, Layout, Code2,
-  Wallet, Key, X, Layers, Activity, RefreshCw, Sparkles, Terminal,
-  Lock, Server, ShieldCheck, CheckCircle2
+  ChevronRight, Copy, Check, Code2
 } from 'lucide-react';
 
 const FRAMEWORK_SNIPPETS = {
@@ -90,130 +87,108 @@ export const Landing: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-[#ccff00] selection:text-black">
 
-      {/* ── 1. NAVBAR (OpenRouter Aesthetics) ─────────────────────────────── */}
-      <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-[#09090b]/90 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-white text-base tracking-tight font-sans">LiteDaemon</span>
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-6 font-mono text-xs">
-            <Link to="/" className="text-zinc-300 hover:text-white font-semibold">Home</Link>
-            <Link to="/providers" className="text-zinc-400 hover:text-white transition-colors">Tools</Link>
-            <Link to="/playground" className="text-zinc-400 hover:text-white transition-colors">Playground</Link>
-            <Link to="/providers" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Rankings</Link>
-            <Link to="/dashboard" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Apps</Link>
-            <Link to="/docs" className="text-zinc-400 hover:text-white transition-colors">Docs</Link>
-          </div>
-
-          <div className="flex items-center gap-3 font-mono text-xs">
-            <Link to="/auth" className="text-zinc-400 hover:text-white transition-colors">Sign In</Link>
-            <Link
-              to="/auth"
-              className="px-3.5 py-1.5 rounded-lg bg-[#ccff00] hover:bg-[#b8e600] text-black font-semibold transition-all shadow-sm"
-            >
-              Get Master Key
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* ── 2. HERO SECTION FIX (Clean OpenRouter Format) ──────────────────── */}
-      <section className="pt-16 pb-12 px-6 max-w-4xl mx-auto text-center space-y-4">
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight font-sans">
-          Unified interface for AI agent tools.
+      {/* ── 2. HERO SECTION (Pixel-Perfect OpenRouter Parity) ─────────────── */}
+      <section className="pt-20 pb-12 px-6 max-w-4xl mx-auto text-center space-y-4">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white text-center font-sans">
+          The Unified Interface For AI Agent Tools
         </h1>
-        <p className="text-lg sm:text-xl text-zinc-400 font-sans max-w-2xl mx-auto font-normal">
-          Better reliability, better latency, no subscriptions.
+        <p className="text-zinc-400 text-center text-lg mt-3 font-sans font-normal">
+          Better <span className="text-white underline decoration-zinc-600 underline-offset-4">reliability</span>, better <span className="text-white underline decoration-zinc-600 underline-offset-4">latency</span>, no subscriptions.
         </p>
 
-        <div className="flex items-center justify-center gap-3 pt-4 font-mono text-xs">
+        <div className="flex items-center justify-center gap-3 pt-6 font-mono text-sm">
           <Link
             to="/auth"
-            className="px-6 py-3 rounded-xl bg-[#ccff00] hover:bg-[#b8e600] text-black font-semibold transition-all shadow-md flex items-center gap-2"
+            className="bg-[#ccff00] text-black font-semibold px-5 py-2.5 rounded-md text-sm hover:bg-yellow-300 transition-colors"
           >
-            <Key className="w-4 h-4 text-black" />
             Get Master Key
           </Link>
           <Link
             to="/providers"
-            className="px-6 py-3 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 font-medium transition-all"
+            className="bg-zinc-900 border border-zinc-800 text-zinc-200 px-5 py-2.5 rounded-md text-sm hover:bg-zinc-800 transition-colors flex items-center gap-2"
           >
-            Explore Tools
+            <span>Explore Tools</span>
+            <span className="text-yellow-400">✦</span>
           </Link>
         </div>
       </section>
 
-      {/* ── 3. METRICS BAR FIX (OpenRouter Format) ─────────────────────────── */}
+      {/* ── 3. BORDERLESS STATS ROW (Floating Numbers Format) ─────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-8 border-y border-zinc-800/80">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 font-mono text-center">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 my-12 text-center">
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">100M+</div>
-            <div className="text-xs text-zinc-500 mt-1 font-sans">Monthly Tool Calls</div>
+            <div className="text-3xl md:text-5xl font-bold text-white font-mono tracking-tight">100M+</div>
+            <div className="text-xs text-zinc-400 mt-1 font-sans">Monthly Tool Calls</div>
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">1M+</div>
-            <div className="text-xs text-zinc-500 mt-1 font-sans">Global Developers</div>
+            <div className="text-3xl md:text-5xl font-bold text-white font-mono tracking-tight">1M+</div>
+            <div className="text-xs text-zinc-400 mt-1 font-sans">Global Developers</div>
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">36+</div>
-            <div className="text-xs text-zinc-500 mt-1 font-sans">Tool Providers</div>
+            <div className="text-3xl md:text-5xl font-bold text-white font-mono tracking-tight">36+</div>
+            <div className="text-xs text-zinc-400 mt-1 font-sans">Tool Providers</div>
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">150+</div>
-            <div className="text-xs text-zinc-500 mt-1 font-sans">Tool Engines</div>
+            <div className="text-3xl md:text-5xl font-bold text-white font-mono tracking-tight">150+</div>
+            <div className="text-xs text-zinc-400 mt-1 font-sans">Tool Engines</div>
           </div>
         </div>
       </section>
 
-      {/* ── 4. BENTO FEATURE GRID ───────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-12">
+      {/* ── 4. FEATURED TOOLS & BENTO GRID ──────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-12 space-y-10">
+        
+        {/* Section Header Standard */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:text-zinc-300 font-sans">
+            Featured Tools <ChevronRight className="w-4 h-4 text-zinc-400" />
+          </h2>
+          <Link to="/providers" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-mono">
+            View all &rarr;
+          </Link>
+        </div>
+
+        {/* 2x2 Bento Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
           <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-bold text-white font-sans">One API for Any Tool</h3>
+            <h3 className="text-base font-semibold text-white font-sans">One API for Any Tool</h3>
             <p className="text-zinc-400 text-xs leading-relaxed font-sans">
               Access web search, scraping, code sandboxes, and browser automation through a single master endpoint.
             </p>
           </div>
 
           <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-bold text-white font-sans">Higher Availability</h3>
+            <h3 className="text-base font-semibold text-white font-sans">Higher Availability</h3>
             <p className="text-zinc-400 text-xs leading-relaxed font-sans">
               Automatic multi-key failover and key rotation pools to eliminate 429 rate limits.
             </p>
           </div>
 
           <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-bold text-white font-sans">Price and Performance</h3>
+            <h3 className="text-base font-semibold text-white font-sans">Price and Performance</h3>
             <p className="text-zinc-400 text-xs leading-relaxed font-sans">
               Zero monthly subscription fees. Pay-as-you-go micro-routing past free tier.
             </p>
           </div>
 
           <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-bold text-white font-sans">Custom Data Policies</h3>
+            <h3 className="text-base font-semibold text-white font-sans">Custom Data Policies</h3>
             <p className="text-zinc-400 text-xs leading-relaxed font-sans">
               Ephemeral memory-only routing. Prompt and tool execution payloads are never stored.
             </p>
           </div>
-
         </div>
       </section>
 
       {/* ── 5. HOW IT WORKS (3 Simple Steps) ────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white font-sans">How It Works</h2>
+      <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80 space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 font-sans">
+            How It Works <ChevronRight className="w-4 h-4 text-zinc-400" />
+          </h2>
+          <Link to="/docs" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-mono">
+            Read docs &rarr;
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans text-xs">
@@ -240,15 +215,15 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* ── Interactive Framework Quickstarts Section ───────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80">
-        <div className="text-center mb-8 space-y-2">
-          <h2 className="text-2xl font-bold text-white font-sans">
-            3 Lines of Code • Instant Integration
+      {/* ── 6. FRAMEWORK QUICKSTARTS ────────────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80 space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 font-sans">
+            Framework Integration <ChevronRight className="w-4 h-4 text-zinc-400" />
           </h2>
-          <p className="text-zinc-400 text-xs font-mono">
-            Plugs into your favorite agent framework without code changes.
-          </p>
+          <Link to="/docs/frameworks" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-mono">
+            SDK docs &rarr;
+          </Link>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none font-mono text-xs">

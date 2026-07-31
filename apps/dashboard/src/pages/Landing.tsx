@@ -164,8 +164,8 @@ export const Landing: React.FC = () => {
     <div className="min-h-screen font-sans transition-colors duration-200" style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}>
 
       {/* ── HERO SECTION ─────────────────────────────────────────── */}
-      <section className="pt-20 pb-8 px-6 max-w-5xl mx-auto text-center space-y-4">
-        <h1 className="max-w-5xl mx-auto text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-center leading-tight" style={{ color: 'var(--text-primary)' }}>
+      <section className="pt-20 pb-8 px-6 max-w-6xl mx-auto text-center space-y-4">
+        <h1 className="max-w-6xl mx-auto text-2xl sm:text-4xl lg:text-[48px] font-extrabold tracking-tight text-center leading-tight sm:whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
           The Unified Interface For AI Agent Tools
         </h1>
         <p className="text-xs sm:text-sm max-w-xl mx-auto font-sans" style={{ color: 'var(--text-secondary)' }}>
@@ -175,19 +175,19 @@ export const Landing: React.FC = () => {
         <div className="flex items-center justify-center gap-3 pt-4 text-sm font-sans">
           <Link
             to="/auth"
-            className="font-extrabold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm"
+            className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-sm flex items-center justify-center min-w-[150px]"
             style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
           >
             Get API Key
           </Link>
           <Link
             to="/providers"
-            className="border px-4 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-2 font-medium group cursor-pointer"
+            className="border px-6 py-3 rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-2 font-medium group cursor-pointer min-w-[150px]"
             style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
           >
             <span>Explore Tools</span>
             <span
-              className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-300 transform ${
+              className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 transform ${
                 currentTool.color
               } ${
                 isAnimating ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
@@ -201,8 +201,8 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* ── 2. COMPACT STATS ROW ────────────────────────────────────────── */}
-      <section className="py-6 max-w-4xl mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <section className="py-6 max-w-2xl mx-auto px-4">
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-14 text-center">
           <div className="space-y-1">
             <div className="text-2xl sm:text-3xl font-extrabold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
               100M+

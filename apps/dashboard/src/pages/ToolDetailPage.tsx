@@ -45,7 +45,7 @@ export const ToolDetailPage: React.FC = () => {
           tool={tool}
           onOpenPlayground={() => navigate('/playground')}
           onOpenQuickStart={() => navigate('/docs/quickstart')}
-          onCompare={() => navigate('/providers')}
+          onCompare={() => navigate(`/compare/${tool.slug}`)}
         />
 
         {/* Providers & Backends Table */}

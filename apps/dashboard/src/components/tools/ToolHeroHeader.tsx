@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Copy, 
   Check, 
@@ -66,19 +66,13 @@ export function ToolHeroHeader({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 shrink-0 font-mono">
-          <button
-            onClick={() => {
-              if (onCompare) {
-                onCompare();
-              } else {
-                navigate(`/compare/${tool.slug}`);
-              }
-            }}
+          <Link
+            to={`/compare/${tool.slug}`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-xs font-medium text-zinc-300 transition-colors cursor-pointer"
           >
             <GitCompare className="w-3.5 h-3.5" />
             <span>Compare</span>
-          </button>
+          </Link>
           
           <button
             onClick={onOpenPlayground}

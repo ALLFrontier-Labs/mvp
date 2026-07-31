@@ -544,6 +544,13 @@ export function getAllToolSlugs(): string[] {
   return Object.keys(TOOL_REGISTRY);
 }
 
+/**
+ * Get all registered ToolDetail objects
+ */
+export function getAllTools(): ToolDetail[] {
+  return Object.values(TOOL_REGISTRY);
+}
+
 export interface ComparePreset {
   title: string;
   description: string;

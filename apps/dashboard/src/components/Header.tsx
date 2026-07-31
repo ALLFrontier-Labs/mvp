@@ -71,21 +71,21 @@ export const Header: React.FC = () => {
                 <ProfileDropdown onLogout={handleLogout} balanceUsd={null} />
                 <Link
                   to="/keys"
-                  className="bg-[#ccff00] text-black font-semibold px-3.5 py-1.5 rounded-md text-sm hover:bg-yellow-300 transition-colors"
+                  className="bg-[#ccff00] text-black font-semibold px-3.5 py-1.5 rounded-md text-xs hover:bg-yellow-300 transition-colors"
                 >
-                  Get Master Key
+                  Get API Key
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/auth" className="text-zinc-300 hover:text-white font-medium">
+                <Link to="/auth" className="text-zinc-300 hover:text-white font-medium text-xs">
                   Sign In
                 </Link>
                 <Link
                   to="/auth"
-                  className="bg-[#ccff00] text-black font-semibold px-3.5 py-1.5 rounded-md text-sm hover:bg-yellow-300 transition-colors"
+                  className="bg-[#ccff00] text-black font-semibold px-3.5 py-1.5 rounded-md text-xs hover:bg-yellow-300 transition-colors"
                 >
-                  Get Master Key
+                  Get API Key
                 </Link>
               </>
             )}

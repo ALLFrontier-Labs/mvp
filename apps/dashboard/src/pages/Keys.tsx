@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
   Key, Plus, Trash2, Check, Eye, EyeOff, AlertCircle,
   Loader2, ShieldCheck, ExternalLink, RefreshCw, Sparkles,
@@ -358,9 +359,11 @@ export const Keys: React.FC = () => {
                 const alwaysUse = !!alwaysUseMap[k.id];
 
                 return (
-                  <div
+                  <motion.div
                     key={k.id}
-                    className="rounded-xl bg-slate-900/80 border border-slate-800 overflow-hidden font-mono text-xs shadow-md"
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ duration: 0.15 }}
+                    className="rounded-xl bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 overflow-hidden font-mono text-xs shadow-md transition-colors"
                   >
                     {/* Compact Accordion Header with Drag Grip */}
                     <div
@@ -374,6 +377,10 @@ export const Keys: React.FC = () => {
                         </span>
                         <div>
                           <p className="text-white font-bold flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                            </span>
                             <span>{k.label || `Key #${idx + 1}`}</span>
                             <span className="text-emerald-400 font-normal text-xs">{k.key_hint}</span>
                           </p>
@@ -504,7 +511,7 @@ export const Keys: React.FC = () => {
 
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

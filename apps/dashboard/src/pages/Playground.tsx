@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Globe,
   Search,
@@ -970,14 +971,23 @@ export const Playground: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-              {log.map((entry) => (
-                <LogCard
-                  key={entry.id}
-                  entry={entry}
-                  onToggle={toggleExpand}
-                  onCopy={copyEntry}
-                />
-              ))}
+              <AnimatePresence>
+                {log.map((entry) => (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, height: 0, y: -10 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -10 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                  >
+                    <LogCard
+                      entry={entry}
+                      onToggle={toggleExpand}
+                      onCopy={copyEntry}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </div>

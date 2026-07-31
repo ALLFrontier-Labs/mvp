@@ -27,52 +27,52 @@ interface ToolItem {
 
 const TOOL_ITEMS: ToolItem[] = [
   // Web & Search (7)
-  { id: 'tavily',     title: 'Tavily Search API',          category: 'Web & Search',           icon: Search,   path: '/playground' },
-  { id: 'perplexity', title: 'Perplexity Sonar Search',    category: 'Web & Search',           icon: Search,   path: '/playground' },
-  { id: 'serper',     title: 'Serper.dev Search',          category: 'Web & Search',           icon: Search,   path: '/playground' },
-  { id: 'exa',        title: 'Exa AI Neural Search',       category: 'Web & Search',           icon: Brain,    path: '/playground' },
-  { id: 'bing',       title: 'Bing Web Search',            category: 'Web & Search',           icon: Search,   path: '/playground' },
-  { id: 'google-custom', title: 'Google Custom Search API', category: 'Web & Search',          icon: Search,   path: '/playground' },
-  { id: 'duckduckgo', title: 'DuckDuckGo Scraping Engine',category: 'Web & Search',           icon: Search,   path: '/playground' },
+  { id: 'tavily',     title: 'Tavily Search API',          category: 'Web & Search',           icon: Search,   path: '/tools/tavily/web-search' },
+  { id: 'perplexity', title: 'Perplexity Sonar Search',    category: 'Web & Search',           icon: Search,   path: '/tools/perplexity/sonar-search' },
+  { id: 'serper',     title: 'Serper.dev Search',          category: 'Web & Search',           icon: Search,   path: '/tools/serper/google-search' },
+  { id: 'exa',        title: 'Exa AI Neural Search',       category: 'Web & Search',           icon: Brain,    path: '/tools/exa/neural-search' },
+  { id: 'bing',       title: 'Bing Web Search',            category: 'Web & Search',           icon: Search,   path: '/tools/bing/web-search' },
+  { id: 'google-custom', title: 'Google Custom Search API', category: 'Web & Search',          icon: Search,   path: '/tools/google/custom-search' },
+  { id: 'duckduckgo', title: 'DuckDuckGo Scraping Engine',category: 'Web & Search',           icon: Search,   path: '/tools/duckduckgo/scraping-engine' },
 
   // Scraping & Extraction (6)
-  { id: 'firecrawl',  title: 'Firecrawl Web Scraper',      category: 'Scraping & Extraction',  icon: Globe,    path: '/playground' },
-  { id: 'brightdata', title: 'BrightData Web Scraper',     category: 'Scraping & Extraction',  icon: Globe,    path: '/playground' },
-  { id: 'apify',      title: 'Apify Web Scraper',          category: 'Scraping & Extraction',  icon: Globe,    path: '/playground' },
-  { id: 'jina',       title: 'Jina AI Reader',             category: 'Scraping & Extraction',  icon: Sparkles, path: '/playground' },
-  { id: 'spider',     title: 'Spider.cloud Scraper',       category: 'Scraping & Extraction',  icon: Globe,    path: '/playground' },
-  { id: 'scrapingbee',title: 'ScrapingBee Engine',          category: 'Scraping & Extraction',  icon: Globe,    path: '/playground' },
+  { id: 'firecrawl',  title: 'Firecrawl Web Scraper',      category: 'Scraping & Extraction',  icon: Globe,    path: '/tools/firecrawl/web-scraper' },
+  { id: 'brightdata', title: 'BrightData Web Scraper',     category: 'Scraping & Extraction',  icon: Globe,    path: '/tools/brightdata/web-scraper' },
+  { id: 'apify',      title: 'Apify Web Scraper',          category: 'Scraping & Extraction',  icon: Globe,    path: '/tools/apify/web-scraper' },
+  { id: 'jina',       title: 'Jina AI Reader',             category: 'Scraping & Extraction',  icon: Sparkles, path: '/tools/jina/reader' },
+  { id: 'spider',     title: 'Spider.cloud Scraper',       category: 'Scraping & Extraction',  icon: Globe,    path: '/tools/spider/cloud-scraper' },
+  { id: 'scrapingbee',title: 'ScrapingBee Engine',          category: 'Scraping & Extraction',  icon: Globe,    path: '/tools/scrapingbee/engine' },
 
   // Browser Automation (4)
-  { id: 'browserbase',title: 'Browserbase CDP Session',    category: 'Browser Automation',     icon: Zap,      path: '/playground' },
-  { id: 'steel',      title: 'Steel Browser Automation',   category: 'Browser Automation',     icon: Zap,      path: '/playground' },
-  { id: 'hyperbrowser', title: 'Hyperbrowser Session',     category: 'Browser Automation',     icon: Zap,      path: '/playground' },
-  { id: 'stagehand',  title: 'Stagehand Agent Engine',     category: 'Browser Automation',     icon: Zap,      path: '/playground' },
+  { id: 'browserbase',title: 'Browserbase CDP Session',    category: 'Browser Automation',     icon: Zap,      path: '/tools/browserbase/cdp-session' },
+  { id: 'steel',      title: 'Steel Browser Automation',   category: 'Browser Automation',     icon: Zap,      path: '/tools/steel/browser-automation' },
+  { id: 'hyperbrowser', title: 'Hyperbrowser Session',     category: 'Browser Automation',     icon: Zap,      path: '/tools/hyperbrowser/session' },
+  { id: 'stagehand',  title: 'Stagehand Agent Engine',     category: 'Browser Automation',     icon: Zap,      path: '/tools/stagehand/agent-engine' },
 
   // Code & Sandboxes (4)
-  { id: 'e2b',        title: 'E2B Sandbox Execution',      category: 'Code & Sandboxes',       icon: Code2,    path: '/playground' },
-  { id: 'daytona',    title: 'Daytona Code Sandbox',       category: 'Code & Sandboxes',       icon: Code2,    path: '/playground' },
-  { id: 'modal',      title: 'Modal Labs Compute',         category: 'Code & Sandboxes',       icon: Terminal, path: '/playground' },
-  { id: 'code-interpreter', title: 'Code Interpreter Engine', category: 'Code & Sandboxes', icon: Code2,    path: '/playground' },
+  { id: 'e2b',        title: 'E2B Sandbox Execution',      category: 'Code & Sandboxes',       icon: Code2,    path: '/tools/e2b/code-sandbox' },
+  { id: 'daytona',    title: 'Daytona Code Sandbox',       category: 'Code & Sandboxes',       icon: Code2,    path: '/tools/daytona/code-sandbox' },
+  { id: 'modal',      title: 'Modal Labs Compute',         category: 'Code & Sandboxes',       icon: Terminal, path: '/tools/modal/compute' },
+  { id: 'code-interpreter', title: 'Code Interpreter Engine', category: 'Code & Sandboxes', icon: Code2,    path: '/tools/code-interpreter/engine' },
 
   // Parsing & Documents (4)
-  { id: 'unstructured', title: 'Unstructured Parsing',     category: 'Parsing & Documents',    icon: FileText, path: '/playground' },
-  { id: 'llamaparse', title: 'LlamaParse Document',        category: 'Parsing & Documents',    icon: FileText, path: '/playground' },
-  { id: 'marker',     title: 'Marker PDF Parser',          category: 'Parsing & Documents',    icon: FileText, path: '/playground' },
-  { id: 'azure-doc',  title: 'Azure Document Intelligence', category: 'Parsing & Documents',   icon: FileText, path: '/playground' },
+  { id: 'unstructured', title: 'Unstructured Parsing',     category: 'Parsing & Documents',    icon: FileText, path: '/tools/unstructured/parsing' },
+  { id: 'llamaparse', title: 'LlamaParse Document',        category: 'Parsing & Documents',    icon: FileText, path: '/tools/llamaparse/document-parser' },
+  { id: 'marker',     title: 'Marker PDF Parser',          category: 'Parsing & Documents',    icon: FileText, path: '/tools/marker/pdf-parser' },
+  { id: 'azure-doc',  title: 'Azure Document Intelligence', category: 'Parsing & Documents',   icon: FileText, path: '/tools/azure/doc-intelligence' },
 
   // Audio, Memory & Vector (11)
-  { id: 'assemblyai', title: 'AssemblyAI Transcribe',      category: 'Audio, Memory & Vector', icon: Mic,      path: '/playground' },
-  { id: 'deepgram',   title: 'Deepgram Speech API',        category: 'Audio, Memory & Vector', icon: Mic,      path: '/playground' },
-  { id: 'mem0',       title: 'Mem0 Long-Term Memory',      category: 'Audio, Memory & Vector', icon: Database, path: '/playground' },
-  { id: 'pinecone',   title: 'Pinecone Vector Store',      category: 'Audio, Memory & Vector', icon: Layers,   path: '/playground' },
-  { id: 'qdrant',     title: 'Qdrant Index Search',        category: 'Audio, Memory & Vector', icon: Database, path: '/playground' },
-  { id: 'weaviate',   title: 'Weaviate Search',            category: 'Audio, Memory & Vector', icon: Database, path: '/playground' },
-  { id: 'chroma',     title: 'Chroma DB Engine',           category: 'Audio, Memory & Vector', icon: Database, path: '/playground' },
-  { id: 'whisper',    title: 'Whisper V3 Speech',          category: 'Audio, Memory & Vector', icon: Mic,      path: '/playground' },
-  { id: 'elevenlabs', title: 'ElevenLabs Voice Synthesis', category: 'Audio, Memory & Vector', icon: Volume2,  path: '/playground' },
-  { id: 'cohere',     title: 'Cohere Rerank v3',           category: 'Audio, Memory & Vector', icon: Cpu,      path: '/playground' },
-  { id: 'voyage',     title: 'Voyage AI Embeddings',       category: 'Audio, Memory & Vector', icon: Cpu,      path: '/playground' },
+  { id: 'assemblyai', title: 'AssemblyAI Transcribe',      category: 'Audio, Memory & Vector', icon: Mic,      path: '/tools/assemblyai/transcribe' },
+  { id: 'deepgram',   title: 'Deepgram Speech API',        category: 'Audio, Memory & Vector', icon: Mic,      path: '/tools/deepgram/speech-api' },
+  { id: 'mem0',       title: 'Mem0 Long-Term Memory',      category: 'Audio, Memory & Vector', icon: Database, path: '/tools/mem0/long-term-memory' },
+  { id: 'pinecone',   title: 'Pinecone Vector Store',      category: 'Audio, Memory & Vector', icon: Layers,   path: '/tools/pinecone/vector-store' },
+  { id: 'qdrant',     title: 'Qdrant Index Search',        category: 'Audio, Memory & Vector', icon: Database, path: '/tools/qdrant/index-search' },
+  { id: 'weaviate',   title: 'Weaviate Search',            category: 'Audio, Memory & Vector', icon: Database, path: '/tools/weaviate/search' },
+  { id: 'chroma',     title: 'Chroma DB Engine',           category: 'Audio, Memory & Vector', icon: Database, path: '/tools/chroma/db-engine' },
+  { id: 'whisper',    title: 'Whisper V3 Speech',          category: 'Audio, Memory & Vector', icon: Mic,      path: '/tools/whisper/v3-speech' },
+  { id: 'elevenlabs', title: 'ElevenLabs Voice Synthesis', category: 'Audio, Memory & Vector', icon: Volume2,  path: '/tools/elevenlabs/voice-synthesis' },
+  { id: 'cohere',     title: 'Cohere Rerank v3',           category: 'Audio, Memory & Vector', icon: Cpu,      path: '/tools/cohere/rerank-v3' },
+  { id: 'voyage',     title: 'Voyage AI Embeddings',       category: 'Audio, Memory & Vector', icon: Cpu,      path: '/tools/voyage/embeddings' },
 ];
 
 interface CommandPaletteProps {

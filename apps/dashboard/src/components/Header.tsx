@@ -36,14 +36,14 @@ export const Header: React.FC = () => {
 
           <button
             onClick={() => setIsCmdOpen(true)}
-            className="hidden sm:flex items-center gap-6 px-3 py-1.5 rounded-md bg-zinc-900/80 border border-zinc-800 text-sm text-zinc-400 hover:border-zinc-700 transition-colors cursor-pointer"
+            className="hidden sm:flex w-64 sm:w-72 h-9 bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 rounded-lg px-3.5 items-center justify-between text-sm text-zinc-400 transition-colors shadow-sm cursor-pointer"
           >
-            <span className="flex items-center gap-1.5">
-              <Search className="w-3.5 h-3.5 text-zinc-500" />
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-zinc-400" />
               <span>Search...</span>
-            </span>
-            <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] text-zinc-400 font-mono font-semibold">
-              ⌘ K
+            </div>
+            <kbd className="bg-zinc-800/90 text-zinc-300 border border-zinc-700/60 text-[11px] font-mono px-1.5 py-0.5 rounded">
+              ⌘K
             </kbd>
           </button>
         </div>

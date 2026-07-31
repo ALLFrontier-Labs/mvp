@@ -72,25 +72,85 @@ console.log(result.data);`,
 
 type FrameworkTab = 'langchain' | 'crewai' | 'autogen' | 'n8n' | 'python' | 'typescript';
 
-const PROVIDER_LOGOS = [
-  { name: 'Anthropic', icon: '⚡' },
-  { name: 'OpenAI', icon: '🌀' },
-  { name: 'Google', icon: '✦' },
-  { name: 'Meta', icon: '♾️' },
-  { name: 'DeepSeek', icon: '🤖' },
+const TOOL_LOGOS = [
+  {
+    name: 'Tavily',
+    color: 'bg-indigo-950/80 text-indigo-400 border-indigo-800/50',
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg>
+    ),
+  },
+  {
+    name: 'Exa',
+    color: 'bg-emerald-950/80 text-emerald-400 border-emerald-800/50',
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z" />
+      </svg>
+    ),
+  },
+  {
+    name: 'E2B',
+    color: 'bg-amber-950/80 text-amber-400 border-amber-800/50',
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    ),
+  },
+  {
+    name: 'Firecrawl',
+    color: 'bg-orange-950/80 text-orange-400 border-orange-800/50',
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 13.5a3.75 3.75 0 1 1 0-7.5 3.75 3.75 0 0 1 0 7.5z" />
+      </svg>
+    ),
+  },
+  {
+    name: 'Serper',
+    color: 'bg-cyan-950/80 text-cyan-400 border-cyan-800/50',
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    ),
+  },
+  {
+    name: 'Browserbase',
+    color: 'bg-purple-950/80 text-purple-400 border-purple-800/50',
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    ),
+  },
 ];
 
 export const Landing: React.FC = () => {
   const [frameworkTab, setFrameworkTab] = useState<FrameworkTab>('langchain');
   const [copiedFramework, setCopiedFramework] = useState(false);
-  const [logoIndex, setLogoIndex] = useState(0);
+  const [activeLogoIndex, setActiveLogoIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setLogoIndex((prev) => (prev + 1) % PROVIDER_LOGOS.length);
-    }, 1200);
+      setIsAnimating(true);
+      setTimeout(() => {
+        setActiveLogoIndex((prev) => (prev + 1) % TOOL_LOGOS.length);
+        setIsAnimating(false);
+      }, 150);
+    }, 1800);
+
     return () => clearInterval(interval);
   }, []);
+
+  const currentTool = TOOL_LOGOS[activeLogoIndex];
 
   const copyFrameworkCode = () => {
     navigator.clipboard.writeText(FRAMEWORK_SNIPPETS[frameworkTab]);
@@ -121,11 +181,18 @@ export const Landing: React.FC = () => {
           </Link>
           <Link
             to="/providers"
-            className="bg-zinc-900/60 border border-zinc-800 text-zinc-200 px-5 py-2.5 rounded-xl text-sm hover:bg-zinc-800/80 transition-all flex items-center gap-2 font-semibold"
+            className="bg-zinc-900/90 border border-zinc-800 text-zinc-100 px-4 py-2.5 rounded-xl text-sm hover:bg-zinc-800/80 transition-all duration-200 flex items-center gap-2 font-medium group cursor-pointer"
           >
             <span>Explore Tools</span>
-            <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-xs transition-transform duration-300 scale-105">
-              {PROVIDER_LOGOS[logoIndex].icon}
+            <span
+              className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-300 transform ${
+                currentTool.color
+              } ${
+                isAnimating ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+              }`}
+              title={currentTool.name}
+            >
+              {currentTool.icon}
             </span>
           </Link>
         </div>

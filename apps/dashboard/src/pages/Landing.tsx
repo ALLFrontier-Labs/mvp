@@ -65,6 +65,74 @@ res = requests.post(f"{BASE}/v1/execute",
 print(res.json()["result"])`,
 };
 
+const FRAMEWORK_SNIPPETS = {
+  langchain: `import os
+from langchain_community.tools import TavilySearchResults
+
+# 1. Route tool base URL through LiteDaemon Gateway
+os.environ["TAVILY_API_BASE"] = "https://gateway.litedaemon.com/v1"
+os.environ["TAVILY_API_KEY"]  = "ld_live_your_master_key"
+
+# 2. Use tool as normal — multi-key failover & vault BYOK are fully automated
+tool = TavilySearchResults()
+results = tool.invoke({"query": "Autonomous agent tool architectures"})`,
+
+  crewai: `import os
+from crewai import Agent
+from crewai_tools import SerperDevTool
+
+# 1. Point tool requests to LiteDaemon Gateway
+os.environ["HTTP_PROXY"]  = "https://gateway.litedaemon.com/v1?key=ld_live_your_master_key"
+os.environ["HTTPS_PROXY"] = "https://gateway.litedaemon.com/v1?key=ld_live_your_master_key"
+
+# 2. Run CrewAI agent with zero underlying provider key code changes
+researcher = Agent(role="Senior Analyst", tools=[SerperDevTool()])`,
+
+  autogen: `import os
+from autogen import AssistantAgent
+
+# 1. Configure AutoGen agent tools to route via LiteDaemon Master Key
+tool_config = {
+    "base_url": "https://gateway.litedaemon.com/v1",
+    "api_key": "ld_live_your_master_key"
+}
+
+assistant = AssistantAgent("researcher", llm_config=tool_config)`,
+
+  n8n: `// In n8n HTTP Request Node Settings:
+{
+  "method": "POST",
+  "url": "https://gateway.litedaemon.com/v1/scrape",
+  "headers": {
+    "Authorization": "Bearer ld_live_your_master_key",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "url": "https://news.ycombinator.com"
+  }
+}`,
+
+  python: `import requests
+
+# Single master key routes to Browserbase, Firecrawl, Tavily, E2B, etc.
+res = requests.post(
+    "https://gateway.litedaemon.com/v1/search",
+    headers={"Authorization": "Bearer ld_live_your_master_key"},
+    json={"query": "Latest LLM benchmark results"}
+)
+print(res.json())`,
+
+  typescript: `import { LiteDaemon } from '@litedaemon/sdk';
+
+const client = new LiteDaemon({ apiKey: 'ld_live_your_master_key' });
+
+// Executed through encrypted vault BYOK key pool
+const result = await client.scrape({ url: 'https://example.com' });
+console.log(result.data);`,
+};
+
+type FrameworkTab = 'langchain' | 'crewai' | 'autogen' | 'n8n' | 'python' | 'typescript';
+
 const PROVIDERS = [
   { name: 'Firecrawl',    cat: 'Scraping',  cost: '5% Fee', dot: 'bg-emerald-400', icon: '🔥' },
   { name: 'Jina AI',      cat: 'Scraping',  cost: '5% Fee', dot: 'bg-emerald-400', icon: '⚡' },
@@ -84,14 +152,24 @@ const PROVIDERS = [
 ];
 
 export const Landing: React.FC = () => {
-  const [codeTab, setCodeTab] = useState<'curl' | 'typescript' | 'python'>('curl');
-  const [copied, setCopied]   = useState(false);
+  const [codeTab, setCodeTab]           = useState<'curl' | 'typescript' | 'python'>('curl');
+  const [frameworkTab, setFrameworkTab] = useState<FrameworkTab>('langchain');
+  const [copied, setCopied]             = useState(false);
+  const [copiedFramework, setCopiedFramework] = useState(false);
 
   const copyCode = () => {
     navigator.clipboard.writeText(CODE_EXAMPLES[codeTab]);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const copyFrameworkCode = () => {
+    navigator.clipboard.writeText(FRAMEWORK_SNIPPETS[frameworkTab]);
+    setCopiedFramework(true);
+    setTimeout(() => setCopiedFramework(false), 2000);
+  };
+
+  const frameworkLines = FRAMEWORK_SNIPPETS[frameworkTab].split('\n');
 
   return (
     <div className="min-h-screen bg-[#0a0d14] text-slate-100 overflow-x-hidden font-sans">
@@ -357,8 +435,187 @@ export const Landing: React.FC = () => {
         </p>
       </section>
 
+      {/* ── Why LiteDaemon? Section ────────────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+        <div className="text-center mb-12 space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono mb-2">
+            <Zap className="w-3.5 h-3.5" />
+            Fail-Safe Agent Infrastructure
+          </div>
+          <h2 className="text-3xl font-extrabold text-white">
+            Why Developers Route Through LiteDaemon?
+          </h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            The invisible fail-safe gateway for autonomous AI agents.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-emerald-500/40 p-6 space-y-4 shadow-xl transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <ShieldCheck className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Zero 429 Rate-Limit Crashes</h3>
+            <p className="text-slate-400 text-xs leading-relaxed font-sans">
+              When a provider rate-limits your agent mid-execution, LiteDaemon's multi-key failover automatically routes to a backup key or secondary provider with 0ms downtime.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-teal-500/40 p-6 space-y-4 shadow-xl transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+              <Key className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-lg font-bold text-white">1 Unified Master Key</h3>
+            <p className="text-slate-400 text-xs leading-relaxed font-sans">
+              Stop cluttering your .env file with 15+ API keys. Use one single <code className="text-teal-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">ld_live_...</code> key across your entire codebase for searching, scraping, browsers, and sandboxes.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-cyan-500/40 p-6 space-y-4 shadow-xl transition-all group">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Zero Code Revamp</h3>
+            <p className="text-slate-400 text-xs leading-relaxed font-sans">
+              Plugs into existing LangChain, CrewAI, AutoGen, or custom Python/TypeScript scripts by updating a single base URL string.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Interactive 3-Line Framework Quickstarts Section ────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+        <div className="text-center mb-10 space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+            <Zap className="w-3.5 h-3.5" />
+            ⚡ 3 Lines of Code • Zero Refactoring
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+            Plugs Directly Into Your Existing Agent Framework
+          </h2>
+          <p className="text-slate-400 text-sm max-w-2xl mx-auto leading-relaxed">
+            Swap your tool base URL or proxy endpoint to <code className="text-emerald-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">https://gateway.litedaemon.com/v1</code> and let LiteDaemon handle BYOK keys, rate limits, and multi-key failover automatically.
+          </p>
+        </div>
+
+        {/* Tabbed Framework Navigation Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none font-mono text-xs">
+          {[
+            { id: 'langchain',  label: 'LangChain' },
+            { id: 'crewai',     label: 'CrewAI' },
+            { id: 'autogen',    label: 'AutoGen' },
+            { id: 'n8n',        label: 'n8n / Webhook' },
+            { id: 'python',     label: 'Python' },
+            { id: 'typescript', label: 'TypeScript' },
+          ].map((tab) => {
+            const isActive = frameworkTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setFrameworkTab(tab.id as FrameworkTab)}
+                className={`px-4 py-2.5 rounded-xl border transition-all whitespace-nowrap font-semibold flex items-center gap-2 ${
+                  isActive
+                    ? 'bg-slate-800 text-white border-emerald-500/50 shadow-md shadow-emerald-500/10'
+                    : 'bg-[#121620]/60 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <Code2 className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* macOS Terminal Window Container */}
+        <div className="rounded-2xl bg-[#080b10] border border-slate-800 overflow-hidden shadow-2xl">
+          {/* Terminal Window Header */}
+          <div className="flex items-center justify-between px-4 py-3 bg-slate-900/60 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+              <span className="ml-2 text-xs font-mono text-slate-500">
+                quickstart.{frameworkTab === 'n8n' ? 'json' : frameworkTab === 'typescript' ? 'ts' : 'py'}
+              </span>
+            </div>
+
+            <button
+              onClick={copyFrameworkCode}
+              className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 hover:text-emerald-300 px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 transition-colors"
+            >
+              {copiedFramework ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedFramework ? 'Copied!' : 'Copy Snippet'}
+            </button>
+          </div>
+
+          {/* Syntax-Highlighted Code Block with Line Numbers */}
+          <pre className="p-6 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed flex">
+            <div className="select-none text-slate-600 text-right pr-4 border-r border-slate-800/80 shrink-0 space-y-1">
+              {frameworkLines.map((_, i) => (
+                <div key={i}>{i + 1}</div>
+              ))}
+            </div>
+            <div className="pl-4 space-y-1 text-emerald-300 overflow-x-auto flex-1">
+              {frameworkLines.map((line, i) => (
+                <div key={i} className="whitespace-pre">{line}</div>
+              ))}
+            </div>
+          </pre>
+        </div>
+      </section>
+
+      {/* ── Enterprise-Grade Security & Vault Architecture ───────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
+        <div className="rounded-2xl bg-gradient-to-b from-[#0d1117] to-[#121620] border border-slate-800 p-8 md:p-12 shadow-2xl space-y-10">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+              <Lock className="w-3.5 h-3.5" />
+              SOC-2 Ready Architecture • AES-256 Encrypted
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+              Your API Keys &amp; Data Payloads Never Leave Memory
+            </h2>
+            <p className="text-slate-400 text-sm max-w-2xl mx-auto leading-relaxed">
+              Built with zero-retention ephemeral proxies so your private agent workflows stay private.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-emerald-500/30 transition-colors">
+              <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
+                <Lock className="w-4 h-4" />
+                <span>AES-256-GCM Vault Encryption</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed font-sans">
+                Provider API keys stored in your dashboard are encrypted at rest using AES-256-GCM with isolated user-specific decryption keys. Plaintext keys are never exposed.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-teal-500/30 transition-colors">
+              <div className="flex items-center gap-2.5 text-teal-400 font-bold text-sm">
+                <Server className="w-4 h-4" />
+                <span>Ephemeral In-Memory Proxying (Zero Payload Logging)</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed font-sans">
+                LiteDaemon is a strict pass-through proxy. Scraped web content, browser execution steps, and search query payloads stream strictly through isolated in-memory pipes. We NEVER save or log payload contents.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-cyan-500/30 transition-colors">
+              <div className="flex items-center gap-2.5 text-cyan-400 font-bold text-sm">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Key Isolation &amp; Restrictive Scopes</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed font-sans">
+                Your master <code className="text-cyan-300 font-mono bg-slate-950 px-1 py-0.5 rounded">ld_live_...</code> key only authorizes routing through your encrypted vault. Intercepting a master key provides zero access to underlying provider accounts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── OpenRouter-Style BYOK Pricing Section ──────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
         <div className="text-center mb-12 space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
             <Shield className="w-3.5 h-3.5" />
@@ -465,104 +722,6 @@ export const Landing: React.FC = () => {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* ── Why LiteDaemon? Section ────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
-        <div className="text-center mb-12 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono mb-2">
-            <Zap className="w-3.5 h-3.5" />
-            Fail-Safe Agent Infrastructure
-          </div>
-          <h2 className="text-3xl font-extrabold text-white">
-            Why Developers Route Through LiteDaemon?
-          </h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            The invisible fail-safe gateway for autonomous AI agents.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-emerald-500/40 p-6 space-y-4 shadow-xl transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <ShieldCheck className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Zero 429 Rate-Limit Crashes</h3>
-            <p className="text-slate-400 text-xs leading-relaxed font-sans">
-              When a provider rate-limits your agent mid-execution, LiteDaemon's multi-key failover automatically routes to a backup key or secondary provider with 0ms downtime.
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-teal-500/40 p-6 space-y-4 shadow-xl transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-              <Key className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </div>
-            <h3 className="text-lg font-bold text-white">1 Unified Master Key</h3>
-            <p className="text-slate-400 text-xs leading-relaxed font-sans">
-              Stop cluttering your .env file with 15+ API keys. Use one single <code className="text-teal-300 font-mono bg-slate-900 px-1.5 py-0.5 rounded">ld_live_...</code> key across your entire codebase for searching, scraping, browsers, and sandboxes.
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-[#121620] border border-slate-800 hover:border-cyan-500/40 p-6 space-y-4 shadow-xl transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-              <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Zero Code Revamp</h3>
-            <p className="text-slate-400 text-xs leading-relaxed font-sans">
-              Plugs into existing LangChain, CrewAI, AutoGen, or custom Python/TypeScript scripts by updating a single base URL string.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Enterprise-Grade Security & Vault Architecture ───────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/60">
-        <div className="rounded-2xl bg-gradient-to-b from-[#0d1117] to-[#121620] border border-slate-800 p-8 md:p-12 shadow-2xl space-y-10">
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-              <Lock className="w-3.5 h-3.5" />
-              SOC-2 Ready Architecture • AES-256 Encrypted
-            </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">
-              Your API Keys &amp; Data Payloads Never Leave Memory
-            </h2>
-            <p className="text-slate-400 text-sm max-w-2xl mx-auto leading-relaxed">
-              Built with zero-retention ephemeral proxies so your private agent workflows stay private.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-emerald-500/30 transition-colors">
-              <div className="flex items-center gap-2.5 text-emerald-400 font-bold text-sm">
-                <Lock className="w-4 h-4" />
-                <span>AES-256-GCM Vault Encryption</span>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed font-sans">
-                Provider API keys stored in your dashboard are encrypted at rest using AES-256-GCM with isolated user-specific decryption keys. Plaintext keys are never exposed.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-teal-500/30 transition-colors">
-              <div className="flex items-center gap-2.5 text-teal-400 font-bold text-sm">
-                <Server className="w-4 h-4" />
-                <span>Ephemeral In-Memory Proxying (Zero Payload Logging)</span>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed font-sans">
-                LiteDaemon is a strict pass-through proxy. Scraped web content, browser execution steps, and search query payloads stream strictly through isolated in-memory pipes. We NEVER save or log payload contents.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-3 hover:border-cyan-500/30 transition-colors">
-              <div className="flex items-center gap-2.5 text-cyan-400 font-bold text-sm">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Key Isolation &amp; Restrictive Scopes</span>
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed font-sans">
-                Your master <code className="text-cyan-300 font-mono bg-slate-950 px-1 py-0.5 rounded">ld_live_...</code> key only authorizes routing through your encrypted vault. Intercepting a master key provides zero access to underlying provider accounts.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 

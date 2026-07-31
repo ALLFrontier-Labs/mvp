@@ -8,7 +8,6 @@ const FOOTER_COLUMNS = [
       { label: 'Tools',      to: '/providers' },
       { label: 'Playground', to: '/playground' },
       { label: 'Rankings',   to: '/rankings' },
-      { label: 'Apps',       to: '/apps' },
       { label: 'Discover',   to: '/providers' },
       { label: 'Pricing',    to: '/billing' },
     ],

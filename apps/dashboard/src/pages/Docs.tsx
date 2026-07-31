@@ -7,7 +7,7 @@ import {
   Terminal, ExternalLink, ArrowRight, Search,
   Rocket, Box, Code2, Book
 } from 'lucide-react';
-
+import { PROVIDER_META } from '../data/providers';
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 type Lang = 'python' | 'typescript' | 'curl';
 type DocTab = 'docs' | 'api-reference' | 'sdks';
@@ -258,6 +258,146 @@ const SIDEBAR = [
     ],
   },
 ];
+
+/* ─── Tools Directory Component (36+ Adapters) ───────────────────────────── */
+const ToolsDirectory: React.FC = () => {
+  const [catFilter, setCatFilter] = useState<string>('All');
+  const [query, setQuery] = useState<string>('');
+
+  const allTools = Object.entries(PROVIDER_META).map(([id, meta]) => {
+    let category = 'Web Scraping';
+    let endpoint = '/v1/scrape';
+    if (['tavily', 'serper', 'exa', 'brave', 'serpapi', 'bing', 'google_cse', 'zenserp', 'you', 'perplexity', 'searxng'].includes(id)) {
+      category = 'Web Search';
+      endpoint = '/v1/search';
+    } else if (['browserbase', 'steel', 'browserless', 'anchor'].includes(id)) {
+      category = 'Headless Browsing';
+      endpoint = '/v1/browser';
+    } else if (['e2b', 'daytona', 'modal', 'fly', 'runpod'].includes(id)) {
+      category = 'Code Execution';
+      endpoint = '/v1/execute';
+    } else if (['llamaparse', 'unstructured', 'firecrawl_parse', 'diffbot'].includes(id)) {
+      category = 'Document Parsing';
+      endpoint = '/v1/parse';
+    } else if (['voyage', 'cohere_embed', 'jina_embed'].includes(id)) {
+      category = 'Vector Embeddings';
+      endpoint = '/v1/embeddings';
+    }
+
+    const title = id.charAt(0).toUpperCase() + id.slice(1).replace('_', ' ');
+
+    return {
+      id,
+      title,
+      category,
+      endpoint,
+      meta,
+    };
+  });
+
+  const categories = ['All', 'Web Search', 'Web Scraping', 'Headless Browsing', 'Code Execution', 'Document Parsing', 'Vector Embeddings'];
+
+  const filtered = allTools.filter((t) => {
+    const matchCat = catFilter === 'All' || t.category === catFilter;
+    const matchQ = !query || 
+      t.title.toLowerCase().includes(query.toLowerCase()) || 
+      t.meta.description.toLowerCase().includes(query.toLowerCase()) ||
+      t.category.toLowerCase().includes(query.toLowerCase());
+    return matchCat && matchQ;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono mb-3" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--accent)' }}>
+          <Box className="w-3 h-3" /> 36+ Production Tool Engines Supported
+        </div>
+        <H1>Supported Tool Engines</H1>
+        <P>LiteDaemon unifies 36+ enterprise web scrapers, search engines, sandboxes, browsers, document parsers, and embedding models through a master API endpoint with automated BYOK key failover.</P>
+      </div>
+
+      {/* Filter Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl border text-xs w-full sm:w-64" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+          <Search className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            placeholder="Search 36+ tool engines..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="bg-transparent flex-1 outline-none text-xs"
+            style={{ color: 'var(--text-primary)' }}
+          />
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex items-center gap-1 p-1 rounded-xl border text-xs overflow-x-auto" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCatFilter(cat)}
+              className="px-2.5 py-1 rounded-lg transition-all text-[11px] font-medium cursor-pointer whitespace-nowrap"
+              style={
+                catFilter === cat
+                  ? { backgroundColor: 'var(--bg)', color: 'var(--text-primary)', fontWeight: 600 }
+                  : { color: 'var(--text-muted)' }
+              }
+            >
+              {cat === 'All' ? `All (${allTools.length})` : cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 36+ Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filtered.map((t) => (
+          <div
+            key={t.id}
+            className="p-5 rounded-2xl border transition-all hover:scale-[1.01] hover:shadow-xl space-y-3 group"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${t.meta.iconBg} border flex items-center justify-center font-bold text-xs`}>
+                  {t.title.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t.title}</h3>
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{t.category}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                  {t.meta.latency}
+                </span>
+                <IC>{t.endpoint}</IC>
+              </div>
+            </div>
+
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {t.meta.description}
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {t.meta.capabilities.map((cap) => (
+                <span
+                  key={cap}
+                  className="px-2 py-0.5 rounded-md text-[10px] font-medium"
+                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                >
+                  {cap}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 /* ─── Doc Content Map ────────────────────────────────────────────────────── */
 const DOC_CONTENT: Record<string, React.ReactNode> = {
@@ -572,51 +712,7 @@ curl -X POST https://gateway.litedaemon.com/v1/search \\
   ),
 
   /* ── TOOLS ───────────────────────────────────────────────────────────── */
-  tools: (
-    <div className="space-y-2">
-      <H1>Supported Tool Providers</H1>
-      <P>LiteDaemon routes to 10+ major AI agent tool APIs through a unified endpoint.</P>
-
-      <div className="my-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {[
-          { name: 'Tavily Search',   cat: 'Web Search',    endpoint: '/v1/search',    status: 'stable',  color: '#818cf8' },
-          { name: 'Exa Search',      cat: 'Web Search',    endpoint: '/v1/exa/search',status: 'stable',  color: '#34d399' },
-          { name: 'Serper.dev',      cat: 'Google Search', endpoint: '/v1/serper',    status: 'stable',  color: '#22d3ee' },
-          { name: 'Firecrawl',       cat: 'Web Scraping',  endpoint: '/v1/scrape',    status: 'stable',  color: '#f97316' },
-          { name: 'Jina Reader',     cat: 'Web Scraping',  endpoint: '/v1/jina',      status: 'stable',  color: '#e879f9' },
-          { name: 'Spider',          cat: 'Web Scraping',  endpoint: '/v1/spider',    status: 'stable',  color: '#a78bfa' },
-          { name: 'E2B Sandbox',     cat: 'Code Execution',endpoint: '/v1/execute',   status: 'stable',  color: '#fbbf24' },
-          { name: 'Browserbase',     cat: 'Browser',       endpoint: '/v1/browser',   status: 'stable',  color: '#c084fc' },
-          { name: 'Steel Browser',   cat: 'Browser',       endpoint: '/v1/steel',     status: 'beta',    color: '#67e8f9' },
-          { name: 'LlamaParse',      cat: 'Document',      endpoint: '/v1/document',  status: 'stable',  color: '#fb923c' },
-        ].map((t) => (
-          <div
-            key={t.name}
-            className="p-4 rounded-xl text-xs transition-all"
-            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
-          >
-            <div className="flex items-start justify-between mb-2">
-              <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{t.name}</span>
-              <span
-                className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold"
-                style={{
-                  backgroundColor: t.status === 'stable' ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',
-                  color: t.status === 'stable' ? '#4ade80' : '#fbbf24',
-                  border: `1px solid ${t.status === 'stable' ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.2)'}`,
-                }}
-              >
-                {t.status}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span style={{ color: 'var(--text-muted)' }}>{t.cat}</span>
-              <IC>{t.endpoint}</IC>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  ),
+  tools: <ToolsDirectory />,
 
   /* ── ENDPOINTS ───────────────────────────────────────────────────────── */
   endpoints: (

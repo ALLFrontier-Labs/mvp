@@ -1,12 +1,14 @@
 import React from 'react';
-import { useLocation, useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link, useNavigate } from 'react-router-dom';
 import { ToolDetailLayout } from '../components/tools/ToolDetailLayout';
+import { ToolHeroHeader } from '../components/tools/ToolHeroHeader';
 import { getToolBySlug } from '../lib/services/tool-service';
 import { ShieldCheck, Zap, Server, DollarSign, Activity, BarChart3, AppWindow, LineChart, HelpCircle, ArrowLeft } from 'lucide-react';
 
 export const ToolDetailPage: React.FC = () => {
   const location = useLocation();
   const params = useParams();
+  const navigate = useNavigate();
 
   // Handle both /tools/:provider/:tool and wildcard /tools/*
   let slug = params.slug || '';
@@ -20,7 +22,7 @@ export const ToolDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans px-6 py-20 text-center space-y-4">
         <div className="text-4xl font-extrabold text-white">Tool Not Found</div>
-        <p className="text-zinc-400 text-sm max-w-md mx-auto">
+        <p className="text-zinc-400 text-sm max-w-md mx-auto font-mono">
           No tool engine found matching slug <code className="text-yellow-400 font-mono">{slug}</code>.
         </p>
         <div>
@@ -35,44 +37,17 @@ export const ToolDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-[#ccff00] selection:text-black">
       
-      {/* Tool Header Banner */}
-      <div className="border-b border-zinc-800/80 bg-[#09090b] py-8 px-6">
-        <div className="max-w-7xl mx-auto space-y-3">
-          <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-            <Link to="/providers" className="hover:text-white transition-colors">Tools</Link>
-            <span>/</span>
-            <span className="text-emerald-400 font-bold">{tool.category}</span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                {tool.name}
-              </h1>
-              <p className="text-zinc-400 text-sm mt-1 max-w-3xl">
-                {tool.shortDescription}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 font-mono text-xs shrink-0">
-              <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                <span>{tool.pricingSummary}</span>
-              </div>
-              <Link
-                to="/playground"
-                className="px-4 py-2 rounded-lg bg-[#ccff00] hover:bg-[#b8e600] text-black font-extrabold transition-all"
-              >
-                Test in Playground
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Relational Tool Layout */}
       <ToolDetailLayout>
         
+        {/* Dynamic Tool Hero Header */}
+        <ToolHeroHeader
+          tool={tool}
+          onOpenPlayground={() => navigate('/playground')}
+          onOpenQuickStart={() => navigate('/docs/quickstart')}
+          onCompare={() => navigate('/providers')}
+        />
+
         {/* Section 1: Providers & Backends */}
         <section id="providers" className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-4">
           <div className="flex items-center gap-2 text-white font-bold text-lg">

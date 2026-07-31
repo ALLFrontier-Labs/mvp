@@ -17,6 +17,8 @@ import {
   Sliders
 } from 'lucide-react';
 
+import { useTheme } from '../context/ThemeContext';
+
 interface ProfileDropdownProps {
   onLogout: () => void;
   balanceUsd?: number | null;
@@ -24,30 +26,8 @@ interface ProfileDropdownProps {
 
 export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('dark');
+  const { theme, setTheme } = useTheme();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Real Theme Switcher Implementation
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    } else if (theme === 'dark') {
-      root.classList.remove('light');
-      root.classList.add('dark');
-    } else {
-      // System mode
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (isDark) {
-        root.classList.remove('light');
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-      }
-    }
-  }, [theme]);
 
   // Close dropdown on click outside
   useEffect(() => {

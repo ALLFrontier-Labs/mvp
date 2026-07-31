@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Sun, Moon } from 'lucide-react';
 import { Logo } from './Logo';
 import { CommandPalette } from './CommandPalette';
 import { ProfileDropdown } from './ProfileDropdown';
 import { getStoredApiKey, clearStoredApiKey } from '../lib/api';
+import { useTheme } from '../context/ThemeContext';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const navigate  = useNavigate();
   const apiKey    = getStoredApiKey();
   const [isCmdOpen, setIsCmdOpen] = useState(false);
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     clearStoredApiKey();
@@ -28,7 +30,7 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full border-b px-4 h-14 flex items-center justify-between font-sans backdrop-blur-md"
+        className="sticky top-0 z-40 w-full border-b px-4 h-14 flex items-center justify-between font-sans backdrop-blur-md transition-colors duration-200"
         style={{
           backgroundColor: 'var(--bg-overlay)',
           borderColor: 'var(--border)',
@@ -64,7 +66,7 @@ export const Header: React.FC = () => {
           </button>
         </div>
 
-        {/* RIGHT: Nav + Action */}
+        {/* RIGHT: Nav + Actions */}
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-5 text-sm">
             {navLinks.map((link) => {
@@ -77,7 +79,7 @@ export const Header: React.FC = () => {
                 <Link
                   key={link.label}
                   to={link.path}
-                  className="relative transition-colors text-sm font-medium"
+                  className="relative transition-colors text-sm font-medium hover:text-[var(--text-primary)]"
                   style={{
                     color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
                     fontWeight: isActive ? '600' : '400',
@@ -87,8 +89,8 @@ export const Header: React.FC = () => {
                   {/* Active underline indicator */}
                   {isActive && (
                     <span
-                      className="absolute -bottom-[18px] left-0 w-full h-px"
-                      style={{ backgroundColor: 'var(--text-primary)' }}
+                      className="absolute -bottom-[18px] left-0 w-full h-[2px] rounded-full transition-all"
+                      style={{ backgroundColor: 'var(--accent)' }}
                     />
                   )}
                 </Link>
@@ -97,10 +99,23 @@ export const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* Quick Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 light:text-zinc-600 light:hover:text-zinc-900 light:hover:bg-zinc-100 transition-colors cursor-pointer"
+              title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-zinc-700" />
+              )}
+            </button>
+
             {!apiKey ? (
               <Link
                 to="/auth"
-                className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+                className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 shadow-sm"
                 style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
               >
                 Sign Up

@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { ThemeProvider } from './context/ThemeContext';
 import { Login }         from './pages/Login';
 import { Dashboard }     from './pages/Dashboard';
 import { Providers }     from './pages/Providers';
@@ -26,49 +27,44 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 export const App: React.FC = () => {
-  // Apply dark class to <html> by default so Tailwind dark: variants work
-  useEffect(() => {
-    if (!document.documentElement.classList.contains('light')) {
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
   return (
-    <BrowserRouter>
-      <div
-        className="min-h-screen flex flex-col"
-        style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}
-      >
-        <Navbar />
-        <main className="flex-1 page-enter">
-          <Routes>
-            {/* ── Public ─────────────────────────────────────── */}
-            <Route path="/"          element={<Landing />} />
-            <Route path="/auth"      element={<Login />} />
-            <Route path="/providers" element={<Providers />} />
-            <Route path="/tools/*"   element={<ToolDetailPage />} />
-            <Route path="/tool/*"    element={<ToolDetailPage />} />
-            <Route path="/compare/*" element={<ComparePage />} />
-            <Route path="/rankings"  element={<Rankings />} />
-            <Route path="/docs"      element={<Docs />} />
-            <Route path="/docs/*"    element={<Docs />} />
-            <Route path="/privacy"   element={<Privacy />} />
-            <Route path="/terms"     element={<Terms />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        <div
+          className="min-h-screen flex flex-col transition-colors duration-200"
+          style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}
+        >
+          <Navbar />
+          <main className="flex-1 page-enter">
+            <Routes>
+              {/* ── Public ─────────────────────────────────────── */}
+              <Route path="/"          element={<Landing />} />
+              <Route path="/auth"      element={<Login />} />
+              <Route path="/providers" element={<Providers />} />
+              <Route path="/tools/*"   element={<ToolDetailPage />} />
+              <Route path="/tool/*"    element={<ToolDetailPage />} />
+              <Route path="/compare/*" element={<ComparePage />} />
+              <Route path="/rankings"  element={<Rankings />} />
+              <Route path="/docs"      element={<Docs />} />
+              <Route path="/docs/*"    element={<Docs />} />
+              <Route path="/privacy"   element={<Privacy />} />
+              <Route path="/terms"     element={<Terms />} />
 
-            {/* ── Protected ───────────────────────────────────── */}
-            <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/jobs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-            <Route path="/billing"    element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-            <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/keys"       element={<ProtectedRoute><Keys /></ProtectedRoute>} />
-            <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
+              {/* ── Protected ───────────────────────────────────── */}
+              <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/jobs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+              <Route path="/billing"    element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+              <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/keys"       element={<ProtectedRoute><Keys /></ProtectedRoute>} />
+              <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </BrowserRouter>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 };
 

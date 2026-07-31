@@ -32,12 +32,12 @@ const CodeBlock: React.FC<{
   return (
     <div
       className="my-6 rounded-xl overflow-hidden text-xs font-mono shadow-xl"
-      style={{ border: '1px solid var(--border)', backgroundColor: '#0d0d0f' }}
+      style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-card)' }}
     >
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2.5 border-b"
-        style={{ backgroundColor: '#111113', borderColor: 'var(--border)' }}
+        style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
       >
         <div className="flex items-center gap-3">
           {/* Traffic lights */}
@@ -101,7 +101,7 @@ const CodeBlock: React.FC<{
           {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
         </div>
         {/* Code lines */}
-        <pre className="flex-1 text-[11px] leading-relaxed text-emerald-300 overflow-x-auto">
+        <pre className="flex-1 text-[11px] leading-relaxed overflow-x-auto" style={{ color: 'var(--text-primary)' }}>
           {lines.map((line, i) => <div key={i} className="whitespace-pre">{line || ' '}</div>)}
         </pre>
       </div>
@@ -141,7 +141,7 @@ const Callout: React.FC<{
 const IC: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <code
     className="text-[11px] font-mono px-1.5 py-0.5 rounded"
-    style={{ backgroundColor: 'var(--bg-secondary)', color: '#86efac', border: '1px solid var(--border)' }}
+    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
   >
     {children}
   </code>
@@ -169,6 +169,31 @@ const P: React.FC<{ children: React.ReactNode; className?: string }> = ({ childr
   </p>
 );
 
+/* ─── Parameter Table ────────────────────────────────────────────────────── */
+const ParamTable: React.FC<{
+  params: { name: string; type: string; required?: boolean; default?: string; desc: string }[];
+}> = ({ params }) => (
+  <div className="my-4 rounded-xl border overflow-hidden text-xs" style={{ borderColor: 'var(--border)' }}>
+    <div className="grid grid-cols-12 gap-2 px-4 py-2 font-semibold uppercase tracking-wider text-[11px] border-b" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+      <span className="col-span-3">Parameter</span>
+      <span className="col-span-2">Type</span>
+      <span className="col-span-2">Default</span>
+      <span className="col-span-5">Description</span>
+    </div>
+    {params.map((p, i) => (
+      <div key={p.name} className="grid grid-cols-12 gap-2 px-4 py-3 border-b last:border-b-0 items-center" style={{ borderColor: 'var(--border)', backgroundColor: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-secondary)' }}>
+        <span className="col-span-3 font-mono font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+          {p.name}
+          {p.required && <span className="text-[9px] px-1 py-0.2 rounded bg-rose-500/20 text-rose-400 font-bold">REQ</span>}
+        </span>
+        <span className="col-span-2 font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{p.type}</span>
+        <span className="col-span-2 font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{p.default ?? '—'}</span>
+        <span className="col-span-5" style={{ color: 'var(--text-secondary)' }}>{p.desc}</span>
+      </div>
+    ))}
+  </div>
+);
+
 /* ─── Sidebar Nav Data ───────────────────────────────────────────────────── */
 const SIDEBAR = [
   {
@@ -190,20 +215,29 @@ const SIDEBAR = [
     ],
   },
   {
-    title: 'Tool Providers',
+    title: 'Tool Providers & APIs',
     icon: Layers,
     items: [
       { label: 'Supported Tools',   id: 'tools',         icon: Box },
-      { label: 'Endpoints Reference', id: 'endpoints',   icon: Code2 },
+      { label: 'API Reference',     id: 'endpoints',     icon: Code2 },
     ],
   },
   {
-    title: 'Framework SDKs',
+    title: 'Official SDKs',
+    icon: Terminal,
+    items: [
+      { label: 'TypeScript / Node', id: 'sdk-npm',       icon: Terminal },
+      { label: 'Python SDK',        id: 'sdk-python',    icon: Terminal },
+    ],
+  },
+  {
+    title: 'Framework Integrations',
     icon: Cpu,
     items: [
       { label: 'LangChain',         id: 'langchain',     icon: Terminal },
       { label: 'CrewAI',            id: 'crewai',        icon: Terminal },
       { label: 'AutoGen',           id: 'autogen',       icon: Terminal },
+      { label: 'LlamaIndex',        id: 'llamaindex',    icon: Terminal },
       { label: 'n8n / Webhooks',    id: 'n8n',           icon: Terminal },
     ],
   },
@@ -586,52 +620,242 @@ curl -X POST https://gateway.litedaemon.com/v1/search \\
 
   /* ── ENDPOINTS ───────────────────────────────────────────────────────── */
   endpoints: (
-    <div className="space-y-2">
-      <H1>Endpoint Reference</H1>
-      <P>All LiteDaemon gateway endpoints. Base URL: <IC>https://gateway.litedaemon.com</IC></P>
+    <div className="space-y-6">
+      <div>
+        <H1>API Reference & Gateway Endpoints</H1>
+        <P>Complete reference for LiteDaemon REST endpoints. All requests require header authentication: <IC>Authorization: Bearer ld_live_...</IC></P>
+      </div>
 
-      <H2>POST /v1/search</H2>
-      <P>Route a web search request to Tavily, Exa, or Serper based on your vault config.</P>
-      <CodeBlock filename="search" code={{
-        python: `requests.post("https://gateway.litedaemon.com/v1/search", json={
-    "query": "string",          # required
-    "provider": "tavily",       # optional: tavily | exa | serper
-    "num_results": 10,          # optional, default 10
-    "include_raw_content": False
-})`,
-        typescript: `fetch('https://gateway.litedaemon.com/v1/search', {
+      {/* 1. SEARCH */}
+      <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">POST</span>
+          <span className="font-mono text-base font-bold" style={{ color: 'var(--text-primary)' }}>/v1/search</span>
+        </div>
+        <P>Route unified web search queries across Tavily, Exa, or Serper based on active vault credentials.</P>
+
+        <H3>Request Parameters</H3>
+        <ParamTable params={[
+          { name: 'query', type: 'string', required: true, desc: 'Search query keyword or question.' },
+          { name: 'provider', type: 'string', required: false, default: 'auto', desc: 'Target engine: "tavily" | "exa" | "serper" | "auto"' },
+          { name: 'num_results', type: 'number', required: false, default: '10', desc: 'Number of search result objects to return (1-50).' },
+          { name: 'search_depth', type: 'string', required: false, default: 'basic', desc: '"basic" (faster) or "advanced" (deep content extraction).' },
+          { name: 'include_domains', type: 'string[]', required: false, desc: 'Limit search strictly to specific domain hostnames.' },
+        ]} />
+
+        <H3>Code Example</H3>
+        <CodeBlock filename="search" code={{
+          python: `import requests
+
+res = requests.post(
+    "https://gateway.litedaemon.com/v1/search",
+    headers={"Authorization": "Bearer ld_live_master"},
+    json={
+        "query": "Autonomous AI Agent Benchmarks 2025",
+        "provider": "tavily",
+        "num_results": 5
+    }
+)
+print(res.json())`,
+          typescript: `const res = await fetch('https://gateway.litedaemon.com/v1/search', {
   method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ld_live_master',
+    'Content-Type': 'application/json'
+  },
   body: JSON.stringify({
-    query: 'string',           // required
-    provider: 'tavily',        // optional: tavily | exa | serper
-    num_results: 10,           // optional, default 10
-    include_raw_content: false,
-  }),
-})`,
-        curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
-  -d '{"query":"your query","provider":"tavily"}'`,
+    query: 'Autonomous AI Agent Benchmarks 2025',
+    provider: 'tavily',
+    num_results: 5
+  })
+});
+const data = await res.json();`,
+          curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
+  -H "Authorization: Bearer ld_live_master" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query":"Autonomous AI Agent Benchmarks 2025","provider":"tavily"}'`,
+        }} />
+      </div>
+
+      {/* 2. SCRAPE */}
+      <div className="pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">POST</span>
+          <span className="font-mono text-base font-bold" style={{ color: 'var(--text-primary)' }}>/v1/scrape</span>
+        </div>
+        <P>Scrape and convert any webpage URL to clean Markdown, HTML, or raw text using Firecrawl, Jina, or Spider.</P>
+
+        <H3>Request Parameters</H3>
+        <ParamTable params={[
+          { name: 'url', type: 'string', required: true, desc: 'Target HTTP/HTTPS URL to scrape.' },
+          { name: 'provider', type: 'string', required: false, default: 'firecrawl', desc: 'Engine: "firecrawl" | "jina" | "spider"' },
+          { name: 'formats', type: 'string[]', required: false, default: '["markdown"]', desc: 'Output formats: ["markdown", "html", "rawHtml"]' },
+          { name: 'wait_for', type: 'number', required: false, default: '0', desc: 'Milliseconds to wait before capturing DOM.' },
+        ]} />
+
+        <CodeBlock filename="scrape" code={{
+          python: `res = requests.post(
+    "https://gateway.litedaemon.com/v1/scrape",
+    headers={"Authorization": "Bearer ld_live_master"},
+    json={"url": "https://news.ycombinator.com", "provider": "firecrawl"}
+)`,
+          typescript: `const res = await fetch('https://gateway.litedaemon.com/v1/scrape', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer ld_live_master', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ url: 'https://news.ycombinator.com', provider: 'firecrawl' })
+});`,
+          curl: `curl -X POST https://gateway.litedaemon.com/v1/scrape \\
+  -H "Authorization: Bearer ld_live_master" \\
+  -d '{"url":"https://news.ycombinator.com","provider":"firecrawl"}'`,
+        }} />
+      </div>
+
+      {/* 3. EXECUTE */}
+      <div className="pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">POST</span>
+          <span className="font-mono text-base font-bold" style={{ color: 'var(--text-primary)' }}>/v1/execute</span>
+        </div>
+        <P>Execute code in isolated, microVM sandboxes via E2B or Modal.</P>
+
+        <H3>Request Parameters</H3>
+        <ParamTable params={[
+          { name: 'code', type: 'string', required: true, desc: 'Source code snippet to execute.' },
+          { name: 'language', type: 'string', required: false, default: 'python', desc: 'Runtime: "python" | "typescript" | "bash"' },
+          { name: 'timeout_seconds', type: 'number', required: false, default: '30', desc: 'Max execution duration before kill.' },
+        ]} />
+
+        <CodeBlock filename="execute" code={{
+          python: `res = requests.post(
+    "https://gateway.litedaemon.com/v1/execute",
+    headers={"Authorization": "Bearer ld_live_master"},
+    json={"code": "import math; print(math.factorial(10))", "language": "python"}
+)`,
+          typescript: `const res = await fetch('https://gateway.litedaemon.com/v1/execute', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer ld_live_master', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ code: 'console.log("Hello from E2B Sandbox!")', language: 'typescript' })
+});`,
+          curl: `curl -X POST https://gateway.litedaemon.com/v1/execute \\
+  -H "Authorization: Bearer ld_live_master" \\
+  -d '{"code":"print(42)","language":"python"}'`,
+        }} />
+      </div>
+    </div>
+  ),
+
+  /* ── OFFICIAL SDKS ────────────────────────────────────────────────────── */
+  'sdk-npm': (
+    <div className="space-y-4">
+      <H1>TypeScript / Node.js SDK (`@litedaemon/sdk`)</H1>
+      <P>Official TypeScript client for LiteDaemon. Full type safety for all 150+ tool engines.</P>
+
+      <H2>Installation</H2>
+      <CodeBlock filename="install" code={{
+        python: `# Use npm, pnpm, or yarn
+npm install @litedaemon/sdk`,
+        typescript: `npm install @litedaemon/sdk`,
+        curl: `npm install @litedaemon/sdk`,
       }} />
 
-      <H2>POST /v1/scrape</H2>
-      <P>Scrape any URL via Firecrawl, Jina, or Spider.</P>
-      <CodeBlock filename="scrape" code={{
-        python: `requests.post("https://gateway.litedaemon.com/v1/scrape", json={
-    "url": "https://example.com",    # required
-    "provider": "firecrawl",         # optional
-    "formats": ["markdown", "html"], # optional
-})`,
-        typescript: `fetch('https://gateway.litedaemon.com/v1/scrape', {
-  method: 'POST',
-  body: JSON.stringify({
-    url: 'https://example.com',
-    provider: 'firecrawl',
-    formats: ['markdown'],
-  }),
-})`,
-        curl: `curl -X POST https://gateway.litedaemon.com/v1/scrape \\
+      <H2>Usage Example</H2>
+      <CodeBlock filename="sdk_example" code={{
+        python: `# TypeScript SDK Usage
+import { LiteDaemon } from '@litedaemon/sdk';
+
+const client = new LiteDaemon({ apiKey: process.env.LITEDAEMON_API_KEY });
+const result = await client.search({ query: 'Agentic Workflows 2025' });
+console.log(result);`,
+        typescript: `import { LiteDaemon } from '@litedaemon/sdk';
+
+const client = new LiteDaemon({
+  apiKey: process.env.LITEDAEMON_API_KEY,
+  maxRetries: 3,
+  timeoutMs: 15000,
+});
+
+// Search
+const searchRes = await client.search({
+  query: 'Latest LLM research papers',
+  provider: 'tavily',
+  numResults: 5,
+});
+
+// Scrape
+const scrapeRes = await client.scrape({
+  url: 'https://arxiv.org',
+  provider: 'firecrawl',
+});
+
+console.log(searchRes, scrapeRes);`,
+        curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
   -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
-  -d '{"url":"https://example.com","formats":["markdown"]}'`,
+  -d '{"query":"Agentic Workflows 2025"}'`,
+      }} />
+    </div>
+  ),
+
+  'sdk-python': (
+    <div className="space-y-4">
+      <H1>Python SDK (`litedaemon`)</H1>
+      <P>Official Python client for LiteDaemon with async support and automatic failover retries.</P>
+
+      <H2>Installation</H2>
+      <CodeBlock filename="install_python" code={{
+        python: `pip install litedaemon`,
+        typescript: `pip install litedaemon`,
+        curl: `pip install litedaemon`,
+      }} />
+
+      <H2>Usage Example</H2>
+      <CodeBlock filename="python_usage" code={{
+        python: `from litedaemon import LiteDaemon
+import os
+
+client = LiteDaemon(api_key=os.environ["LITEDAEMON_API_KEY"])
+
+# Web Search
+res = client.search(query="Python 3.13 features", provider="exa", num_results=5)
+print(res.results)
+
+# Execute Code in Sandbox
+exec_res = client.execute(code="print('Hello from E2B')", language="python")
+print(exec_res.output)`,
+        typescript: `# Async Client also available
+from litedaemon import AsyncLiteDaemon
+
+async_client = AsyncLiteDaemon()
+res = await async_client.search(query="Python 3.13 features")`,
+        curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
+  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
+  -d '{"query":"Python 3.13 features"}'`,
+      }} />
+    </div>
+  ),
+
+  llamaindex: (
+    <div className="space-y-4">
+      <H1>LlamaIndex Integration</H1>
+      <P>Use LiteDaemon as a tool spec for LlamaIndex RAG pipelines and agents.</P>
+      <CodeBlock filename="llamaindex_quickstart" code={{
+        python: `from llama_index.core.agent import ReActAgent
+from llama_index.tools.tavily_research import TavilyToolSpec
+import os
+
+# Point Tavily spec to LiteDaemon Gateway
+os.environ["TAVILY_API_BASE"] = "https://gateway.litedaemon.com/v1"
+os.environ["TAVILY_API_KEY"] = "ld_live_your_master_key"
+
+tavily_tool = TavilyToolSpec().to_tool_list()
+agent = ReActAgent.from_tools(tavily_tool, verbose=True)
+
+response = agent.chat("What are the latest AI agent trends in 2025?")
+print(response)`,
+        typescript: `import { ReActAgent } from 'llamaindex';
+// Configure tool spec base URL to https://gateway.litedaemon.com/v1`,
+        curl: `curl https://gateway.litedaemon.com/v1/search \\
+  -H "Authorization: Bearer ld_live_your_master_key" \\
+  -d '{"query":"LlamaIndex AI Trends"}'`,
       }} />
     </div>
   ),
@@ -853,17 +1077,21 @@ export const Docs: React.FC = () => {
   const location  = useLocation();
   const navigate  = useNavigate();
   const [search, setSearch]     = useState('');
-  const [docTab, setDocTab]     = useState<DocTab>('docs');
   const [mobileNav, setMobileNav] = useState(false);
 
   // Active doc from URL
   const pathSeg   = location.pathname.replace('/docs', '').replace(/^\//, '') || 'quickstart';
   const activeDoc = pathSeg || 'quickstart';
 
-  const DOC_TABS: { id: DocTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'docs',          label: 'Docs',          icon: <BookOpen className="w-3.5 h-3.5" /> },
-    { id: 'api-reference', label: 'API Reference',  icon: <Code2 className="w-3.5 h-3.5" /> },
-    { id: 'sdks',          label: 'SDKs',           icon: <Box className="w-3.5 h-3.5" /> },
+  let docTab: DocTab = 'docs';
+  if (['quickstart', 'architecture', 'principles', 'keys', 'security', 'failover'].includes(activeDoc)) docTab = 'docs';
+  if (['tools', 'endpoints'].includes(activeDoc)) docTab = 'api-reference';
+  if (['langchain', 'crewai', 'autogen', 'n8n'].includes(activeDoc)) docTab = 'sdks';
+
+  const DOC_TABS: { id: DocTab; label: string; icon: React.ReactNode; path: string }[] = [
+    { id: 'docs',          label: 'Docs',          icon: <BookOpen className="w-3.5 h-3.5" />, path: '/docs/quickstart' },
+    { id: 'api-reference', label: 'API Reference',  icon: <Code2 className="w-3.5 h-3.5" />, path: '/docs/endpoints' },
+    { id: 'sdks',          label: 'SDKs',           icon: <Box className="w-3.5 h-3.5" />, path: '/docs/langchain' },
   ];
 
   const content = DOC_CONTENT[activeDoc] ?? DOC_CONTENT['quickstart'];
@@ -881,9 +1109,9 @@ export const Docs: React.FC = () => {
             {/* Section tabs */}
             <div className="flex items-center">
               {DOC_TABS.map((tab) => (
-                <button
+                <Link
                   key={tab.id}
-                  onClick={() => setDocTab(tab.id)}
+                  to={tab.path}
                   className="flex items-center gap-1.5 px-4 h-10 text-xs font-medium relative transition-colors cursor-pointer"
                   style={{
                     color: docTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
@@ -895,10 +1123,10 @@ export const Docs: React.FC = () => {
                   {docTab === tab.id && (
                     <span
                       className="absolute bottom-0 left-0 w-full h-[2px]"
-                      style={{ backgroundColor: '#ccff00' }}
+                      style={{ backgroundColor: 'var(--accent)' }}
                     />
                   )}
-                </button>
+                </Link>
               ))}
             </div>
 

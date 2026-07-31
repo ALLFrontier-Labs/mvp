@@ -282,56 +282,54 @@ export const Landing: React.FC = () => {
             </div>
           </div>
 
-          {/* Step 2: Buy Credits */}
+          {/* Step 2: Connect Provider Keys (BYOK) */}
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
                 <span>2</span>
-                <span>Buy credits</span>
+                <span>Connect tool keys</span>
               </div>
               <p className="text-xs text-zinc-400 leading-relaxed max-w-xs">
-                Credits can be used with <span className="text-zinc-200">any model or provider</span>.
+                Add your API keys for <span className="text-zinc-200">Tavily, Exa, E2B, Browserbase</span> and more.
               </p>
             </div>
 
-            {/* Credit Card & Ledger Mock */}
+            {/* Key Vault Ledger Mock */}
             <div className="pt-2 space-y-2">
-              {/* Credit card icon */}
+              {/* Shield / Vault Icon */}
               <div className="text-zinc-400 pl-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <rect x="2" y="5" width="20" height="14" rx="2" />
-                  <line x1="2" y1="10" x2="22" y2="10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
 
-              {/* Ledger */}
-              <div className="space-y-1 font-mono text-xs max-w-[200px]">
-                <div className="flex items-center justify-between px-2.5 py-1 rounded bg-zinc-900/80 text-zinc-400 border border-zinc-800/60">
-                  <span>Apr 1</span>
-                  <span className="text-zinc-200 font-medium">$99</span>
+              {/* Provider Key Status Pills */}
+              <div className="space-y-1.5 font-mono text-xs max-w-[220px]">
+                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/80 text-zinc-300 border border-zinc-800/80 text-[11px]">
+                  <span className="truncate">Tavily Key</span>
+                  <span className="text-emerald-400 font-medium text-[10px]">Active</span>
                 </div>
-                <div className="flex items-center justify-between px-2.5 py-1 rounded bg-zinc-900/80 text-zinc-400 border border-zinc-800/60">
-                  <span>Mar 30</span>
-                  <span className="text-zinc-200 font-medium">$10</span>
+                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/80 text-zinc-300 border border-zinc-800/80 text-[11px]">
+                  <span className="truncate">E2B Sandbox</span>
+                  <span className="text-emerald-400 font-medium text-[10px]">Active</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Step 3: Get API Key */}
+          {/* Step 3: Get Unified Key */}
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
                 <span>3</span>
-                <span>Get your API key</span>
+                <span>Get your unified key</span>
               </div>
               <p className="text-xs text-zinc-400 leading-relaxed max-w-xs">
-                Create an API key and start making requests.{' '}
-                <span className="text-zinc-200 underline decoration-zinc-500 underline-offset-2">Fully OpenAI compatible</span>.
+                Execute all search, browser, and sandbox tools via <span className="text-zinc-200 font-medium">a single master key</span>.
               </p>
             </div>
 
-            {/* Key & Secret Pill Inputs */}
+            {/* Master Key Input Pills */}
             <div className="pt-2 space-y-2 max-w-[230px]">
               {/* Key Icon */}
               <div className="text-zinc-400 pl-1">
@@ -342,8 +340,8 @@ export const Landing: React.FC = () => {
 
               {/* Key Name Pill */}
               <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono text-xs flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
-                <span className="truncate">LITEDAEMON_API_KEY</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span className="truncate">LITEDAEMON_MASTER_KEY</span>
               </div>
 
               {/* Hidden Token Pill */}

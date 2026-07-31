@@ -84,7 +84,7 @@ export const Footer: React.FC = () => {
         {FOOTER_COLUMNS.map((col) => (
           <div key={col.title} className="space-y-4">
             <h4
-              className="text-sm font-semibold tracking-wide"
+              className="text-base font-bold tracking-tight mb-1"
               style={{ color: 'var(--text-primary)' }}
             >
               {col.title}

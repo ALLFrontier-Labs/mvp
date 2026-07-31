@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ChevronRight, Copy, Check, Code2
+  ChevronRight, Copy, Check, Code2, Globe, Github, Mail, Key
 } from 'lucide-react';
 
 const FRAMEWORK_SNIPPETS = {
@@ -104,15 +104,23 @@ export const Landing: React.FC = () => {
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-[#ccff00] selection:text-black">
 
       {/* ── HERO SECTION (Pixel-Perfect OpenRouter Parity) ─────────────── */}
-      <section className="pt-20 pb-12 px-6 max-w-5xl mx-auto text-center space-y-4">
+      <section className="pt-20 pb-8 px-6 max-w-5xl mx-auto text-center space-y-4">
         <h1 className="max-w-5xl mx-auto text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white text-center leading-tight">
           The Unified Interface For AI Agent Tools
         </h1>
-        <p className="text-zinc-400 text-center text-lg mt-3 font-sans font-normal">
-          Better <span className="text-white underline decoration-zinc-600 underline-offset-4">reliability</span>, better <span className="text-white underline decoration-zinc-600 underline-offset-4">latency</span>, no subscriptions.
+        <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto font-sans">
+          Better{' '}
+          <Link className="underline decoration-zinc-400 hover:text-zinc-100 transition-colors font-medium cursor-pointer" to="/providers?sort=reliability">
+            reliability
+          </Link>
+          , better{' '}
+          <Link className="underline decoration-zinc-400 hover:text-zinc-100 transition-colors font-medium cursor-pointer" to="/providers?sort=latency">
+            latency
+          </Link>
+          , no subscriptions.
         </p>
 
-        <div className="flex items-center justify-center gap-3 pt-6 text-sm font-sans">
+        <div className="flex items-center justify-center gap-3 pt-4 text-sm font-sans">
           <Link
             to="/auth"
             className="bg-[#ccff00] text-black font-extrabold px-5 py-2.5 rounded-xl text-sm hover:bg-yellow-300 transition-all shadow-sm"
@@ -131,30 +139,46 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 3. BORDERLESS STATS ROW (Floating Numbers Format) ─────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-3xl md:text-5xl font-extrabold text-zinc-100 font-sans tracking-tight">100M+</div>
-            <div className="text-xs text-zinc-400 mt-1 font-medium font-sans">Monthly Tool Calls</div>
+      {/* ── 2. COMPACT STATS ROW ────────────────────────────────────────── */}
+      <section className="py-6 max-w-4xl mx-auto px-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="space-y-1">
+            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+              100M+
+            </div>
+            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+              Monthly Tool Calls
+            </div>
           </div>
-          <div>
-            <div className="text-3xl md:text-5xl font-extrabold text-zinc-100 font-sans tracking-tight">1M+</div>
-            <div className="text-xs text-zinc-400 mt-1 font-medium font-sans">Global Developers</div>
+          <div className="space-y-1">
+            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+              1M+
+            </div>
+            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+              Global Developers
+            </div>
           </div>
-          <div>
-            <div className="text-3xl md:text-5xl font-extrabold text-zinc-100 font-sans tracking-tight">36+</div>
-            <div className="text-xs text-zinc-400 mt-1 font-medium font-sans">Tool Providers</div>
+          <div className="space-y-1">
+            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+              36+
+            </div>
+            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+              Tool Providers
+            </div>
           </div>
-          <div>
-            <div className="text-3xl md:text-5xl font-extrabold text-zinc-100 font-sans tracking-tight">150+</div>
-            <div className="text-xs text-zinc-400 mt-1 font-medium font-sans">Tool Engines</div>
+          <div className="space-y-1">
+            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+              150+
+            </div>
+            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+              Tool Engines
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── 4. FEATURED TOOLS & BENTO GRID ──────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-12 space-y-10">
+      {/* ── 3. FEATURED TOOLS & BENTO GRID ──────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-10 space-y-8">
         
         {/* Section Header Standard */}
         <div className="flex items-center justify-between mb-4">
@@ -198,42 +222,97 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 5. HOW IT WORKS (3 Simple Steps) ────────────────────────────────── */}
+      {/* ── 4. HIGH-FIDELITY "HOW IT WORKS" VISUAL SECTION ─────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80 space-y-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 font-sans">
-            How It Works <ChevronRight className="w-4 h-4 text-zinc-400" />
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-zinc-100 font-sans flex items-center gap-2">
+            <span>How It Works</span>
+            <span className="text-xs font-normal text-zinc-500">&gt;</span>
           </h2>
-          <Link to="/docs" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-mono">
+          <Link className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors font-mono" to="/docs">
             Read docs &rarr;
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans text-xs">
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="font-bold text-white text-sm">1. Sign Up</h3>
-            <p className="text-zinc-400 leading-relaxed">
-              Create an account via GitHub or Google in seconds.
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Step 1: Signup Card */}
+          <div className="p-5 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-zinc-300 font-sans">
+                <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[11px]">1</span>
+                <span>Signup</span>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                Create an account to get started. You can set up an org for your team later.
+              </p>
+            </div>
+
+            {/* Step 1 Visual Mock */}
+            <div className="pt-3 border-t border-zinc-800/60 flex items-center gap-2 justify-center">
+              <div className="p-2 rounded-lg bg-zinc-800/60 border border-zinc-700/50 text-zinc-300 hover:text-white transition-colors cursor-pointer">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div className="p-2 rounded-lg bg-zinc-800/60 border border-zinc-700/50 text-zinc-300 hover:text-white transition-colors cursor-pointer">
+                <Github className="w-4 h-4" />
+              </div>
+              <div className="p-2 rounded-lg bg-zinc-800/60 border border-zinc-700/50 text-zinc-300 hover:text-white transition-colors cursor-pointer">
+                <Mail className="w-4 h-4" />
+              </div>
+            </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="font-bold text-white text-sm">2. Add BYOK Keys</h3>
-            <p className="text-zinc-400 leading-relaxed">
-              Connect your provider keys or top up wallet balance.
-            </p>
+          {/* Step 2: Connect Keys / Credits */}
+          <div className="p-5 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-zinc-300 font-sans">
+                <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[11px]">2</span>
+                <span>Connect BYOK or Buy Credits</span>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                Connect your provider keys or top up wallet balance for shared execution.
+              </p>
+            </div>
+
+            {/* Step 2 Visual Mock */}
+            <div className="p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 space-y-1.5 font-mono text-[11px]">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span>Apr 1</span>
+                <span className="text-lime-400 font-semibold">$99.00</span>
+              </div>
+              <div className="flex items-center justify-between text-zinc-400">
+                <span>Mar 30</span>
+                <span className="text-lime-400 font-semibold">$10.00</span>
+              </div>
+            </div>
           </div>
 
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="font-bold text-white text-sm">3. Get Master Key</h3>
-            <p className="text-zinc-400 leading-relaxed">
-              Swap your tool base URL to <code className="text-emerald-400 font-mono">https://gateway.litedaemon.com/v1</code> and execute.
-            </p>
+          {/* Step 3: Get API Key */}
+          <div className="p-5 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-zinc-300 font-sans">
+                <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[11px]">3</span>
+                <span>Get your API key</span>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                Create an API key and start making requests. <span className="text-zinc-200 underline decoration-zinc-500">Fully OpenAI compatible</span>.
+              </p>
+            </div>
+
+            {/* Step 3 Visual Mock */}
+            <div className="space-y-1.5 font-mono text-[11px]">
+              <div className="px-3 py-1.5 rounded-lg bg-zinc-950/80 border border-zinc-800 text-zinc-300 flex items-center gap-2">
+                <Key className="w-3.5 h-3.5 text-lime-400 shrink-0" />
+                <span className="truncate text-zinc-400">LITEDAEMON_API_KEY</span>
+              </div>
+              <div className="px-3 py-1.5 rounded-lg bg-zinc-950/80 border border-zinc-800 text-zinc-500 truncate">
+                ••••••••••••••••••••••••
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── 6. FRAMEWORK QUICKSTARTS ────────────────────────────────────────── */}
+      {/* ── 5. FRAMEWORK QUICKSTARTS ────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80 space-y-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 font-sans">

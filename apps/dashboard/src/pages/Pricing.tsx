@@ -66,8 +66,6 @@ const FAQS: { category: string; items: FAQItem[] }[] = [
 
 export const Pricing: React.FC = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<string | null>('0-0');
-  const apiKey = getStoredApiKey();
-  const ctaRoute = apiKey ? '/keys' : '/auth';
 
   const toggleFaq = (key: string) => {
     setOpenFaqIndex((prev) => (prev === key ? null : key));
@@ -82,24 +80,24 @@ export const Pricing: React.FC = () => {
           Pricing
         </h1>
         <p className="text-sm sm:text-base max-w-xl mx-auto font-sans" style={{ color: 'var(--text-secondary)' }}>
-          Plans for indie hackers, AI native startups, and enterprise agent infrastructure
+          100 free tool calls per month. 5% markup per call post 100 calls, or 0% gateway fee with BYOK.
         </p>
 
         <div className="flex items-center justify-center gap-4 pt-4 text-sm font-sans">
           <Link
-            to={ctaRoute}
+            to="/auth"
             className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-sm min-w-[150px] text-center"
             style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
           >
             Get Started
           </Link>
-          <a
-            href="mailto:sales@litedaemon.com"
+          <Link
+            to="/contact-sales"
             className="border px-6 py-3 rounded-2xl text-sm font-semibold transition-all hover:opacity-80 min-w-[150px] text-center"
             style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
           >
             Talk To Sales
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -117,7 +115,7 @@ export const Pricing: React.FC = () => {
                 <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
                   <th className="p-5 w-1/4" />
                   <th className="p-5 text-center text-sm font-bold w-1/4" style={{ color: 'var(--text-primary)' }}>
-                    Free
+                    Free Tier
                   </th>
                   <th 
                     className="p-5 text-center text-sm font-bold w-1/4 border-x relative"
@@ -128,9 +126,9 @@ export const Pricing: React.FC = () => {
                     }}
                   >
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-1" style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}>
-                      <Sparkles className="w-3 h-3" /> Most Popular
+                      <Sparkles className="w-3 h-3" /> Pay-as-you-go
                     </div>
-                    <div>Pay-as-you-go</div>
+                    <div>Standard Engine</div>
                   </th>
                   <th className="p-5 text-center text-sm font-bold w-1/4" style={{ color: 'var(--text-primary)' }}>
                     Enterprise
@@ -141,15 +139,39 @@ export const Pricing: React.FC = () => {
               {/* Body Rows */}
               <tbody className="divide-y text-xs" style={{ borderColor: 'var(--border)' }}>
 
-                {/* Platform Fees */}
+                {/* Monthly Free Calls */}
                 <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Platform Fees</td>
-                  <td className="p-5 text-center font-bold text-emerald-400">0% BYOK Gateway Fee</td>
+                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Monthly Free Allowance</td>
+                  <td className="p-5 text-center font-bold text-emerald-400">100 free calls / mo (resets monthly)</td>
+                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
+                    100 free calls / mo
+                  </td>
+                  <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Custom monthly quota
+                  </td>
+                </tr>
+
+                {/* Per Call Fee & Markup */}
+                <tr>
+                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Execution Markup (Post 100 calls)</td>
+                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>0% (up to 100 calls)</td>
                   <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--accent)' }}>
-                    0% BYOK Markup
+                    5% markup per call
                   </td>
                   <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="underline cursor-pointer hover:opacity-80">Fee discounts available</span>
+                    <span className="underline cursor-pointer hover:opacity-80">Volume fee discounts</span>
+                  </td>
+                </tr>
+
+                {/* BYOK Key Markup */}
+                <tr>
+                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>BYOK Connected Key Fee</td>
+                  <td className="p-5 text-center font-bold text-emerald-400">0% Gateway Fee</td>
+                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--accent)' }}>
+                    0% Gateway Fee
+                  </td>
+                  <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
+                    0% Gateway Fee
                   </td>
                 </tr>
 
@@ -170,7 +192,7 @@ export const Pricing: React.FC = () => {
                   </td>
                 </tr>
 
-                {/* Providers */}
+                {/* Tool Providers */}
                 <tr>
                   <td className="p-5 space-y-1">
                     <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Tool Providers</div>
@@ -241,39 +263,6 @@ export const Pricing: React.FC = () => {
                   <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
                 </tr>
 
-                {/* Payment Options */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Payment Options</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>N/A (Free BYOK)</td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>Credit card, crypto & more</td>
-                  <td className="p-5 text-center font-medium" style={{ color: 'var(--text-primary)' }}>Invoicing options</td>
-                </tr>
-
-                {/* BYOK Limits */}
-                <tr>
-                  <td className="p-5 space-y-1">
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>BYOK Limits</div>
-                    <Link to="/docs/keys" className="text-[11px] hover:underline flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-                      Learn more &rarr;
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>1,000 calls / month free</td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
-                    $25,000 list price inference / month with no fees
-                  </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-primary)' }}>
-                    $200,000+ list price inference / month with no fees
-                  </td>
-                </tr>
-
-                {/* Rate Limits */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Rate Limits</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>100 reqs/min</td>
-                  <td className="p-5 text-center font-medium" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>10,000 reqs/min</td>
-                  <td className="p-5 text-center font-medium" style={{ color: 'var(--text-primary)' }}>Optional dedicated limits</td>
-                </tr>
-
                 {/* Support */}
                 <tr>
                   <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Support</td>
@@ -287,7 +276,7 @@ export const Pricing: React.FC = () => {
                   <td className="p-5" />
                   <td className="p-5 text-center">
                     <Link
-                      to={ctaRoute}
+                      to="/auth"
                       className="inline-block px-4 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 transition-opacity"
                       style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                     >
@@ -296,21 +285,21 @@ export const Pricing: React.FC = () => {
                   </td>
                   <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}>
                     <Link
-                      to={ctaRoute}
+                      to="/auth"
                       className="inline-block px-4 py-2.5 rounded-xl text-xs font-extrabold shadow-md hover:opacity-90 transition-opacity"
                       style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
                     >
-                      Connect BYOK Keys
+                      Sign Up For Free
                     </Link>
                   </td>
                   <td className="p-5 text-center">
-                    <a
-                      href="mailto:sales@litedaemon.com"
+                    <Link
+                      to="/contact-sales"
                       className="inline-block px-4 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 transition-opacity"
                       style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                     >
                       Contact Sales
-                    </a>
+                    </Link>
                   </td>
                 </tr>
 
@@ -393,19 +382,19 @@ export const Pricing: React.FC = () => {
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
-              to={ctaRoute}
+              to="/auth"
               className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-md min-w-[160px]"
               style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
             >
               Sign Up For Free
             </Link>
-            <a
-              href="mailto:sales@litedaemon.com"
+            <Link
+              to="/contact-sales"
               className="border px-6 py-3 rounded-2xl text-sm font-semibold transition-all hover:opacity-80 min-w-[160px]"
               style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             >
               Contact Sales
-            </a>
+            </Link>
           </div>
         </div>
       </section>

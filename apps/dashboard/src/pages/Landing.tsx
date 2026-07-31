@@ -744,15 +744,6 @@ export const Landing: React.FC = () => {
           </Link>
         </div>
       </section>
-
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-800/60 py-8 text-center text-xs font-mono text-slate-600">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Zap className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-slate-400 font-semibold">LiteDaemon</span>
-        </div>
-        Unified BYOK Infrastructure Gateway for AI Agents
-      </footer>
     </div>
   );
 };

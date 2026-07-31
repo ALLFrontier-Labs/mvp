@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
+import { Footer } from './components/Footer';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Providers } from './pages/Providers';
@@ -28,13 +29,7 @@ const ConditionalNavbar: React.FC = () => {
 };
 
 const ConditionalFooter: React.FC = () => {
-  const location = useLocation();
-  if (location.pathname === '/') return null;
-  return (
-    <footer className="border-t border-slate-800/60 py-6 text-center text-xs font-mono text-slate-600">
-      LiteDaemon · Unified BYOK Infrastructure Gateway for AI Agents
-    </footer>
-  );
+  return <Footer />;
 };
 
 export const App: React.FC = () => {

@@ -24,10 +24,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Hide the global Navbar on the landing page (it has its own)
 const ConditionalNavbar: React.FC = () => {
-  const location = useLocation();
-  if (location.pathname === '/') return null;
   return <Navbar />;
 };
 

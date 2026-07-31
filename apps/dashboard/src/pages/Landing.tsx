@@ -87,9 +87,9 @@ export const Landing: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-[#ccff00] selection:text-black">
 
-      {/* ── 2. HERO SECTION (Pixel-Perfect OpenRouter Parity) ─────────────── */}
-      <section className="pt-20 pb-12 px-6 max-w-4xl mx-auto text-center space-y-4">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white text-center font-sans">
+      {/* ── HERO SECTION (Pixel-Perfect OpenRouter Parity) ─────────────── */}
+      <section className="pt-20 pb-12 px-6 max-w-5xl mx-auto text-center space-y-4">
+        <h1 className="max-w-5xl mx-auto text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white text-center leading-tight">
           The Unified Interface For AI Agent Tools
         </h1>
         <p className="text-zinc-400 text-center text-lg mt-3 font-sans font-normal">

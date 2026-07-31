@@ -161,27 +161,29 @@ export const Landing: React.FC = () => {
   const frameworkLines = FRAMEWORK_SNIPPETS[frameworkTab].split('\n');
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-[#ccff00] selection:text-black">
+    <div className="min-h-screen font-sans transition-colors duration-200" style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}>
 
-      {/* ── HERO SECTION (Pixel-Perfect OpenRouter Parity) ─────────────── */}
+      {/* ── HERO SECTION ─────────────────────────────────────────── */}
       <section className="pt-20 pb-8 px-6 max-w-5xl mx-auto text-center space-y-4">
-        <h1 className="max-w-5xl mx-auto text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white text-center leading-tight">
+        <h1 className="max-w-5xl mx-auto text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-center leading-tight" style={{ color: 'var(--text-primary)' }}>
           The Unified Interface For AI Agent Tools
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto font-sans">
+        <p className="text-xs sm:text-sm max-w-xl mx-auto font-sans" style={{ color: 'var(--text-secondary)' }}>
           Better reliability, better latency, no subscriptions.
         </p>
 
         <div className="flex items-center justify-center gap-3 pt-4 text-sm font-sans">
           <Link
             to="/auth"
-            className="bg-[#ccff00] text-black font-extrabold px-5 py-2.5 rounded-xl text-sm hover:bg-yellow-300 transition-all shadow-sm"
+            className="font-extrabold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm"
+            style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
           >
             Get API Key
           </Link>
           <Link
             to="/providers"
-            className="bg-zinc-900/90 border border-zinc-800 text-zinc-100 px-4 py-2.5 rounded-xl text-sm hover:bg-zinc-800/80 transition-all duration-200 flex items-center gap-2 font-medium group cursor-pointer"
+            className="border px-4 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-2 font-medium group cursor-pointer"
+            style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
           >
             <span>Explore Tools</span>
             <span
@@ -202,34 +204,34 @@ export const Landing: React.FC = () => {
       <section className="py-6 max-w-4xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+            <div className="text-2xl sm:text-3xl font-extrabold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
               100M+
             </div>
-            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+            <div className="text-[11px] font-sans font-medium" style={{ color: 'var(--text-muted)' }}>
               Monthly Tool Calls
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+            <div className="text-2xl sm:text-3xl font-extrabold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
               1M+
             </div>
-            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+            <div className="text-[11px] font-sans font-medium" style={{ color: 'var(--text-muted)' }}>
               Global Developers
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+            <div className="text-2xl sm:text-3xl font-extrabold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
               36+
             </div>
-            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+            <div className="text-[11px] font-sans font-medium" style={{ color: 'var(--text-muted)' }}>
               Tool Providers
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-sans tracking-tight">
+            <div className="text-2xl sm:text-3xl font-extrabold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
               150+
             </div>
-            <div className="text-[11px] text-zinc-400 font-sans font-medium">
+            <div className="text-[11px] font-sans font-medium" style={{ color: 'var(--text-muted)' }}>
               Tool Engines
             </div>
           </div>
@@ -241,54 +243,54 @@ export const Landing: React.FC = () => {
         
         {/* Section Header Standard */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:text-zinc-300 font-sans">
-            Featured Tools <ChevronRight className="w-4 h-4 text-zinc-400" />
+          <h2 className="text-lg font-semibold flex items-center gap-1.5 cursor-pointer font-sans" style={{ color: 'var(--text-primary)' }}>
+            Featured Tools <ChevronRight className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
           </h2>
-          <Link to="/providers" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-mono">
+          <Link to="/providers" className="text-xs flex items-center gap-1 font-mono hover:underline" style={{ color: 'var(--text-muted)' }}>
             View all &rarr;
           </Link>
         </div>
 
         {/* 2x2 Bento Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-semibold text-white font-sans">One API for Any Tool</h3>
-            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+          <div className="p-6 rounded-2xl border space-y-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <h3 className="text-base font-semibold font-sans" style={{ color: 'var(--text-primary)' }}>One API for Any Tool</h3>
+            <p className="text-xs leading-relaxed font-sans" style={{ color: 'var(--text-secondary)' }}>
               Access web search, scraping, code sandboxes, and browser automation through a single master endpoint.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-semibold text-white font-sans">Higher Availability</h3>
-            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+          <div className="p-6 rounded-2xl border space-y-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <h3 className="text-base font-semibold font-sans" style={{ color: 'var(--text-primary)' }}>Higher Availability</h3>
+            <p className="text-xs leading-relaxed font-sans" style={{ color: 'var(--text-secondary)' }}>
               Automatic multi-key failover and key rotation pools to eliminate 429 rate limits.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-semibold text-white font-sans">Price and Performance</h3>
-            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+          <div className="p-6 rounded-2xl border space-y-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <h3 className="text-base font-semibold font-sans" style={{ color: 'var(--text-primary)' }}>Price and Performance</h3>
+            <p className="text-xs leading-relaxed font-sans" style={{ color: 'var(--text-secondary)' }}>
               Zero monthly subscription fees. Pay-as-you-go micro-routing past free tier.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-[#0d0d0e] border border-zinc-800 space-y-2">
-            <h3 className="text-base font-semibold text-white font-sans">Custom Data Policies</h3>
-            <p className="text-zinc-400 text-xs leading-relaxed font-sans">
+          <div className="p-6 rounded-2xl border space-y-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <h3 className="text-base font-semibold font-sans" style={{ color: 'var(--text-primary)' }}>Custom Data Policies</h3>
+            <p className="text-xs leading-relaxed font-sans" style={{ color: 'var(--text-secondary)' }}>
               Ephemeral memory-only routing. Prompt and tool execution payloads are never stored.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── 4. EXACT OPENROUTER "HOW IT WORKS" BORDERLESS SECTION ──────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-16 space-y-10 font-sans border-t border-zinc-800/80">
+      {/* ── 4. HOW IT WORKS SECTION ──────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-16 space-y-10 font-sans border-t" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-zinc-100 flex items-center gap-1.5">
+          <h2 className="text-base font-bold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
             <span>How It Works</span>
-            <span className="text-zinc-500 font-normal">&gt;</span>
+            <span className="font-normal" style={{ color: 'var(--text-muted)' }}>&gt;</span>
           </h2>
-          <Link className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors" to="/docs">
+          <Link className="text-xs hover:underline transition-colors" style={{ color: 'var(--text-muted)' }} to="/docs">
             Read docs &rarr;
           </Link>
         </div>
@@ -297,28 +299,25 @@ export const Landing: React.FC = () => {
           {/* Step 1: Signup */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
+              <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                 <span>1</span>
                 <span>Signup</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-xs">
+              <p className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-secondary)' }}>
                 Create an account to get started. You can set up an org for your team later.
               </p>
             </div>
 
             {/* User outline & Social Logos Container */}
             <div className="pt-2 space-y-3">
-              {/* User Icon Outline */}
-              <div className="text-zinc-400 pl-1">
+              <div className="pl-1" style={{ color: 'var(--text-muted)' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
 
-              {/* Colored Social Logos */}
               <div className="flex items-center gap-2">
-                {/* Google */}
-                <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800/80 transition-colors cursor-pointer">
+                <div className="w-8 h-8 rounded-lg border flex items-center justify-center hover:opacity-80 transition-colors cursor-pointer" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -327,22 +326,9 @@ export const Landing: React.FC = () => {
                   </svg>
                 </div>
 
-                {/* GitHub */}
-                <div className="w-8 h-8 rounded-lg bg-[#24292e] border border-zinc-700/60 flex items-center justify-center hover:bg-[#2c3137] transition-colors cursor-pointer">
-                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-lg border flex items-center justify-center hover:opacity-80 transition-colors cursor-pointer" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
+                  <svg className="w-4 h-4" style={{ fill: 'var(--text-primary)' }} viewBox="0 0 24 24">
                     <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                  </svg>
-                </div>
-
-                {/* Provider / Accent */}
-                <div className="w-8 h-8 rounded-lg bg-orange-950/60 border border-orange-800/50 flex items-center justify-center hover:bg-orange-900/60 transition-colors cursor-pointer">
-                  <span className="text-orange-400 text-xs font-bold">⚡</span>
-                </div>
-
-                {/* Email */}
-                <div className="w-8 h-8 rounded-lg bg-amber-950/50 border border-amber-800/40 flex items-center justify-center hover:bg-amber-900/50 transition-colors cursor-pointer">
-                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
               </div>
@@ -352,33 +338,30 @@ export const Landing: React.FC = () => {
           {/* Step 2: Connect Provider Keys (BYOK) */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
+              <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                 <span>2</span>
                 <span>Connect tool keys</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-xs">
-                Add your API keys for <span className="text-zinc-200">Tavily, Exa, E2B, Browserbase</span> and more.
+              <p className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-secondary)' }}>
+                Add your API keys for <span style={{ color: 'var(--text-primary)' }}>Tavily, Exa, E2B, Browserbase</span> and more.
               </p>
             </div>
 
-            {/* Key Vault Ledger Mock */}
             <div className="pt-2 space-y-2">
-              {/* Shield / Vault Icon */}
-              <div className="text-zinc-400 pl-1">
+              <div className="pl-1" style={{ color: 'var(--text-muted)' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
 
-              {/* Provider Key Status Pills */}
               <div className="space-y-1.5 font-mono text-xs max-w-[220px]">
-                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/80 text-zinc-300 border border-zinc-800/80 text-[11px]">
+                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md border text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                   <span className="truncate">Tavily Key</span>
-                  <span className="text-emerald-400 font-medium text-[10px]">Active</span>
+                  <span className="text-emerald-500 font-medium text-[10px]">Active</span>
                 </div>
-                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-zinc-900/80 text-zinc-300 border border-zinc-800/80 text-[11px]">
+                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-md border text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                   <span className="truncate">E2B Sandbox</span>
-                  <span className="text-emerald-400 font-medium text-[10px]">Active</span>
+                  <span className="text-emerald-500 font-medium text-[10px]">Active</span>
                 </div>
               </div>
             </div>
@@ -387,32 +370,28 @@ export const Landing: React.FC = () => {
           {/* Step 3: Get Unified Key */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
+              <div className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                 <span>3</span>
                 <span>Get your unified key</span>
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-xs">
-                Execute all search, browser, and sandbox tools via <span className="text-zinc-200 font-medium">a single master key</span>.
+              <p className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-secondary)' }}>
+                Execute all search, browser, and sandbox tools via <span className="font-medium" style={{ color: 'var(--text-primary)' }}>a single master key</span>.
               </p>
             </div>
 
-            {/* Master Key Input Pills */}
             <div className="pt-2 space-y-2 max-w-[230px]">
-              {/* Key Icon */}
-              <div className="text-zinc-400 pl-1">
+              <div className="pl-1" style={{ color: 'var(--text-muted)' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                 </svg>
               </div>
 
-              {/* Key Name Pill */}
-              <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 font-mono text-xs flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <div className="px-3 py-1.5 rounded-lg border font-mono text-xs flex items-center gap-2" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--accent)' }}></span>
                 <span className="truncate">LITEDAEMON_MASTER_KEY</span>
               </div>
 
-              {/* Hidden Token Pill */}
-              <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 font-mono text-xs tracking-widest truncate">
+              <div className="px-3 py-1.5 rounded-lg border font-mono text-xs tracking-widest truncate" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
                 ••••••••••••••••••••••••
               </div>
             </div>
@@ -421,12 +400,12 @@ export const Landing: React.FC = () => {
       </section>
 
       {/* ── 5. FRAMEWORK QUICKSTARTS ────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 py-12 border-t border-zinc-800/80 space-y-6">
+      <section className="max-w-5xl mx-auto px-6 py-12 border-t space-y-6" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-1.5 font-sans">
-            Framework Integration <ChevronRight className="w-4 h-4 text-zinc-400" />
+          <h2 className="text-lg font-semibold flex items-center gap-1.5 font-sans" style={{ color: 'var(--text-primary)' }}>
+            Framework Integration <ChevronRight className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
           </h2>
-          <Link to="/docs/frameworks" className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-mono">
+          <Link to="/docs/frameworks" className="text-xs hover:underline flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
             SDK docs &rarr;
           </Link>
         </div>
@@ -445,46 +424,48 @@ export const Landing: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setFrameworkTab(tab.id as FrameworkTab)}
-                className={`px-3.5 py-2 rounded-xl border transition-all whitespace-nowrap font-semibold flex items-center gap-2 cursor-pointer ${
+                className="px-3.5 py-2 rounded-xl border transition-all whitespace-nowrap font-semibold flex items-center gap-2 cursor-pointer"
+                style={
                   isActive
-                    ? 'bg-zinc-800 text-white border-emerald-500/50'
-                    : 'bg-[#0d0d0e] text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
-                }`}
+                    ? { backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', borderColor: 'var(--accent)' }
+                    : { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)', borderColor: 'var(--border)' }
+                }
               >
-                <Code2 className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`} />
+                <Code2 className="w-3.5 h-3.5" style={{ color: isActive ? 'var(--accent)' : 'var(--text-muted)' }} />
                 <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="rounded-2xl bg-[#050507] border border-zinc-800 overflow-hidden shadow-2xl">
-          <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/80 border-b border-zinc-800">
+        <div className="rounded-2xl border overflow-hidden shadow-xl" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
               <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-              <span className="ml-2 text-xs font-mono text-zinc-500">
+              <span className="ml-2 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                 quickstart.{frameworkTab === 'n8n' ? 'json' : frameworkTab === 'typescript' ? 'ts' : 'py'}
               </span>
             </div>
 
             <button
               onClick={copyFrameworkCode}
-              className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 hover:text-emerald-300 px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700/60 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-lg border transition-colors cursor-pointer"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             >
-              {copiedFramework ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedFramework ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedFramework ? 'Copied!' : 'Copy'}
             </button>
           </div>
 
-          <pre className="p-5 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed flex">
-            <div className="select-none text-zinc-600 text-right pr-4 border-r border-zinc-800/80 shrink-0 space-y-1">
+          <pre className="p-5 text-xs font-mono overflow-x-auto leading-relaxed flex" style={{ color: 'var(--text-primary)' }}>
+            <div className="select-none text-right pr-4 border-r shrink-0 space-y-1" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
               {frameworkLines.map((_, i) => (
                 <div key={i}>{i + 1}</div>
               ))}
             </div>
-            <div className="pl-4 space-y-1 text-emerald-300 overflow-x-auto flex-1">
+            <div className="pl-4 space-y-1 overflow-x-auto flex-1" style={{ color: 'var(--text-primary)' }}>
               {frameworkLines.map((line, i) => (
                 <div key={i} className="whitespace-pre">{line}</div>
               ))}

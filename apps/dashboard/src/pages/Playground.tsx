@@ -87,13 +87,14 @@ function timeAgo(d: Date) {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">{children}</label>
+  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>{children}</label>
 );
 
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
   <input
     {...props}
-    className={`w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all ${props.className ?? ''}`}
+    className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all ${props.className ?? ''}`}
+    style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
   />
 );
 
@@ -101,11 +102,12 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ child
   <div className="relative">
     <select
       {...props}
-      className={`w-full appearance-none bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all pr-9 ${props.className ?? ''}`}
+      className={`w-full appearance-none border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all pr-9 ${props.className ?? ''}`}
+      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
     >
       {children}
     </select>
-    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
   </div>
 );
 
@@ -813,31 +815,38 @@ export const Playground: React.FC = () => {
   const c = TAB_COLORS[activeTab];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" style={{ color: 'var(--text-primary)' }}>
 
       {/* ── Page Header ───────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-900/60 border border-slate-700/50">
+      <div 
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl border"
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      >
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <Zap className="w-5 h-5 text-white fill-white/30" />
+          <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}>
+              <Zap className="w-5 h-5 fill-current" />
             </div>
             API Playground
           </h1>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-sm mt-1.5" style={{ color: 'var(--text-secondary)' }}>
             Test all 5 unified endpoints directly from your browser using your connected BYOK keys.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/40 text-xs font-mono text-slate-400">
+          <div 
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono"
+            style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+          >
             <Activity className="w-3.5 h-3.5 text-emerald-400" />
             {log.length} calls this session
           </div>
           {log.length > 0 && (
             <button
               onClick={clearLog}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-rose-400 bg-slate-800/60 hover:bg-rose-500/10 border border-slate-700/40 hover:border-rose-500/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
             >
               <Trash2 className="w-3.5 h-3.5" />
               Clear log
@@ -848,17 +857,21 @@ export const Playground: React.FC = () => {
 
       {/* ── BYOK Gateway Banner ───────────────────────────────── */}
       {!warningDismissed && (
-        <div className="flex items-start gap-4 p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30">
-          <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+        <div 
+          className="flex items-start gap-4 p-4 rounded-xl border"
+          style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
+        >
+          <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-emerald-300">Pure BYOK Gateway Execution</p>
-            <p className="text-xs text-emerald-400/80 mt-0.5 leading-relaxed">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Pure BYOK Gateway Execution</p>
+            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               Live Execution: Playground requests route directly through your connected BYOK provider keys.
             </p>
           </div>
           <button
             onClick={dismissWarning}
-            className="shrink-0 p-1 rounded-lg hover:bg-emerald-500/10 text-emerald-500/60 hover:text-emerald-400 transition-colors"
+            className="shrink-0 p-1 rounded-lg hover:opacity-70 transition-colors"
+            style={{ color: 'var(--text-muted)' }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -871,7 +884,7 @@ export const Playground: React.FC = () => {
         {/* LEFT — Tab form panel */}
         <div className="space-y-0">
           {/* Endpoint tabs */}
-          <div className="flex border-b border-slate-800/60 bg-slate-900/40 rounded-t-2xl overflow-hidden">
+          <div className="flex border rounded-t-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
             {TABS.map((t) => {
               const Icon = t.icon;
               const isActive = activeTab === t.id;
@@ -880,11 +893,12 @@ export const Playground: React.FC = () => {
                   key={t.id}
                   id={`playground-tab-${t.id}`}
                   onClick={() => setActiveTab(t.id)}
-                  className={`flex-1 flex flex-col items-center gap-1.5 px-2 py-3 text-[10px] font-semibold uppercase tracking-wider transition-all ${
-                    isActive
-                      ? TAB_COLORS[t.id].active
-                      : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
-                  }`}
+                  className="flex-1 flex flex-col items-center gap-1.5 px-2 py-3 text-[10px] font-semibold uppercase tracking-wider transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive ? 'var(--bg-card)' : 'transparent',
+                    color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                    borderBottom: isActive ? '2px solid var(--accent)' : 'none',
+                  }}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden sm:block">{t.label}</span>
@@ -894,9 +908,9 @@ export const Playground: React.FC = () => {
           </div>
 
           {/* Form body */}
-          <div className={`bg-slate-900/60 border border-t-0 ${c.border} rounded-b-2xl p-5`}>
+          <div className="border border-t-0 rounded-b-2xl p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
             {providersLoading ? (
-              <div className="flex items-center justify-center h-40 gap-3 text-slate-500">
+              <div className="flex items-center justify-center h-40 gap-3" style={{ color: 'var(--text-muted)' }}>
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="text-sm">Loading providers…</span>
               </div>

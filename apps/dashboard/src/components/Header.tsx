@@ -99,19 +99,6 @@ export const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-            {/* Quick Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 light:text-zinc-600 light:hover:text-zinc-900 light:hover:bg-zinc-100 transition-colors cursor-pointer"
-              title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            >
-              {resolvedTheme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-zinc-700" />
-              )}
-            </button>
-
             {!apiKey ? (
               <Link
                 to="/auth"

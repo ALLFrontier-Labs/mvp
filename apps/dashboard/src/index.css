@@ -2,33 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design Token System ─────────────────────────────────────────────────── */
+/* Dark mode is the default. html.light overrides flip every token.            */
+
+:root {
+  /* Backgrounds */
+  --bg:            #09090b;
+  --bg-secondary:  #0d0d0f;
+  --bg-card:       #111113;
+  --bg-overlay:    rgba(9, 9, 11, 0.85);
+
+  /* Borders */
+  --border:        #27272a;
+  --border-subtle: rgba(39, 39, 42, 0.6);
+
+  /* Text */
+  --text-primary:   #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted:     #71717a;
+
+  /* Accent */
+  --accent:         #ccff00;
+  --accent-hover:   #d4ff33;
+}
+
+html.light {
+  --bg:            #ffffff;
+  --bg-secondary:  #f4f4f5;
+  --bg-card:       #fafafa;
+  --bg-overlay:    rgba(255, 255, 255, 0.90);
+
+  --border:        #e4e4e7;
+  --border-subtle: rgba(228, 228, 231, 0.8);
+
+  --text-primary:   #09090b;
+  --text-secondary: #52525b;
+  --text-muted:     #71717a;
+
+  --accent:         #5a7a00;
+  --accent-hover:   #4a6800;
+}
+
+/* ─── Base Styles ────────────────────────────────────────────────────────── */
 @layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-[#0a0d14] text-slate-100 font-sans antialiased;
+    background-color: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: #ccff00;
+    color: #09090b;
   }
 }
 
-/* Custom scrollbar for dark mode */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar-track    { background: var(--bg); }
+::-webkit-scrollbar-thumb    { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-::-webkit-scrollbar-track {
-  background: #0a0d14;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1e2638;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #2d3852;
-}
-
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
 .glass-card {
-  background: rgba(18, 22, 32, 0.7);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Smooth page transitions */
+.page-enter { animation: fadeUp 0.18s ease both; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

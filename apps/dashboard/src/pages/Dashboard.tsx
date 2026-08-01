@@ -219,13 +219,13 @@ export const Dashboard: React.FC = () => {
         {/* Stat 1: Total Tool Requests */}
         <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
           <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
+            <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
               Total Tool Requests
             </span>
-            <span className="text-3xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 mt-2 block">
+            <span className="text-3xl font-extrabold font-sans text-zinc-900 dark:text-zinc-100 mt-2 block">
               {totalCalls.toLocaleString()}
             </span>
-            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">
               Cumulative tool calls
             </span>
           </div>
@@ -237,13 +237,13 @@ export const Dashboard: React.FC = () => {
         {/* Stat 2: Failovers Handled */}
         <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
           <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
+            <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
               Failovers Handled
             </span>
-            <span className="text-3xl font-extrabold font-mono text-teal-600 dark:text-teal-400 mt-2 block">
+            <span className="text-3xl font-extrabold font-sans text-teal-600 dark:text-teal-400 mt-2 block">
               {rescuedRateLimits.toLocaleString()}
             </span>
-            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">
               Auto-rotated keys &amp; limits
             </span>
           </div>
@@ -258,13 +258,13 @@ export const Dashboard: React.FC = () => {
           className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between cursor-pointer group"
         >
           <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block group-hover:text-cyan-500 transition-colors">
+            <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block group-hover:text-cyan-500 transition-colors">
               Configured Keys →
             </span>
-            <span className="text-3xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 mt-2 block">
+            <span className="text-3xl font-extrabold font-sans text-cyan-600 dark:text-cyan-400 mt-2 block">
               {activeVaults} Vaulted
             </span>
-            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">
               AES-256-GCM encrypted
             </span>
           </div>
@@ -299,13 +299,13 @@ export const Dashboard: React.FC = () => {
           <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-lime-500/10 rounded-full blur-2xl group-hover:bg-lime-500/20 transition-all pointer-events-none" />
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-mono uppercase tracking-wider font-semibold">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-sans uppercase tracking-wider font-semibold">
               <span>Prepaid Credit Balance</span>
               <Wallet className="w-4 h-4 text-lime-600 dark:text-lime-400" />
             </div>
 
             <div>
-              <div className="text-4xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 tracking-tight">
+              <div className="text-4xl font-extrabold font-sans text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {stats ? `$${stats.balance_usd.toFixed(2)}` : '$0.00'}
               </div>
               <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
@@ -316,12 +316,12 @@ export const Dashboard: React.FC = () => {
             {/* Quick Top-Up Pills */}
             <div className="pt-2">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-semibold">
+                <span className="text-xs font-sans text-zinc-500 dark:text-zinc-400 font-semibold">
                   Quick Deposit Options:
                 </span>
                 <button
                   onClick={() => handleOpenTopUp(10)}
-                  className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 hover:underline"
+                  className="text-xs font-sans font-bold text-lime-600 dark:text-lime-400 hover:underline"
                 >
                   Custom Amount →
                 </button>
@@ -331,7 +331,7 @@ export const Dashboard: React.FC = () => {
                   <button
                     key={amt}
                     onClick={() => handleOpenTopUp(amt)}
-                    className="px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all bg-zinc-100 hover:bg-lime-400 hover:text-zinc-950 text-zinc-800 dark:bg-zinc-800 dark:hover:bg-lime-400 dark:hover:text-zinc-950 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 shadow-sm"
+                    className="px-3.5 py-1.5 rounded-xl font-sans text-xs font-bold transition-all bg-zinc-100 hover:bg-lime-400 hover:text-zinc-950 text-zinc-800 dark:bg-zinc-800 dark:hover:bg-lime-400 dark:hover:text-zinc-950 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 shadow-sm"
                   >
                     +${amt}
                   </button>
@@ -340,7 +340,7 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-zinc-500 dark:text-zinc-400">
+          <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-sans text-zinc-500 dark:text-zinc-400">
             <span className="flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5 text-emerald-500" />
               Auto-recharge ready
@@ -354,7 +354,7 @@ export const Dashboard: React.FC = () => {
         {/* Right Column (60% width): Monthly Gateway Volume */}
         <div className="lg:col-span-7 rounded-3xl p-6 sm:p-7 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-mono uppercase tracking-wider font-semibold">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-sans uppercase tracking-wider font-semibold">
               <span>Monthly Volume</span>
               <span className="text-xs text-zinc-400 font-sans font-normal">Transparent usage pricing • Raw provider rates + 5% routing fee</span>
             </div>
@@ -362,25 +362,25 @@ export const Dashboard: React.FC = () => {
             {/* Side-by-Side Volume Breakdown */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
-                <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-zinc-400 block font-bold">
+                <span className="text-[10px] font-sans uppercase text-zinc-500 dark:text-zinc-400 block font-bold">
                   Total Calls Billed (Post 100)
                 </span>
-                <span className="text-2xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 mt-1 block">
+                <span className="text-2xl font-extrabold font-sans text-zinc-900 dark:text-zinc-100 mt-1 block">
                   {stats?.billed_calls ?? 0} Calls
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
+                <span className="text-[11px] font-sans text-zinc-500 dark:text-zinc-400 mt-1 block">
                   {stats && stats.total_calls <= 100 ? 'Covered by Free Allowance' : 'Standard 5% markup'}
                 </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
-                <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-zinc-400 block font-bold">
+                <span className="text-[10px] font-sans uppercase text-zinc-500 dark:text-zinc-400 block font-bold">
                   Calculated Pass-Through Cost
                 </span>
-                <span className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+                <span className="text-2xl font-extrabold font-sans text-emerald-600 dark:text-emerald-400 mt-1 block">
                   {stats ? `$${stats.total_spent_usd.toFixed(2)}` : '$0.00'}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
+                <span className="text-[11px] font-sans text-zinc-500 dark:text-zinc-400 mt-1 block">
                   Pass-through billing after 100 free calls
                 </span>
               </div>

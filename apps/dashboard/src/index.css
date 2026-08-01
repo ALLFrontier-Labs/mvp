@@ -55,15 +55,13 @@ html.light {
   body {
     background-color: var(--bg);
     color: var(--text-primary);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     transition: background-color 0.2s ease, color 0.2s ease;
-    font-feature-settings: "zero" 0;
-    font-variant-numeric: normal;
   }
 
   /* Force clean non-dotted zero glyphs across all font family elements */
   code, kbd, samp, pre, .font-mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     font-feature-settings: "zero" 0 !important;
     font-variant-numeric: normal !important;
   }

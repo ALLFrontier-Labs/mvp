@@ -5,7 +5,9 @@ import {
   Zap, ShieldCheck, ArrowRight, Terminal, Download, Activity,
   Filter, Calendar, ChevronDown, FileSpreadsheet, FileJson, Layers
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { LogInspectorDrawer } from '../components/LogInspectorDrawer';
 
 export interface JobItem {
   job_id: string;
@@ -106,6 +108,17 @@ export const Jobs: React.FC = () => {
     }, 8000);
     return () => clearInterval(interval);
   }, [isLiveTail]);
+
+  // Deep-link URL Query Parameter Handling (?jobId=...)
+  const [searchParams] = useSearchParams();
+  const queryJobId = searchParams.get('jobId');
+
+  useEffect(() => {
+    if (queryJobId && jobs.length > 0) {
+      const found = jobs.find(j => j.job_id.toLowerCase() === queryJobId.toLowerCase());
+      if (found) setSelectedJob(found);
+    }
+  }, [queryJobId, jobs]);
 
   const copyText = (text: string, id?: string) => {
     navigator.clipboard.writeText(text);
@@ -541,113 +554,12 @@ export const Jobs: React.FC = () => {
         </div>
       )}
 
-      {/* ── INTERACTIVE LOG DETAIL INSPECTION DRAWER ─────────────────────────── */}
-      {selectedJob && (
-        <div 
-          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex justify-end"
-          onClick={() => setSelectedJob(null)}
-        >
-          <div 
-            className="w-full max-w-xl bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 h-screen flex flex-col justify-between p-6 overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer Header */}
-            <div className="space-y-2 border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-lime-600 dark:text-lime-400 font-bold">
-                    Job Trace #{selectedJob.job_id.slice(0, 12)}
-                  </span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${STATUS_STYLES[selectedJob.status]?.badge}`}>
-                    {selectedJob.status}
-                  </span>
-                </div>
-                <h2 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">
-                  {selectedJob.provider} · {selectedJob.endpoint}
-                </h2>
-              </div>
-
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Drawer Body Scrollable */}
-            <div className="overflow-y-auto flex-1 py-6 space-y-6 font-mono text-xs">
-              {/* Stat Summary Row */}
-              <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <div>
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Execution Latency</span>
-                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatLatency(selectedJob.duration_ms)}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Routing Protocol</span>
-                  <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{selectedJob.routing_type || 'Direct BYOK'}</span>
-                </div>
-              </div>
-
-              {/* Request Payload JSON */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-zinc-500">
-                  <span>Request Parameters (JSON):</span>
-                  <button
-                    onClick={() => copyText(JSON.stringify(selectedJob.request_payload || {}, null, 2))}
-                    className="text-lime-600 dark:text-lime-400 hover:underline text-[11px]"
-                  >
-                    Copy JSON
-                  </button>
-                </div>
-                <pre className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 text-emerald-400 overflow-x-auto max-h-48 text-[11px]">
-                  {JSON.stringify(selectedJob.request_payload || { provider: selectedJob.provider, endpoint: selectedJob.endpoint }, null, 2)}
-                </pre>
-              </div>
-
-              {/* Error Trace if Failed */}
-              {selectedJob.error && (
-                <div className="space-y-2">
-                  <span className="text-rose-500 font-bold">Failure Trace Exception:</span>
-                  <pre className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 overflow-x-auto max-h-36 text-[11px]">
-                    {selectedJob.error}
-                  </pre>
-                </div>
-              )}
-
-              {/* Response JSON */}
-              {selectedJob.result && (
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-zinc-500">
-                    <span>Response Output Data (JSON):</span>
-                    <button
-                      onClick={() => copyText(JSON.stringify(selectedJob.result, null, 2))}
-                      className="text-lime-600 dark:text-lime-400 hover:underline text-[11px]"
-                    >
-                      Copy Output
-                    </button>
-                  </div>
-                  <pre className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 overflow-x-auto max-h-56 text-[11px]">
-                    {JSON.stringify(selectedJob.result, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-
-            {/* Drawer Footer */}
-            <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 flex justify-between items-center">
-              <span className="text-zinc-500 font-mono text-[11px]">LiteDaemon Telemetry Engine v1.0</span>
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="px-4 py-2 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-mono text-xs font-bold"
-              >
-                Close Drawer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* ── INTERACTIVE LOG INSPECTOR DRAWER (Mounted via React Portal) ───────────── */}
+      <LogInspectorDrawer
+        isOpen={!!selectedJob}
+        job={selectedJob}
+        onClose={() => setSelectedJob(null)}
+      />
     </div>
   );
 };

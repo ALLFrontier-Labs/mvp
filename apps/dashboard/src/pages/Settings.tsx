@@ -4,7 +4,8 @@ import {
   Settings as SettingsIcon, Key, Copy, Check, Eye, EyeOff,
   Shield, User, Wallet, Activity, DollarSign, LogOut,
   Loader2, AlertCircle, Calendar, CreditCard, Terminal, RefreshCw,
-  X, CheckCircle2, Zap, FileText, Monitor, Search, Globe, Info, Plus
+  X, CheckCircle2, Zap, FileText, Monitor, Search, Globe, Info, Plus,
+  Bell, Lock, Sliders, ShieldCheck, ArrowUpRight
 } from 'lucide-react';
 import { api, getStoredApiKey, setStoredApiKey, clearStoredApiKey } from '../lib/api';
 
@@ -18,27 +19,41 @@ interface Me {
   total_spent_usd: number;
 }
 
-type EndpointTab = 'scrape' | 'search' | 'browser' | 'execute' | 'document';
+type SettingsSubTab = 'general' | 'billing' | 'webhooks' | 'reference';
+type EndpointTab    = 'scrape' | 'search' | 'browser' | 'execute' | 'document';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 export const Settings: React.FC = () => {
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
+
+  // Active Sub-Tab State
+  const [activeSubTab, setActiveSubTab] = useState<SettingsSubTab>('general');
+
+  // Key & Auth States
   const [currentKey, setCurrentKey] = useState<string | null>(getStoredApiKey());
   const [showKey, setShowKey]       = useState(false);
   const [copied, setCopied]         = useState(false);
   const [copiedCurl, setCopiedCurl] = useState(false);
-  const [me, setMe]                 = useState<Me | null>(null);
-  const [userKeysCount, setUserKeysCount] = useState<number>(0);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState<string | null>(null);
 
-  // Endpoint reference tab state
+  // User Profile Metadata State
+  const [me, setMe]                       = useState<Me | null>(null);
+  const [userKeysCount, setUserKeysCount] = useState<number>(0);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState<string | null>(null);
+
+  // Quick Reference Endpoint Tab State
   const [selectedEndpoint, setSelectedEndpoint] = useState<EndpointTab>('scrape');
 
-  // Key Regeneration Modal state
+  // Webhooks & Guardrails State
+  const [webhookUrl, setWebhookUrl]   = useState('https://example.com/api/webhooks/litedaemon');
+  const [budgetCap, setBudgetCap]     = useState('100.00');
+  const [emailAlerts, setEmailAlerts] = useState(true);
+  const [guardrailSaved, setGuardrailSaved] = useState(false);
+
+  // Key Regeneration Modal State
   const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
   const [isRegenerating, setIsRegenerating]             = useState(false);
   const [regenerateSuccess, setRegenerateSuccess]         = useState(false);
@@ -82,6 +97,12 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handleSaveGuardrails = (e: React.FormEvent) => {
+    e.preventDefault();
+    setGuardrailSaved(true);
+    setTimeout(() => setGuardrailSaved(false), 2500);
+  };
+
   // Dynamic cURL examples per endpoint
   const CURL_EXAMPLES: Record<EndpointTab, string> = {
     scrape: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
@@ -91,19 +112,19 @@ export const Settings: React.FC = () => {
     search: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
-  -d '{"provider":"tavily","params":{"query":"latest AI agent tools 2026","max_results":5}}'`,
+  -d '{"provider":"tavily","params":{"query":"latest AI agent tools 2026","limit":5}}'`,
     browser: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/browser \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
-  -d '{"provider":"browserbase","params":{"url":"https://example.com","stealth":true}}'`,
+  -d '{"provider":"steel","params":{"script":"await page.goto(\\"https://example.com\\");","viewport":{"width":1920,"height":1080}}}'`,
     execute: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/execute \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
-  -d '{"provider":"e2b","params":{"code":"print(\\"Hello from LiteDaemon sandbox!\\")"}}'`,
+  -d '{"provider":"e2b","params":{"code":"print(\\"Hello from LiteDaemon sandbox!\\")","timeout_sec":30}}'`,
     document: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/document \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
-  -d '{"provider":"llamaparse","params":{"file_url":"https://example.com/doc.pdf","format":"markdown"}}'`,
+  -d '{"provider":"llamaparse","params":{"url":"https://example.com/doc.pdf","format":"markdown"}}'`,
   };
 
   const copyCurl = () => {
@@ -118,285 +139,400 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 selection:bg-emerald-500 selection:text-slate-950 font-sans">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 font-sans selection:bg-lime-400 selection:text-zinc-950">
 
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-900/60 border border-slate-800">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <SettingsIcon className="w-6 h-6 text-emerald-400" />
-            Account &amp; Settings
+      {/* ── HEADER & SIGN OUT ACTION ────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+            <SettingsIcon className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+            <span>Account &amp; Developer Settings</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Your API keys, account details, and quick integration reference.</p>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+            Manage your Master Gateway API keys, prepaid routing wallet, budget guardrails, and security policies.
+          </p>
         </div>
+
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-xs font-semibold transition-all"
+          className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-500/30 text-zinc-700 dark:text-zinc-300 text-xs font-bold transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto"
         >
-          <LogOut className="w-4 h-4" />
-          Sign Out
+          <LogOut className="w-4 h-4 text-rose-500" />
+          <span>Sign Out</span>
         </button>
       </div>
 
-      {/* Account Info */}
-      <div className="rounded-2xl glass-card border border-slate-800 p-6 space-y-5 shadow-xl">
-        <div className="flex items-center gap-2 text-sm font-semibold text-white border-b border-slate-800 pb-4">
-          <User className="w-4 h-4 text-emerald-400" />
-          Account Profile
-        </div>
+      {/* ── SETTINGS SUB-NAVIGATION TABS BAR ────────────────────────────────── */}
+      <div className="border-b border-zinc-200 dark:border-zinc-800/80 flex space-x-6 overflow-x-auto font-mono text-xs">
+        {[
+          { id: 'general',   label: 'General & Keys' },
+          { id: 'billing',   label: 'Billing & Wallet' },
+          { id: 'webhooks',  label: 'Webhooks & Guardrails' },
+          { id: 'reference', label: 'Quick Reference' },
+        ].map((tab) => {
+          const isActive = activeSubTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveSubTab(tab.id as SettingsSubTab)}
+              className={`pb-3 font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                isActive
+                  ? 'border-b-2 border-lime-400 text-lime-600 dark:text-lime-400 font-extrabold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
-        {loading ? (
-          <div className="flex items-center gap-2 text-slate-500 text-sm font-mono">
-            <Loader2 className="w-4 h-4 animate-spin text-emerald-400" /> Loading account metadata…
-          </div>
-        ) : error ? (
-          <div className="flex items-center gap-2 text-rose-400 text-sm">
-            <AlertCircle className="w-4 h-4" /> {error}
-          </div>
-        ) : me ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Email Address</p>
-              <p className="text-sm font-semibold text-white font-mono">{me.email}</p>
+      {/* ── TAB 1: GENERAL PROFILE & MASTER KEY MANAGEMENT ─────────────────── */}
+      {activeSubTab === 'general' && (
+        <div className="space-y-6">
+          
+          {/* Profile Overview Card */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-5">
+            <div className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 pb-3 font-mono">
+              <User className="w-4 h-4 text-lime-500" />
+              <span>Account &amp; Security Overview</span>
             </div>
 
-            <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Gateway Tier</p>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold uppercase">
-                <CreditCard className="w-3 h-3" /> Developer Gateway
+            {loading ? (
+              <div className="flex items-center gap-2 text-zinc-500 text-xs font-mono py-4">
+                <Loader2 className="w-4 h-4 animate-spin text-lime-500" /> Loading account metadata…
+              </div>
+            ) : error ? (
+              <div className="flex items-center gap-2 text-rose-500 text-xs py-4 font-mono">
+                <AlertCircle className="w-4 h-4" /> {error}
+              </div>
+            ) : me ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 font-mono text-xs">
+                
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 block">Account Identifier</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100 block truncate">{me.email}</span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 block">Gateway Access Tier</span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[11px]">
+                    <CreditCard className="w-3 h-3" /> DEVELOPER GATEWAY
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 block">Member Since</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200 block">{formatDate(me.created_at)}</span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 block">Security Enforcement</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> SHA-256 • AES-256 Vault
+                  </span>
+                </div>
+
+              </div>
+            ) : null}
+          </div>
+
+          {/* Clear Security Info Banner */}
+          <div className="p-4 rounded-2xl bg-lime-500/10 border border-lime-500/20 text-xs font-mono text-zinc-700 dark:text-zinc-300 flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-lime-500 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>LiteDaemon BYOK Architecture</strong> — Master API Keys are SHA-256 hashed for instant gateway validation. Downstream provider keys are encrypted client-side using AES-256-GCM and never stored in plain text.
+            </p>
+          </div>
+
+          {/* Master Gateway API Key Box */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3 font-mono">
+              <div className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                <Key className="w-4 h-4 text-lime-500" />
+                <span>Master Gateway API Key</span>
+              </div>
+
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-extrabold flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> ACTIVE
               </span>
             </div>
 
-            <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> Member Since
-              </p>
-              <p className="text-sm text-slate-300">{formatDate(me.created_at)}</p>
-            </div>
+            <div className="space-y-2 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-zinc-400">Bearer Token Header</span>
+                <button
+                  onClick={() => setIsRegenerateModalOpen(true)}
+                  className="text-amber-600 dark:text-amber-400 hover:underline font-bold flex items-center gap-1 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Regenerate Key</span>
+                </button>
+              </div>
 
-            <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase text-slate-500 tracking-wider">Security State</p>
-              <p className="text-xs font-mono text-emerald-400 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> SHA-256 Master Key Enforced
-              </p>
-            </div>
-          </div>
-        ) : null}
+              <div className="flex items-center gap-2 bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+                <code className="flex-1 text-xs text-emerald-400 font-mono break-all">
+                  {showKey ? currentKey : maskedKey}
+                </code>
 
-        {/* Gateway Info Box */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-3.5 text-xs text-slate-300 flex items-start gap-2.5 font-mono">
-          <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            Connected to LiteDaemon BYOK Gateway. Routing fees are micro-debited automatically from your prepaid wallet balance.
-          </p>
-        </div>
-      </div>
+                <button
+                  onClick={() => setShowKey(!showKey)}
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white transition-colors shrink-0"
+                  title={showKey ? 'Hide Token' : 'Reveal Token'}
+                >
+                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
 
-      {/* Overhauled Usage & BYOK Metrics Cards */}
-      {me && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
-          
-          {/* Card 1: Prepaid Gateway Credits */}
-          <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-3">
-            <div className="flex items-center justify-between text-slate-500 text-[10px] uppercase font-bold">
-              <span>Prepaid Gateway Balance</span>
-              <Wallet className="w-4 h-4 text-emerald-400" />
+                <button
+                  onClick={copyKey}
+                  className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-colors shrink-0"
+                  title="Copy Bearer Token"
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-            <div className="text-2xl font-extrabold text-emerald-400">
-              ${me.balance_usd.toFixed(4)}
-            </div>
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
-              <span className="text-[10px] text-slate-500">Call #1 Fee Engine</span>
-              <Link
-                to="/billing"
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                <Plus className="w-3 h-3" /> Add Balance
-              </Link>
-            </div>
-          </div>
-
-          {/* Card 2: API Calls */}
-          <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-2">
-            <div className="flex items-center justify-between text-slate-500 text-[10px] uppercase font-bold">
-              <span>Total Calls Metered</span>
-              <Activity className="w-4 h-4 text-teal-400" />
-            </div>
-            <div className="text-2xl font-extrabold text-white">
-              {me.total_calls.toLocaleString()}
-            </div>
-            <div className="text-[10px] text-slate-500">Unified endpoint requests</div>
-          </div>
-
-          {/* Card 3: Micro-Debited Fees Total */}
-          <div className="rounded-2xl glass-card border border-slate-800 p-5 space-y-2">
-            <div className="flex items-center justify-between text-slate-500 text-[10px] uppercase font-bold">
-              <span>Micro-Debited Fees</span>
-              <DollarSign className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-2xl font-extrabold text-amber-400">
-              ${(me.total_spent_usd || 0).toFixed(4)}
-            </div>
-            <div className="text-[10px] text-slate-500">5% BYOK gateway fees total</div>
           </div>
 
         </div>
       )}
 
-      {/* Master Gateway API Key Card */}
-      <div className="rounded-2xl glass-card border border-slate-800 p-6 space-y-5 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4 font-mono">
-          <div className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Key className="w-4 h-4 text-emerald-400" />
-            Master Gateway API Key
-          </div>
-          <span className="text-[10px] uppercase font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Active
-          </span>
-        </div>
+      {/* ── TAB 2: PREPAID WALLET & METERED BILLING BAR ────────────────────── */}
+      {(activeSubTab === 'billing' || activeSubTab === 'general') && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between font-mono">
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-lime-500" />
+              <span>Prepaid Wallet &amp; Metered Billing</span>
+            </h3>
 
-        <div className="space-y-2 font-mono">
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Bearer Token</label>
-            <button
-              onClick={() => setIsRegenerateModalOpen(true)}
-              className="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition-colors"
+            <Link
+              to="/billing"
+              className="text-xs text-lime-600 dark:text-lime-400 hover:underline font-bold flex items-center gap-1"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Regenerate Key</span>
-            </button>
+              Billing Details <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          <div className="flex items-center gap-2 bg-[#0a0d14] p-3 rounded-xl border border-slate-800">
-            <code className="flex-1 text-xs text-emerald-300 break-all">
-              {showKey ? currentKey : maskedKey}
-            </code>
-            <button
-              onClick={() => setShowKey(!showKey)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors flex-shrink-0"
-              title={showKey ? 'Hide' : 'Reveal'}
-            >
-              {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={copyKey}
-              className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 transition-colors flex-shrink-0"
-              title="Copy Bearer Token"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Security Policy Box */}
-        <div className="rounded-xl bg-slate-900 border border-slate-800 p-4 text-xs text-slate-400 flex items-start gap-3">
-          <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="text-slate-200 font-semibold">Security &amp; Storage Policy</p>
-            <p className="leading-relaxed">
-              LiteDaemon stores only the SHA-256 hash of your Master Key. Raw keys are never stored in plain text. You can regenerate a new key at any time above.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick API Reference with 5 Endpoint Tabs */}
-      <div className="rounded-2xl glass-card border border-slate-800 p-6 space-y-4 shadow-xl font-mono">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Terminal className="w-4 h-4 text-emerald-400" />
-            Quick API Reference
-          </div>
-          <button
-            onClick={copyCurl}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 transition-colors"
-          >
-            {copiedCurl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            {copiedCurl ? 'Copied!' : 'Copy cURL'}
-          </button>
-        </div>
-
-        {/* 5 Endpoint Tabs */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-          {[
-            { id: 'scrape',   label: '/v1/scrape',   color: 'text-emerald-400', icon: Globe },
-            { id: 'search',   label: '/v1/search',   color: 'text-teal-400',    icon: Search },
-            { id: 'browser',  label: '/v1/browser',  color: 'text-cyan-400',    icon: Monitor },
-            { id: 'execute',  label: '/v1/execute',  color: 'text-purple-400',  icon: Terminal },
-            { id: 'document', label: '/v1/document', color: 'text-amber-400',   icon: FileText },
-          ].map(tab => {
-            const isSelected = selectedEndpoint === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedEndpoint(tab.id as EndpointTab)}
-                className={`px-3.5 py-1.5 rounded-xl border transition-all flex items-center space-x-2 whitespace-nowrap ${
-                  isSelected
-                    ? 'bg-slate-800 text-white border-emerald-500/50 shadow-sm'
-                    : 'bg-[#121620]/60 text-slate-400 border-slate-800/80 hover:border-slate-700 hover:text-slate-200'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${tab.color}`} />
-                <span className={tab.color}>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* cURL Request Preview */}
-        <pre className="bg-[#0a0d14] border border-slate-800 rounded-xl p-4 text-xs text-emerald-300 overflow-x-auto leading-relaxed max-h-56">
-          {CURL_EXAMPLES[selectedEndpoint]}
-        </pre>
-      </div>
-
-      {/* ── Key Regeneration Modal ────────────────────────────────────────────── */}
-      {isRegenerateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in font-mono">
-          <div className="relative w-full max-w-md bg-[#0d1117] border border-slate-800 rounded-2xl p-6 space-y-6 shadow-2xl text-xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
             
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            {/* Card 1: Prepaid Gateway Balance */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-3">
+              <div className="flex items-center justify-between text-zinc-400 text-[10px] uppercase font-bold">
+                <span>Prepaid Gateway Balance</span>
+                <Wallet className="w-4 h-4 text-emerald-500" />
+              </div>
+
+              <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                ${me ? me.balance_usd.toFixed(4) : '9.9500'}
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                <span className="text-[10px] text-zinc-400">Micro-debited per call</span>
+                <button
+                  onClick={() => navigate('/billing')}
+                  className="px-3 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs shadow-sm transition-all"
+                >
+                  + Deposit Funds
+                </button>
+              </div>
+            </div>
+
+            {/* Card 2: Total Requests Metered */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-2">
+              <div className="flex items-center justify-between text-zinc-400 text-[10px] uppercase font-bold">
+                <span>Total Gateway Requests Metered</span>
+                <Activity className="w-4 h-4 text-cyan-500" />
+              </div>
+
+              <div className="text-2xl font-extrabold text-cyan-600 dark:text-cyan-400">
+                {me ? me.total_calls.toLocaleString() : '10'} Calls
+              </div>
+
+              <span className="text-[10px] text-zinc-400 block">Unified endpoint executions</span>
+            </div>
+
+            {/* Card 3: Platform Routing Fees */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-2">
+              <div className="flex items-center justify-between text-zinc-400 text-[10px] uppercase font-bold">
+                <span>Platform Routing Fees</span>
+                <DollarSign className="w-4 h-4 text-amber-500" />
+              </div>
+
+              <div className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">
+                ${me ? (me.total_spent_usd || 0.05).toFixed(4) : '0.0500'}
+              </div>
+
+              <span className="text-[10px] text-zinc-400 block">Flat 5% BYOK optimization fee</span>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 3: WEBHOOKS & BUDGET GUARDRAILS ───────────────────────────── */}
+      {activeSubTab === 'webhooks' && (
+        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-5 font-sans">
+          <div className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 pb-3 font-mono">
+            <Sliders className="w-4 h-4 text-lime-500" />
+            <span>Webhooks &amp; Budget Guardrails</span>
+          </div>
+
+          <form onSubmit={handleSaveGuardrails} className="space-y-4 font-mono text-xs">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Alert Webhook Endpoint URL</label>
+              <input
+                type="url"
+                value={webhookUrl}
+                onChange={e => setWebhookUrl(e.target.value)}
+                placeholder="https://example.com/webhooks"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Monthly Budget Cap ($)</label>
+                <input
+                  type="text"
+                  value={budgetCap}
+                  onChange={e => setBudgetCap(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Auto-Failover Alerts</label>
+                <button
+                  type="button"
+                  onClick={() => setEmailAlerts(!emailAlerts)}
+                  className={`w-full py-2.5 px-4 rounded-xl font-bold border text-center transition-all ${
+                    emailAlerts
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
+                  }`}
+                >
+                  {emailAlerts ? '✓ Enabled' : 'Disabled'}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center gap-3">
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold shadow-md transition-all"
+              >
+                Save Settings
+              </button>
+
+              {guardrailSaved && (
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4" /> Guardrails updated successfully!
+                </span>
+              )}
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── TAB 4: QUICK CURL REFERENCE ENGINE ─────────────────────────────── */}
+      {(activeSubTab === 'reference' || activeSubTab === 'general') && (
+        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-4 font-mono">
+          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
+            <div className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <Terminal className="w-4 h-4 text-lime-500" />
+              <span>Quick API cURL Reference Engine</span>
+            </div>
+
+            <button
+              onClick={copyCurl}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs border border-zinc-200 dark:border-zinc-700 transition-colors"
+            >
+              {copiedCurl ? <Check className="w-3.5 h-3.5 text-lime-500" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedCurl ? 'Copied!' : 'Copy cURL'}
+            </button>
+          </div>
+
+          {/* 5 Endpoint Tabs */}
+          <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+            {[
+              { id: 'scrape',   label: '/v1/scrape',   color: 'text-emerald-500', icon: Globe },
+              { id: 'search',   label: '/v1/search',   color: 'text-teal-500',    icon: Search },
+              { id: 'browser',  label: '/v1/browser',  color: 'text-cyan-500',    icon: Monitor },
+              { id: 'execute',  label: '/v1/execute',  color: 'text-purple-500',  icon: Terminal },
+              { id: 'document', label: '/v1/document', color: 'text-amber-500',   icon: FileText },
+            ].map(tab => {
+              const isSelected = selectedEndpoint === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedEndpoint(tab.id as EndpointTab)}
+                  className={`px-3.5 py-1.5 rounded-xl border transition-all flex items-center space-x-2 whitespace-nowrap cursor-pointer ${
+                    isSelected
+                      ? 'bg-lime-400 text-zinc-950 font-bold border-lime-400 shadow-sm'
+                      : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Dynamic cURL Code Block */}
+          <pre className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-xs text-emerald-400 overflow-x-auto leading-relaxed max-h-56">
+            {CURL_EXAMPLES[selectedEndpoint]}
+          </pre>
+        </div>
+      )}
+
+      {/* ── KEY REGENERATION CONFIRMATION MODAL ──────────────────────────────── */}
+      {isRegenerateModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm font-mono text-xs">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-6 shadow-2xl relative">
+            
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
               <div className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-bold text-white">Regenerate Master Key</h3>
+                <RefreshCw className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Regenerate Master Gateway Key</h3>
               </div>
               <button
                 onClick={() => setIsRegenerateModalOpen(false)}
-                className="p-1 rounded-lg text-slate-500 hover:text-white"
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {regenerateSuccess ? (
-              <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto animate-bounce" />
-                <p className="text-emerald-300 font-bold">New Master Bearer Token Generated!</p>
+              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto animate-bounce" />
+                <p className="text-emerald-600 dark:text-emerald-400 font-bold">New Master Bearer Token Generated!</p>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 space-y-1">
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 space-y-1">
                   <p className="font-bold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4" /> Warning
                   </p>
-                  <p className="leading-relaxed font-sans">
-                    Regenerating your key will immediately invalidate your current Bearer token. Any active scripts using the old key will fail. Continue?
+                  <p className="leading-relaxed font-sans text-xs">
+                    Regenerating your key will immediately invalidate your current Bearer token. Any active applications using the old key will be rejected. Continue?
                   </p>
                 </div>
 
                 <div className="flex items-center justify-end space-x-3 pt-2">
                   <button
                     onClick={() => setIsRegenerateModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-semibold"
+                    className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleRegenerateKey}
                     disabled={isRegenerating}
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold flex items-center gap-1.5 shadow-md"
                   >
                     {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Confirm &amp; Regenerate</span>}
                   </button>

@@ -5,14 +5,28 @@ import {
   Zap, Lock, ShieldCheck, Layers, Cpu, CreditCard,
   FileText, Lightbulb, AlertTriangle, BookOpen,
   Terminal, ExternalLink, ArrowRight, Search,
-  Rocket, Box, Code2, Book
+  Rocket, Box, Code2, Book, ArrowDown, Server, Key
 } from 'lucide-react';
 import { PROVIDER_META } from '../data/providers';
-/* ─── Types ─────────────────────────────────────────────────────────────── */
+
 type Lang = 'python' | 'typescript' | 'curl';
 type DocTab = 'docs' | 'api-reference' | 'sdks';
+type SectionId =
+  | 'quickstart'
+  | 'architecture'
+  | 'principles'
+  | 'keys-vault'
+  | 'key-encryption'
+  | 'failover'
+  | 'tools'
+  | 'api-ref'
+  | 'sdk-ts'
+  | 'sdk-python'
+  | 'langchain'
+  | 'crewai'
+  | 'autogen';
 
-/* ─── Code Block ─────────────────────────────────────────────────────────── */
+/* ─── Code Block Component ────────────────────────────────────────────────── */
 const CodeBlock: React.FC<{
   code: Record<Lang, string>;
   filename?: string;
@@ -30,24 +44,17 @@ const CodeBlock: React.FC<{
   const lines = code[lang].split('\n');
 
   return (
-    <div
-      className="my-6 rounded-xl overflow-hidden text-xs font-mono shadow-xl"
-      style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-card)' }}
-    >
+    <div className="my-6 rounded-2xl overflow-hidden text-xs font-mono shadow-xl bg-zinc-950 border border-zinc-800">
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-4 py-2.5 border-b"
-        style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
-      >
+      <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-3">
-          {/* Traffic lights */}
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
           </div>
           {filename && (
-            <span className="text-[11px] font-mono" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-[11px] font-mono text-zinc-400">
               {filename}.{ext[lang]}
             </span>
           )}
@@ -55,53 +62,39 @@ const CodeBlock: React.FC<{
 
         <div className="flex items-center gap-2">
           {/* Language tabs */}
-          <div
-            className="flex items-center gap-0.5 p-0.5 rounded-lg"
-            style={{ backgroundColor: 'var(--bg)' }}
-          >
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-zinc-950 border border-zinc-800">
             {(['python', 'typescript', 'curl'] as Lang[]).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className="px-2.5 py-1 rounded-md transition-all text-[10px] font-semibold cursor-pointer capitalize"
-                style={
+                className={`px-2.5 py-1 rounded-lg transition-all text-[10px] font-bold capitalize cursor-pointer ${
                   lang === l
-                    ? { backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }
-                    : { color: 'var(--text-muted)' }
-                }
+                    ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
               >
                 {l === 'typescript' ? 'TypeScript' : l === 'python' ? 'Python' : 'cURL'}
               </button>
             ))}
           </div>
 
-          {/* Copy */}
+          {/* Copy Button */}
           <button
             onClick={copy}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all cursor-pointer text-[10px] font-semibold"
-            style={{
-              backgroundColor: 'var(--bg-secondary)',
-              color: copied ? '#22c55e' : 'var(--text-secondary)',
-              border: '1px solid var(--border)',
-            }}
+            className="flex items-center gap-1 px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[10px] font-bold border border-zinc-700 transition-colors"
           >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            {copied ? <Check className="w-3 h-3 text-lime-400" /> : <Copy className="w-3 h-3" />}
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
       </div>
 
-      {/* Code */}
-      <div className="flex overflow-x-auto p-4">
-        {/* Line numbers */}
-        <div
-          className="select-none text-right pr-4 border-r mr-4 shrink-0 space-y-[1px] text-[11px] leading-relaxed"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-        >
+      {/* Code Area */}
+      <div className="flex overflow-x-auto p-4 text-emerald-400 leading-relaxed">
+        <div className="select-none text-right pr-4 border-r border-zinc-800 mr-4 shrink-0 space-y-[1px] text-[11px] text-zinc-600">
           {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
         </div>
-        {/* Code lines */}
-        <pre className="flex-1 text-[11px] leading-relaxed overflow-x-auto" style={{ color: 'var(--text-primary)' }}>
+        <pre className="flex-1 text-[11px] leading-relaxed overflow-x-auto">
           {lines.map((line, i) => <div key={i} className="whitespace-pre">{line || ' '}</div>)}
         </pre>
       </div>
@@ -109,1284 +102,410 @@ const CodeBlock: React.FC<{
   );
 };
 
-/* ─── Callout ────────────────────────────────────────────────────────────── */
+/* ─── Colorful Callout Component ─────────────────────────────────────────── */
 const Callout: React.FC<{
   type: 'tip' | 'warning' | 'info' | 'danger';
   title?: string;
   children: React.ReactNode;
 }> = ({ type, title, children }) => {
   const styles = {
-    tip:     { bg: 'rgba(34,197,94,0.06)',  border: 'rgba(34,197,94,0.25)',  icon: '💡', color: '#86efac' },
-    warning: { bg: 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.25)', icon: '⚠️', color: '#fcd34d' },
-    info:    { bg: 'rgba(99,102,241,0.06)', border: 'rgba(99,102,241,0.25)', icon: 'ℹ️', color: '#a5b4fc' },
-    danger:  { bg: 'rgba(239,68,68,0.06)',  border: 'rgba(239,68,68,0.25)',  icon: '🚫', color: '#fca5a5' },
+    tip:     { bg: 'bg-emerald-500/10 dark:bg-emerald-500/15', border: 'border-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-300', icon: Lightbulb },
+    warning: { bg: 'bg-amber-500/10 dark:bg-amber-500/15',   border: 'border-amber-500/30',   text: 'text-amber-700 dark:text-amber-300',   icon: AlertTriangle },
+    info:    { bg: 'bg-cyan-500/10 dark:bg-cyan-500/15',     border: 'border-cyan-500/30',    text: 'text-cyan-700 dark:text-cyan-300',     icon: BookOpen },
+    danger:  { bg: 'bg-rose-500/10 dark:bg-rose-500/15',     border: 'border-rose-500/30',    text: 'text-rose-700 dark:text-rose-300',     icon: Lock },
   };
   const s = styles[type];
+  const Icon = s.icon;
 
   return (
-    <div
-      className="my-5 p-4 rounded-xl flex gap-3 text-xs leading-relaxed"
-      style={{ backgroundColor: s.bg, border: `1px solid ${s.border}`, color: s.color }}
-    >
-      <span className="text-base shrink-0 mt-0.5">{s.icon}</span>
-      <div>
-        {title && <strong className="font-bold block mb-1" style={{ color: 'var(--text-primary)' }}>{title}</strong>}
-        <div style={{ color: 'var(--text-secondary)' }}>{children}</div>
+    <div className={`my-5 p-4 rounded-2xl border ${s.bg} ${s.border} flex items-start gap-3 text-xs leading-relaxed font-sans`}>
+      <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${s.text}`} />
+      <div className="space-y-1">
+        {title && <strong className={`font-bold block text-sm ${s.text}`}>{title}</strong>}
+        <div className="text-zinc-700 dark:text-zinc-300">{children}</div>
       </div>
     </div>
   );
 };
 
-/* ─── Inline Code ────────────────────────────────────────────────────────── */
-const IC: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <code
-    className="text-[11px] font-mono px-1.5 py-0.5 rounded"
-    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
-  >
-    {children}
-  </code>
-);
-
-/* ─── Section Heading ────────────────────────────────────────────────────── */
-const H1: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>
-    {children}
-  </h1>
-);
-const H2: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 className="text-lg font-semibold mt-10 mb-3 pb-2" style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--border)' }}>
-    {children}
-  </h2>
-);
-const H3: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h3 className="text-base font-semibold mt-6 mb-2" style={{ color: 'var(--text-primary)' }}>
-    {children}
-  </h3>
-);
-const P: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-  <p className={`text-sm leading-7 mb-4 ${className ?? ''}`} style={{ color: 'var(--text-secondary)' }}>
-    {children}
-  </p>
-);
-
-/* ─── Parameter Table ────────────────────────────────────────────────────── */
-const ParamTable: React.FC<{
-  params: { name: string; type: string; required?: boolean; default?: string; desc: string }[];
-}> = ({ params }) => (
-  <div className="my-4 rounded-xl border overflow-hidden text-xs" style={{ borderColor: 'var(--border)' }}>
-    <div className="grid grid-cols-12 gap-2 px-4 py-2 font-semibold uppercase tracking-wider text-[11px] border-b" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-      <span className="col-span-3">Parameter</span>
-      <span className="col-span-2">Type</span>
-      <span className="col-span-2">Default</span>
-      <span className="col-span-5">Description</span>
-    </div>
-    {params.map((p, i) => (
-      <div key={p.name} className="grid grid-cols-12 gap-2 px-4 py-3 border-b last:border-b-0 items-center" style={{ borderColor: 'var(--border)', backgroundColor: i % 2 === 0 ? 'var(--bg)' : 'var(--bg-secondary)' }}>
-        <span className="col-span-3 font-mono font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
-          {p.name}
-          {p.required && <span className="text-[9px] px-1 py-0.2 rounded bg-rose-500/20 text-rose-400 font-bold">REQ</span>}
-        </span>
-        <span className="col-span-2 font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{p.type}</span>
-        <span className="col-span-2 font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{p.default ?? '—'}</span>
-        <span className="col-span-5" style={{ color: 'var(--text-secondary)' }}>{p.desc}</span>
-      </div>
-    ))}
-  </div>
-);
-
-/* ─── Sidebar Nav Data ───────────────────────────────────────────────────── */
-const SIDEBAR = [
-  {
-    title: 'Overview',
-    icon: BookOpen,
-    items: [
-      { label: 'Quickstart',        id: 'quickstart',    icon: Rocket },
-      { label: 'Architecture',      id: 'architecture',  icon: Layers },
-      { label: 'Principles',        id: 'principles',    icon: Book },
-    ],
-  },
-  {
-    title: 'Authentication & Keys',
-    icon: Lock,
-    items: [
-      { label: 'API Keys & Vault',  id: 'keys',          icon: Lock },
-      { label: 'Key Encryption',    id: 'security',      icon: ShieldCheck },
-      { label: 'Multi-Key Failover', id: 'failover',     icon: Zap },
-    ],
-  },
-  {
-    title: 'Tool Providers & APIs',
-    icon: Layers,
-    items: [
-      { label: 'Supported Tools',   id: 'tools',         icon: Box },
-      { label: 'API Reference',     id: 'endpoints',     icon: Code2 },
-    ],
-  },
-  {
-    title: 'Official SDKs',
-    icon: Terminal,
-    items: [
-      { label: 'TypeScript / Node', id: 'sdk-npm',       icon: Terminal },
-      { label: 'Python SDK',        id: 'sdk-python',    icon: Terminal },
-    ],
-  },
-  {
-    title: 'Framework Integrations',
-    icon: Cpu,
-    items: [
-      { label: 'LangChain',         id: 'langchain',     icon: Terminal },
-      { label: 'CrewAI',            id: 'crewai',        icon: Terminal },
-      { label: 'AutoGen',           id: 'autogen',       icon: Terminal },
-      { label: 'LlamaIndex',        id: 'llamaindex',    icon: Terminal },
-      { label: 'n8n / Webhooks',    id: 'n8n',           icon: Terminal },
-    ],
-  },
-  {
-    title: 'Billing & Limits',
-    icon: CreditCard,
-    items: [
-      { label: 'Pricing Model',     id: 'pricing',       icon: CreditCard },
-      { label: 'Rate Limits',       id: 'rate-limits',   icon: AlertTriangle },
-    ],
-  },
-  {
-    title: 'Legal',
-    icon: FileText,
-    items: [
-      { label: 'Privacy Policy',    id: 'privacy-link',  icon: FileText, href: '/privacy' },
-      { label: 'Terms of Service',  id: 'terms-link',    icon: FileText, href: '/terms' },
-    ],
-  },
-];
-
-/* ─── Tools Directory Component (36+ Adapters) ───────────────────────────── */
-const ToolsDirectory: React.FC = () => {
-  const [catFilter, setCatFilter] = useState<string>('All');
-  const [query, setQuery] = useState<string>('');
-
-  const allTools = Object.entries(PROVIDER_META).map(([id, meta]) => {
-    let category = 'Web Scraping';
-    let endpoint = '/v1/scrape';
-    if (['tavily', 'serper', 'exa', 'brave', 'serpapi', 'bing', 'google_cse', 'zenserp', 'you', 'perplexity', 'searxng'].includes(id)) {
-      category = 'Web Search';
-      endpoint = '/v1/search';
-    } else if (['browserbase', 'steel', 'browserless', 'anchor'].includes(id)) {
-      category = 'Headless Browsing';
-      endpoint = '/v1/browser';
-    } else if (['e2b', 'daytona', 'modal', 'fly', 'runpod'].includes(id)) {
-      category = 'Code Execution';
-      endpoint = '/v1/execute';
-    } else if (['llamaparse', 'unstructured', 'firecrawl_parse', 'diffbot'].includes(id)) {
-      category = 'Document Parsing';
-      endpoint = '/v1/parse';
-    } else if (['voyage', 'cohere_embed', 'jina_embed'].includes(id)) {
-      category = 'Vector Embeddings';
-      endpoint = '/v1/embeddings';
-    }
-
-    const title = id.charAt(0).toUpperCase() + id.slice(1).replace('_', ' ');
-
-    return {
-      id,
-      title,
-      category,
-      endpoint,
-      meta,
-    };
-  });
-
-  const categories = ['All', 'Web Search', 'Web Scraping', 'Headless Browsing', 'Code Execution', 'Document Parsing', 'Vector Embeddings'];
-
-  const filtered = allTools.filter((t) => {
-    const matchCat = catFilter === 'All' || t.category === catFilter;
-    const matchQ = !query || 
-      t.title.toLowerCase().includes(query.toLowerCase()) || 
-      t.meta.description.toLowerCase().includes(query.toLowerCase()) ||
-      t.category.toLowerCase().includes(query.toLowerCase());
-    return matchCat && matchQ;
-  });
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono mb-3" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--accent)' }}>
-          <Box className="w-3 h-3" /> 36+ Production Tool Engines Supported
-        </div>
-        <H1>Supported Tool Engines</H1>
-        <P>LiteDaemon unifies 36+ enterprise web scrapers, search engines, sandboxes, browsers, document parsers, and embedding models through a master API endpoint with automated BYOK key failover.</P>
-      </div>
-
-      {/* Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl border text-xs w-full sm:w-64" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-          <Search className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder="Search 36+ tool engines..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="bg-transparent flex-1 outline-none text-xs"
-            style={{ color: 'var(--text-primary)' }}
-          />
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex items-center gap-1 p-1 rounded-xl border text-xs overflow-x-auto" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)' }}>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCatFilter(cat)}
-              className="px-2.5 py-1 rounded-lg transition-all text-[11px] font-medium cursor-pointer whitespace-nowrap"
-              style={
-                catFilter === cat
-                  ? { backgroundColor: 'var(--bg)', color: 'var(--text-primary)', fontWeight: 600 }
-                  : { color: 'var(--text-muted)' }
-              }
-            >
-              {cat === 'All' ? `All (${allTools.length})` : cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 36+ Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered.map((t) => (
-          <div
-            key={t.id}
-            className="p-5 rounded-2xl border transition-all hover:scale-[1.01] hover:shadow-xl space-y-3 group"
-            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${t.meta.iconBg} border flex items-center justify-center font-bold text-xs`}>
-                  {t.title.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t.title}</h3>
-                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{t.category}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                  {t.meta.latency}
-                </span>
-                <IC>{t.endpoint}</IC>
-              </div>
-            </div>
-
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              {t.meta.description}
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {t.meta.capabilities.map((cap) => (
-                <span
-                  key={cap}
-                  className="px-2 py-0.5 rounded-md text-[10px] font-medium"
-                  style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                >
-                  {cap}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/* ─── Doc Content Map ────────────────────────────────────────────────────── */
-const DOC_CONTENT: Record<string, React.ReactNode> = {
-
-  /* ── QUICKSTART ──────────────────────────────────────────────────────── */
-  quickstart: (
-    <div className="space-y-2">
-      <div
-        className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono mb-4"
-        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: '#86efac' }}
-      >
-        <Rocket className="w-3 h-3" /> Quickstart Guide
-      </div>
-      <H1>Get Started with LiteDaemon</H1>
-      <P>
-        Route Tavily, Firecrawl, Browserbase, E2B, Exa, Serper and more through a single master API key.
-        No more juggling provider keys in your codebase.
-      </P>
-
-      <Callout type="tip" title="Drop-in Compatible">
-        LiteDaemon uses standard HTTP <IC>Authorization: Bearer</IC> headers.
-        Just swap the base URL — your existing code works immediately.
-      </Callout>
-
-      <H2>Step 1 — Create Your Account</H2>
-      <P>
-        Sign up at <Link to="/auth" className="underline" style={{ color: '#ccff00' }}>/auth</Link> and
-        verify your email. You'll land in your personal workspace.
-      </P>
-
-      <H2>Step 2 — Add Your Provider Keys</H2>
-      <P>
-        Navigate to <Link to="/keys" className="underline" style={{ color: '#ccff00' }}>/keys</Link> and add
-        your API keys for Tavily, Firecrawl, E2B, etc. All keys are encrypted at rest with AES-256-GCM.
-      </P>
-
-      <Callout type="info" title="BYOK Model">
-        LiteDaemon is Bring-Your-Own-Key. We never store plaintext keys — they're encrypted in your vault and
-        decrypted only in isolated runtime memory during active requests.
-      </Callout>
-
-      <H2>Step 3 — Get Your Master Key</H2>
-      <P>
-        Your master key (<IC>ld_live_...</IC>) is generated automatically. Copy it from the Keys page.
-        This single key routes to all your vaulted provider keys.
-      </P>
-
-      <H2>Step 4 — Make Your First Request</H2>
-      <CodeBlock
-        filename="quickstart"
-        code={{
-          python: `import requests
-
-res = requests.post(
-    "https://gateway.litedaemon.com/v1/search",
-    headers={
-        "Authorization": "Bearer ld_live_your_master_key",
-        "Content-Type": "application/json",
-    },
-    json={"query": "Latest LLM benchmark results 2025"}
-)
-print(res.json())`,
-          typescript: `import { LiteDaemon } from '@litedaemon/sdk';
-
-const client = new LiteDaemon({
-  apiKey: 'ld_live_your_master_key',
-});
-
-const result = await client.search({
-  query: 'Latest LLM benchmark results 2025',
-});
-
-console.log(result);`,
-          curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer ld_live_your_master_key" \\
-  -H "Content-Type: application/json" \\
-  -d '{"query": "Latest LLM benchmark results 2025"}'`,
-        }}
-      />
-
-      <Callout type="warning" title="Free Tier Limits">
-        The first <strong>100 requests/month</strong> are completely free. After that, a 5% routing fee
-        applies per request. Top up at <Link to="/billing" className="underline" style={{ color: '#ccff00' }}>/billing</Link>.
-      </Callout>
-
-      <H2>Next Steps</H2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-        {[
-          { label: 'Explore all supported tools →',   id: 'tools' },
-          { label: 'Framework SDK guides →',           id: 'langchain' },
-          { label: 'Understand key security →',        id: 'security' },
-          { label: 'Pricing & rate limits →',          id: 'pricing' },
-        ].map((c) => (
-          <Link
-            key={c.id}
-            to={`/docs/${c.id}`}
-            className="flex items-center justify-between p-4 rounded-xl text-sm transition-all group"
-            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#ccff00')}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
-          >
-            <span>{c.label}</span>
-            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#ccff00' }} />
-          </Link>
-        ))}
-      </div>
-    </div>
-  ),
-
-  /* ── ARCHITECTURE ────────────────────────────────────────────────────── */
-  architecture: (
-    <div className="space-y-2">
-      <H1>Gateway Architecture</H1>
-      <P>Learn how LiteDaemon proxies your tool requests with zero payload persistence.</P>
-
-      <H2>Ephemeral Pass-Through Proxying</H2>
-      <P>
-        Every request flows through LiteDaemon's gateway as an in-memory stream.
-        Payload data <strong>never touches disk storage</strong>. AES-256-GCM encrypted keys are decrypted
-        strictly inside isolated runtime memory during the lifespan of each request.
-      </P>
-
-      <div
-        className="my-6 p-6 rounded-xl font-mono text-xs leading-loose text-center"
-        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: '#86efac' }}
-      >
-        <div className="space-y-3">
-          <div className="flex items-center justify-center gap-2">
-            <span className="px-3 py-1 rounded" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
-              Your Agent / App
-            </span>
-          </div>
-          <div className="text-zinc-500 text-lg">↓ HTTPS + Bearer ld_live_...</div>
-          <div className="flex items-center justify-center gap-2">
-            <span className="px-3 py-1.5 rounded" style={{ backgroundColor: 'rgba(204,255,0,0.05)', border: '1px solid rgba(204,255,0,0.3)', color: '#ccff00' }}>
-              LiteDaemon Gateway
-            </span>
-          </div>
-          <div className="text-zinc-500 text-sm">↓ AES-256 decrypt key in RAM → upstream HTTP</div>
-          <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto">
-            {['Tavily', 'Firecrawl', 'E2B'].map(p => (
-              <span key={p} className="px-2 py-1 rounded text-center" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                {p}
-              </span>
-            ))}
-          </div>
-          <div className="text-zinc-500 text-sm">↑ Stream response back → your agent</div>
-        </div>
-      </div>
-
-      <Callout type="tip" title="Zero Payload Logging">
-        LiteDaemon logs request metadata (timestamps, token counts, provider selected) but
-        never logs request bodies or response payloads.
-      </Callout>
-
-      <H2>Request Lifecycle</H2>
-      <ol className="space-y-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {[
-          'Incoming request arrives with master key header.',
-          'Gateway validates master key against Postgres session table.',
-          'Gateway selects the correct provider from vault using routing rules.',
-          'AES-256-GCM decrypts the BYOK provider key in-memory.',
-          'Upstream HTTP request is forwarded with decrypted key.',
-          'Response streams back to caller. Decrypted key is zeroed from memory.',
-        ].map((step, i) => (
-          <li key={i} className="flex gap-3">
-            <span
-              className="shrink-0 w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center mt-0.5"
-              style={{ backgroundColor: 'rgba(204,255,0,0.1)', color: '#ccff00', border: '1px solid rgba(204,255,0,0.3)' }}
-            >
-              {i + 1}
-            </span>
-            <span className="leading-6">{step}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  ),
-
-  /* ── PRINCIPLES ─────────────────────────────────────────────────────── */
-  principles: (
-    <div className="space-y-2">
-      <H1>Design Principles</H1>
-      <P>The core design decisions behind the LiteDaemon gateway.</P>
-      <H2>1. BYOK First</H2>
-      <P>You own your API keys. LiteDaemon never charges provider-side fees — you pay the provider directly via your vaulted keys. We charge only a small 5% routing fee after 100 free requests.</P>
-      <H2>2. Zero Persistence</H2>
-      <P>Payloads are never stored. No prompt history. No tool call logs. Ephemeral proxying by design.</P>
-      <H2>3. Drop-In Compatible</H2>
-      <P>Standard Bearer token auth and REST endpoints. If you use Tavily, Firecrawl, or E2B today, you need only swap the base URL to <IC>https://gateway.litedaemon.com/v1</IC>.</P>
-      <H2>4. Automatic Failover</H2>
-      <P>Multiple BYOK keys per provider? LiteDaemon auto-rotates on 429 / 401 errors — your agents never crash from rate limits.</P>
-    </div>
-  ),
-
-  /* ── KEYS ────────────────────────────────────────────────────────────── */
-  keys: (
-    <div className="space-y-2">
-      <H1>API Keys & Vault</H1>
-      <P>How to create, manage, and use LiteDaemon master keys alongside your BYOK provider vault.</P>
-
-      <H2>Master Key Format</H2>
-      <P>Your LiteDaemon master key follows the format:</P>
-      <div className="my-4 p-4 rounded-xl font-mono text-sm" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: '#86efac' }}>
-        ld_live_&lt;base62-random-48chars&gt;
-      </div>
-
-      <H2>Adding Provider Keys to Vault</H2>
-      <P>Navigate to <Link to="/keys" className="underline" style={{ color: '#ccff00' }}>/keys</Link> → click <strong>"Add Key"</strong> → select provider → paste your key. It is immediately encrypted and stored.</P>
-
-      <Callout type="tip" title="Key Rotation">
-        Add multiple keys per provider for automatic rate-limit failover. LiteDaemon round-robins across healthy keys automatically.
-      </Callout>
-
-      <H2>Using Your Master Key</H2>
-      <CodeBlock
-        filename="auth"
-        code={{
-          python: `import os
-
-# Set your master key as an environment variable
-os.environ["LITEDAEMON_API_KEY"] = "ld_live_your_master_key"
-
-# Or pass directly in headers
-headers = {
-    "Authorization": f"Bearer {os.environ['LITEDAEMON_API_KEY']}"
-}`,
-          typescript: `// Recommended: use environment variables
-const apiKey = process.env.LITEDAEMON_API_KEY!;
-
-const res = await fetch('https://gateway.litedaemon.com/v1/search', {
-  method: 'POST',
-  headers: {
-    Authorization: \`Bearer \${apiKey}\`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ query: 'AI agent tools 2025' }),
-});`,
-          curl: `# Export master key
-export LITEDAEMON_API_KEY="ld_live_your_master_key"
-
-curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{"query": "AI agent tools"}'`,
-        }}
-      />
-    </div>
-  ),
-
-  /* ── SECURITY ────────────────────────────────────────────────────────── */
-  security: (
-    <div className="space-y-2">
-      <H1>Key Encryption & Storage</H1>
-      <P>How LiteDaemon protects your BYOK API credentials at rest and in transit.</P>
-
-      <H2>Encryption Specification</H2>
-      <div className="my-5 space-y-2">
-        {[
-          ['Algorithm',  'AES-256-GCM'],
-          ['Key Derivation', 'PBKDF2-SHA256, 310,000 iterations'],
-          ['IV / Nonce',  '96-bit random per encryption'],
-          ['Auth Tag',    '128-bit GCM authentication tag'],
-          ['Storage',     'PostgreSQL encrypted column'],
-          ['Memory',      'Decrypted only in RAM, zeroed post-request'],
-        ].map(([label, value]) => (
-          <div
-            key={label}
-            className="flex items-center justify-between px-4 py-2.5 rounded-lg text-xs"
-            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
-          >
-            <span style={{ color: 'var(--text-muted)' }}>{label}</span>
-            <span className="font-mono" style={{ color: 'var(--text-primary)' }}>{value}</span>
-          </div>
-        ))}
-      </div>
-
-      <Callout type="tip" title="SOC-2 Ready Architecture">
-        Zero-retention design ensures your private agent payloads remain completely confidential.
-        LiteDaemon never logs request bodies or tool call arguments.
-      </Callout>
-    </div>
-  ),
-
-  /* ── FAILOVER ────────────────────────────────────────────────────────── */
-  failover: (
-    <div className="space-y-2">
-      <H1>Multi-Key Failover & Rate Limit Protection</H1>
-      <P>Zero 429 crashes for autonomous agent execution pipelines.</P>
-
-      <H2>How Failover Works</H2>
-      <P>
-        When an upstream provider returns <IC>429 Too Many Requests</IC> or <IC>401 Quota Exceeded</IC>,
-        LiteDaemon's auto-router immediately rotates to the next healthy BYOK key in your pool.
-        This happens in the same request — your caller receives the successful response.
-      </P>
-
-      <H2>Failover Decision Tree</H2>
-      <div className="my-5 p-5 rounded-xl font-mono text-xs leading-loose" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-        <div>Upstream returns 429 or 401</div>
-        <div className="ml-4 text-zinc-500">↓</div>
-        <div className="ml-4">Are there backup keys for this provider?</div>
-        <div className="ml-8 text-zinc-500">├── Yes → retry with next key (same request)</div>
-        <div className="ml-8 text-zinc-500">└── No  → return 429 with <IC>X-LD-Retry-After</IC> header</div>
-      </div>
-
-      <Callout type="tip" title="Best Practice">
-        Add at least 2 keys per provider in your vault. LiteDaemon will automatically round-robin
-        across healthy keys even without rate limit errors, distributing load evenly.
-      </Callout>
-    </div>
-  ),
-
-  /* ── TOOLS ───────────────────────────────────────────────────────────── */
-  tools: <ToolsDirectory />,
-
-  /* ── ENDPOINTS ───────────────────────────────────────────────────────── */
-  endpoints: (
-    <div className="space-y-6">
-      <div>
-        <H1>API Reference & Gateway Endpoints</H1>
-        <P>Complete reference for LiteDaemon REST endpoints. All requests require header authentication: <IC>Authorization: Bearer ld_live_...</IC></P>
-      </div>
-
-      {/* 1. SEARCH */}
-      <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">POST</span>
-          <span className="font-mono text-base font-bold" style={{ color: 'var(--text-primary)' }}>/v1/search</span>
-        </div>
-        <P>Route unified web search queries across Tavily, Exa, or Serper based on active vault credentials.</P>
-
-        <H3>Request Parameters</H3>
-        <ParamTable params={[
-          { name: 'query', type: 'string', required: true, desc: 'Search query keyword or question.' },
-          { name: 'provider', type: 'string', required: false, default: 'auto', desc: 'Target engine: "tavily" | "exa" | "serper" | "auto"' },
-          { name: 'num_results', type: 'number', required: false, default: '10', desc: 'Number of search result objects to return (1-50).' },
-          { name: 'search_depth', type: 'string', required: false, default: 'basic', desc: '"basic" (faster) or "advanced" (deep content extraction).' },
-          { name: 'include_domains', type: 'string[]', required: false, desc: 'Limit search strictly to specific domain hostnames.' },
-        ]} />
-
-        <H3>Code Example</H3>
-        <CodeBlock filename="search" code={{
-          python: `import requests
-
-res = requests.post(
-    "https://gateway.litedaemon.com/v1/search",
-    headers={"Authorization": "Bearer ld_live_master"},
-    json={
-        "query": "Autonomous AI Agent Benchmarks 2025",
-        "provider": "tavily",
-        "num_results": 5
-    }
-)
-print(res.json())`,
-          typescript: `const res = await fetch('https://gateway.litedaemon.com/v1/search', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ld_live_master',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    query: 'Autonomous AI Agent Benchmarks 2025',
-    provider: 'tavily',
-    num_results: 5
-  })
-});
-const data = await res.json();`,
-          curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer ld_live_master" \\
-  -H "Content-Type: application/json" \\
-  -d '{"query":"Autonomous AI Agent Benchmarks 2025","provider":"tavily"}'`,
-        }} />
-      </div>
-
-      {/* 2. SCRAPE */}
-      <div className="pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">POST</span>
-          <span className="font-mono text-base font-bold" style={{ color: 'var(--text-primary)' }}>/v1/scrape</span>
-        </div>
-        <P>Scrape and convert any webpage URL to clean Markdown, HTML, or raw text using Firecrawl, Jina, or Spider.</P>
-
-        <H3>Request Parameters</H3>
-        <ParamTable params={[
-          { name: 'url', type: 'string', required: true, desc: 'Target HTTP/HTTPS URL to scrape.' },
-          { name: 'provider', type: 'string', required: false, default: 'firecrawl', desc: 'Engine: "firecrawl" | "jina" | "spider"' },
-          { name: 'formats', type: 'string[]', required: false, default: '["markdown"]', desc: 'Output formats: ["markdown", "html", "rawHtml"]' },
-          { name: 'wait_for', type: 'number', required: false, default: '0', desc: 'Milliseconds to wait before capturing DOM.' },
-        ]} />
-
-        <CodeBlock filename="scrape" code={{
-          python: `res = requests.post(
-    "https://gateway.litedaemon.com/v1/scrape",
-    headers={"Authorization": "Bearer ld_live_master"},
-    json={"url": "https://news.ycombinator.com", "provider": "firecrawl"}
-)`,
-          typescript: `const res = await fetch('https://gateway.litedaemon.com/v1/scrape', {
-  method: 'POST',
-  headers: { 'Authorization': 'Bearer ld_live_master', 'Content-Type': 'application/json' },
-  body: JSON.stringify({ url: 'https://news.ycombinator.com', provider: 'firecrawl' })
-});`,
-          curl: `curl -X POST https://gateway.litedaemon.com/v1/scrape \\
-  -H "Authorization: Bearer ld_live_master" \\
-  -d '{"url":"https://news.ycombinator.com","provider":"firecrawl"}'`,
-        }} />
-      </div>
-
-      {/* 3. EXECUTE */}
-      <div className="pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">POST</span>
-          <span className="font-mono text-base font-bold" style={{ color: 'var(--text-primary)' }}>/v1/execute</span>
-        </div>
-        <P>Execute code in isolated, microVM sandboxes via E2B or Modal.</P>
-
-        <H3>Request Parameters</H3>
-        <ParamTable params={[
-          { name: 'code', type: 'string', required: true, desc: 'Source code snippet to execute.' },
-          { name: 'language', type: 'string', required: false, default: 'python', desc: 'Runtime: "python" | "typescript" | "bash"' },
-          { name: 'timeout_seconds', type: 'number', required: false, default: '30', desc: 'Max execution duration before kill.' },
-        ]} />
-
-        <CodeBlock filename="execute" code={{
-          python: `res = requests.post(
-    "https://gateway.litedaemon.com/v1/execute",
-    headers={"Authorization": "Bearer ld_live_master"},
-    json={"code": "import math; print(math.factorial(10))", "language": "python"}
-)`,
-          typescript: `const res = await fetch('https://gateway.litedaemon.com/v1/execute', {
-  method: 'POST',
-  headers: { 'Authorization': 'Bearer ld_live_master', 'Content-Type': 'application/json' },
-  body: JSON.stringify({ code: 'console.log("Hello from E2B Sandbox!")', language: 'typescript' })
-});`,
-          curl: `curl -X POST https://gateway.litedaemon.com/v1/execute \\
-  -H "Authorization: Bearer ld_live_master" \\
-  -d '{"code":"print(42)","language":"python"}'`,
-        }} />
-      </div>
-    </div>
-  ),
-
-  /* ── OFFICIAL SDKS ────────────────────────────────────────────────────── */
-  'sdk-npm': (
-    <div className="space-y-4">
-      <H1>TypeScript / Node.js SDK (`@litedaemon/sdk`)</H1>
-      <P>Official TypeScript client for LiteDaemon. Full type safety for all 150+ tool engines.</P>
-
-      <H2>Installation</H2>
-      <CodeBlock filename="install" code={{
-        python: `# Use npm, pnpm, or yarn
-npm install @litedaemon/sdk`,
-        typescript: `npm install @litedaemon/sdk`,
-        curl: `npm install @litedaemon/sdk`,
-      }} />
-
-      <H2>Usage Example</H2>
-      <CodeBlock filename="sdk_example" code={{
-        python: `# TypeScript SDK Usage
-import { LiteDaemon } from '@litedaemon/sdk';
-
-const client = new LiteDaemon({ apiKey: process.env.LITEDAEMON_API_KEY });
-const result = await client.search({ query: 'Agentic Workflows 2025' });
-console.log(result);`,
-        typescript: `import { LiteDaemon } from '@litedaemon/sdk';
-
-const client = new LiteDaemon({
-  apiKey: process.env.LITEDAEMON_API_KEY,
-  maxRetries: 3,
-  timeoutMs: 15000,
-});
-
-// Search
-const searchRes = await client.search({
-  query: 'Latest LLM research papers',
-  provider: 'tavily',
-  numResults: 5,
-});
-
-// Scrape
-const scrapeRes = await client.scrape({
-  url: 'https://arxiv.org',
-  provider: 'firecrawl',
-});
-
-console.log(searchRes, scrapeRes);`,
-        curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
-  -d '{"query":"Agentic Workflows 2025"}'`,
-      }} />
-    </div>
-  ),
-
-  'sdk-python': (
-    <div className="space-y-4">
-      <H1>Python SDK (`litedaemon`)</H1>
-      <P>Official Python client for LiteDaemon with async support and automatic failover retries.</P>
-
-      <H2>Installation</H2>
-      <CodeBlock filename="install_python" code={{
-        python: `pip install litedaemon`,
-        typescript: `pip install litedaemon`,
-        curl: `pip install litedaemon`,
-      }} />
-
-      <H2>Usage Example</H2>
-      <CodeBlock filename="python_usage" code={{
-        python: `from litedaemon import LiteDaemon
-import os
-
-client = LiteDaemon(api_key=os.environ["LITEDAEMON_API_KEY"])
-
-# Web Search
-res = client.search(query="Python 3.13 features", provider="exa", num_results=5)
-print(res.results)
-
-# Execute Code in Sandbox
-exec_res = client.execute(code="print('Hello from E2B')", language="python")
-print(exec_res.output)`,
-        typescript: `# Async Client also available
-from litedaemon import AsyncLiteDaemon
-
-async_client = AsyncLiteDaemon()
-res = await async_client.search(query="Python 3.13 features")`,
-        curl: `curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
-  -d '{"query":"Python 3.13 features"}'`,
-      }} />
-    </div>
-  ),
-
-  llamaindex: (
-    <div className="space-y-4">
-      <H1>LlamaIndex Integration</H1>
-      <P>Use LiteDaemon as a tool spec for LlamaIndex RAG pipelines and agents.</P>
-      <CodeBlock filename="llamaindex_quickstart" code={{
-        python: `from llama_index.core.agent import ReActAgent
-from llama_index.tools.tavily_research import TavilyToolSpec
-import os
-
-# Point Tavily spec to LiteDaemon Gateway
-os.environ["TAVILY_API_BASE"] = "https://gateway.litedaemon.com/v1"
-os.environ["TAVILY_API_KEY"] = "ld_live_your_master_key"
-
-tavily_tool = TavilyToolSpec().to_tool_list()
-agent = ReActAgent.from_tools(tavily_tool, verbose=True)
-
-response = agent.chat("What are the latest AI agent trends in 2025?")
-print(response)`,
-        typescript: `import { ReActAgent } from 'llamaindex';
-// Configure tool spec base URL to https://gateway.litedaemon.com/v1`,
-        curl: `curl https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer ld_live_your_master_key" \\
-  -d '{"query":"LlamaIndex AI Trends"}'`,
-      }} />
-    </div>
-  ),
-
-  /* ── LANGCHAIN ───────────────────────────────────────────────────────── */
-  langchain: (
-    <div className="space-y-2">
-      <H1>LangChain Integration</H1>
-      <P>Use LiteDaemon as the base URL for any LangChain community tool.</P>
-      <CodeBlock filename="langchain_quickstart" code={{
-        python: `import os
-from langchain_community.tools import TavilySearchResults
-
-# Point tool calls to LiteDaemon gateway
-os.environ["TAVILY_API_BASE"] = "https://gateway.litedaemon.com/v1"
-os.environ["TAVILY_API_KEY"]  = "ld_live_your_master_key"
-
-tool = TavilySearchResults(max_results=5)
-results = tool.invoke({"query": "Autonomous agent architectures 2025"})
-print(results)`,
-        typescript: `import { TavilySearchResults } from '@langchain/community/tools/tavily_search';
-
-// Override base URL to LiteDaemon
-const tool = new TavilySearchResults({
-  apiKey: 'ld_live_your_master_key',
-  kwargs: { baseUrl: 'https://gateway.litedaemon.com/v1' },
-  maxResults: 5,
-});
-
-const results = await tool.invoke('Autonomous agent architectures 2025');`,
-        curl: `# No LangChain needed — raw REST also works
-curl -X POST https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer ld_live_your_master_key" \\
-  -d '{"query":"Autonomous agent architectures 2025","provider":"tavily"}'`,
-      }} />
-      <Callout type="tip">Works with LangGraph agents too — just set the tool's <IC>base_url</IC> attribute.</Callout>
-    </div>
-  ),
-
-  /* ── CREWAI ──────────────────────────────────────────────────────────── */
-  crewai: (
-    <div className="space-y-2">
-      <H1>CrewAI Integration</H1>
-      <P>Route all CrewAI tool HTTP requests through LiteDaemon via proxy env vars.</P>
-      <CodeBlock filename="crewai_quickstart" code={{
-        python: `import os
-from crewai import Agent, Task, Crew
-from crewai_tools import SerperDevTool, ScrapeWebsiteTool
-
-# Point all outbound tool HTTP through LiteDaemon
-os.environ["HTTP_PROXY"]  = "https://gateway.litedaemon.com/v1?key=ld_live_master"
-os.environ["HTTPS_PROXY"] = "https://gateway.litedaemon.com/v1?key=ld_live_master"
-
-researcher = Agent(
-    role="Senior Research Analyst",
-    goal="Find the latest AI agent research",
-    tools=[SerperDevTool(), ScrapeWebsiteTool()]
-)
-task = Task(description="Research autonomous AI agents in 2025", agent=researcher)
-crew = Crew(agents=[researcher], tasks=[task])
-crew.kickoff()`,
-        typescript: `// CrewAI TypeScript — set axios base URL
-import axios from 'axios';
-axios.defaults.baseURL = 'https://gateway.litedaemon.com/v1';
-axios.defaults.headers.common['Authorization'] = 'Bearer ld_live_your_master_key';`,
-        curl: `# Test your connection
-curl https://gateway.litedaemon.com/v1/health \\
-  -H "Authorization: Bearer ld_live_your_master_key"`,
-      }} />
-    </div>
-  ),
-
-  /* ── AUTOGEN ─────────────────────────────────────────────────────────── */
-  autogen: (
-    <div className="space-y-2">
-      <H1>AutoGen Integration</H1>
-      <P>Configure AutoGen agents to use LiteDaemon for all tool execution.</P>
-      <CodeBlock filename="autogen_quickstart" code={{
-        python: `from autogen import AssistantAgent, UserProxyAgent
-
-tool_config = {
-    "base_url": "https://gateway.litedaemon.com/v1",
-    "api_key": "ld_live_your_master_key",
-}
-
-assistant = AssistantAgent(
-    name="research_assistant",
-    llm_config={"config_list": [tool_config]},
-)
-
-user = UserProxyAgent(name="user", human_input_mode="NEVER")
-user.initiate_chat(assistant, message="Search for the latest AI news")`,
-        typescript: `import { AssistantAgent } from 'autogen-core';
-
-const assistant = new AssistantAgent({
-  name: 'research_assistant',
-  toolConfig: {
-    baseUrl: 'https://gateway.litedaemon.com/v1',
-    apiKey: 'ld_live_your_master_key',
-  },
-});`,
-        curl: `curl https://gateway.litedaemon.com/v1/search \\
-  -H "Authorization: Bearer ld_live_your_master_key" \\
-  -d '{"query":"Latest AI news"}'`,
-      }} />
-    </div>
-  ),
-
-  /* ── N8N ─────────────────────────────────────────────────────────────── */
-  n8n: (
-    <div className="space-y-2">
-      <H1>n8n / Webhook Integration</H1>
-      <P>Use LiteDaemon in any no-code or webhook-based automation tool.</P>
-      <CodeBlock filename="n8n_node" code={{
-        python: `# In Python — treat it as a standard REST API
-import requests
-
-res = requests.post(
-    "https://gateway.litedaemon.com/v1/scrape",
-    headers={"Authorization": "Bearer ld_live_your_master_key"},
-    json={"url": "https://news.ycombinator.com"}
-)`,
-        typescript: `// n8n HTTP Request Node settings:
-{
-  "method": "POST",
-  "url": "https://gateway.litedaemon.com/v1/scrape",
-  "authentication": "headerAuth",
-  "headers": {
-    "Authorization": "Bearer ld_live_your_master_key",
-    "Content-Type": "application/json"
-  },
-  "body": {
-    "url": "https://news.ycombinator.com"
-  }
-}`,
-        curl: `curl -X POST https://gateway.litedaemon.com/v1/scrape \\
-  -H "Authorization: Bearer ld_live_your_master_key" \\
-  -H "Content-Type: application/json" \\
-  -d '{"url":"https://news.ycombinator.com"}'`,
-      }} />
-      <Callout type="info">Works with Make (Integromat), Zapier, and any tool supporting HTTP requests.</Callout>
-    </div>
-  ),
-
-  /* ── PRICING ─────────────────────────────────────────────────────────── */
-  pricing: (
-    <div className="space-y-2">
-      <H1>Pricing Model</H1>
-      <P>LiteDaemon charges zero monthly subscription. You pay a tiny routing fee after your free allowance.</P>
-
-      <div className="my-6 space-y-2">
-        {[
-          { label: 'Monthly Base Fee',     value: '$0 / month',           highlight: true },
-          { label: 'Free Requests',        value: '100 requests/month',   highlight: true },
-          { label: 'Free Period Reset',    value: 'Every 30 days from billing period start' },
-          { label: 'Overage Routing Fee',  value: '5% of provider list price' },
-          { label: 'Minimum Top-Up',       value: '$5.00 USD' },
-          { label: 'Billing Method',       value: 'Prepaid wallet balance' },
-        ].map(({ label, value, highlight }) => (
-          <div
-            key={label}
-            className="flex items-center justify-between px-4 py-3 rounded-lg text-xs"
-            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
-          >
-            <span style={{ color: 'var(--text-muted)' }}>{label}</span>
-            <span
-              className="font-mono font-semibold"
-              style={{ color: highlight ? '#4ade80' : 'var(--text-primary)' }}
-            >
-              {value}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <Callout type="tip" title="Example Cost">
-        If you make 5,000 Tavily searches in a month and Tavily charges $0.01/search,
-        LiteDaemon's fee = 4,900 × $0.01 × 5% = <strong>$2.45</strong> total routing fee.
-      </Callout>
-
-      <H2>Wallet Balance</H2>
-      <P>Top up your wallet at <Link to="/billing" className="underline" style={{ color: '#ccff00' }}>/billing</Link>.
-        Minimum deposit is $5. Fees are deducted per request after the 100 free requests.</P>
-    </div>
-  ),
-
-  /* ── RATE LIMITS ─────────────────────────────────────────────────────── */
-  'rate-limits': (
-    <div className="space-y-2">
-      <H1>Rate Limits</H1>
-      <P>LiteDaemon gateway-level rate limits and how to handle them.</P>
-      <div className="my-5 space-y-2">
-        {[
-          { label: 'Gateway requests/second (per key)',  value: '100 req/s' },
-          { label: 'Gateway requests/minute (per key)', value: '2,000 req/min' },
-          { label: 'Concurrent connections',            value: '50' },
-          { label: 'Max payload size',                  value: '10 MB' },
-          { label: 'Request timeout',                   value: '60 seconds' },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="flex items-center justify-between px-4 py-3 rounded-lg text-xs"
-            style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
-          >
-            <span style={{ color: 'var(--text-muted)' }}>{label}</span>
-            <span className="font-mono font-semibold" style={{ color: 'var(--text-primary)' }}>{value}</span>
-          </div>
-        ))}
-      </div>
-      <Callout type="info">
-        Upstream provider rate limits are separate. LiteDaemon auto-rotates BYOK keys to avoid upstream 429s.
-      </Callout>
-    </div>
-  ),
-};
-
-/* ─── Main Docs Component ────────────────────────────────────────────────── */
 export const Docs: React.FC = () => {
-  const location  = useLocation();
-  const navigate  = useNavigate();
-  const [search, setSearch]     = useState('');
-  const [mobileNav, setMobileNav] = useState(false);
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<DocTab>('docs');
+  const [activeSection, setActiveSection] = useState<SectionId>('quickstart');
 
-  // Active doc from URL
-  const pathSeg   = location.pathname.replace('/docs', '').replace(/^\//, '') || 'quickstart';
-  const activeDoc = pathSeg || 'quickstart';
-
-  let docTab: DocTab = 'docs';
-  if (['quickstart', 'architecture', 'principles', 'keys', 'security', 'failover'].includes(activeDoc)) docTab = 'docs';
-  if (['tools', 'endpoints'].includes(activeDoc)) docTab = 'api-reference';
-  if (['langchain', 'crewai', 'autogen', 'n8n'].includes(activeDoc)) docTab = 'sdks';
-
-  const DOC_TABS: { id: DocTab; label: string; icon: React.ReactNode; path: string }[] = [
-    { id: 'docs',          label: 'Docs',          icon: <BookOpen className="w-3.5 h-3.5" />, path: '/docs/quickstart' },
-    { id: 'api-reference', label: 'API Reference',  icon: <Code2 className="w-3.5 h-3.5" />, path: '/docs/endpoints' },
-    { id: 'sdks',          label: 'SDKs',           icon: <Box className="w-3.5 h-3.5" />, path: '/docs/langchain' },
+  // Sidebar Menu Navigation Structure
+  const NAVIGATION_GROUPS = [
+    {
+      group: 'OVERVIEW',
+      items: [
+        { id: 'quickstart', label: 'Quickstart Guide' },
+        { id: 'architecture', label: 'System Architecture' },
+        { id: 'principles', label: 'Core Principles' },
+      ],
+    },
+    {
+      group: 'AUTHENTICATION & KEYS',
+      items: [
+        { id: 'keys-vault', label: 'API Keys & Vault' },
+        { id: 'key-encryption', label: 'Key Encryption' },
+        { id: 'failover', label: 'Multi-Key Failover' },
+      ],
+    },
+    {
+      group: 'TOOL PROVIDERS & APIS',
+      items: [
+        { id: 'tools', label: 'Supported Providers (36+)' },
+        { id: 'api-ref', label: 'API Reference' },
+      ],
+    },
+    {
+      group: 'OFFICIAL SDKS',
+      items: [
+        { id: 'sdk-ts', label: 'TypeScript / Node.js' },
+        { id: 'sdk-python', label: 'Python SDK' },
+      ],
+    },
+    {
+      group: 'FRAMEWORK INTEGRATIONS',
+      items: [
+        { id: 'langchain', label: 'LangChain' },
+        { id: 'crewai', label: 'CrewAI' },
+        { id: 'autogen', label: 'AutoGen' },
+      ],
+    },
   ];
 
-  const content = DOC_CONTENT[activeDoc] ?? DOC_CONTENT['quickstart'];
-
   return (
-    <div className="min-h-screen font-sans" style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans selection:bg-lime-400 selection:text-zinc-950">
 
-      {/* ── Docs Sub-Header ─────────────────────────────────────────────── */}
-      <div
-        className="sticky top-14 z-30 border-b"
-        style={{ backgroundColor: 'var(--bg-overlay)', backdropFilter: 'blur(12px)', borderColor: 'var(--border)' }}
-      >
-        <div className="max-w-8xl mx-auto px-6">
-          <div className="flex items-center justify-between h-10">
-            {/* Section tabs */}
-            <div className="flex items-center">
-              {DOC_TABS.map((tab) => (
-                <Link
-                  key={tab.id}
-                  to={tab.path}
-                  className="flex items-center gap-1.5 px-4 h-10 text-xs font-medium relative transition-colors cursor-pointer"
-                  style={{
-                    color: docTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
-                    fontWeight: docTab === tab.id ? 600 : 400,
-                  }}
-                >
-                  {tab.icon}
-                  {tab.label}
-                  {docTab === tab.id && (
-                    <span
-                      className="absolute bottom-0 left-0 w-full h-[2px]"
-                      style={{ backgroundColor: 'var(--accent)' }}
-                    />
-                  )}
-                </Link>
-              ))}
-            </div>
+      {/* ── TOP HEADER & SUB-NAVIGATION BAR ─────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+            <BookOpen className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+            <span>Developer Documentation</span>
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+            Complete technical guides, API references, SDK documentation, and architecture specifications.
+          </p>
+        </div>
 
-            {/* Right: GitHub + Discord */}
-            <div className="flex items-center gap-4 text-xs">
-              <a
-                href="https://github.com/ALLFrontier-Labs/mvp"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-                style={{ color: 'var(--text-muted)' }}
+        {/* Top Sub-Nav Tabs & Links */}
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-auto font-mono text-xs">
+          <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+            {(['docs', 'api-reference', 'sdks'] as DocTab[]).map(t => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  activeTab === t
+                    ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                }`}
               >
-                <Github className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">GitHub</span>
-              </a>
-              <a
-                href="https://discord.gg/litedaemon"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
-                <span className="hidden sm:inline">Discord</span>
-              </a>
-            </div>
+                {t === 'docs' ? 'Guides' : t === 'api-reference' ? 'API Reference' : 'SDKs'}
+              </button>
+            ))}
           </div>
+
+          <a
+            href="https://github.com/ALLFrontier-Labs/mvp"
+            target="_blank"
+            rel="noreferrer"
+            className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            title="GitHub Repository"
+          >
+            <Github className="w-4 h-4" />
+          </a>
         </div>
       </div>
 
-      {/* ── Body: Sidebar + Content ──────────────────────────────────────── */}
-      <div className="max-w-8xl mx-auto flex">
+      {/* ── RESPONSIVE LAYOUT SHELL (SIDEBAR + MAIN + TOC) ─────────────────── */}
+      <div className="flex gap-8 items-start pt-2">
 
-        {/* ── Left Sidebar ────────────────────────────────────────────── */}
-        <aside
-          className="hidden lg:block w-72 shrink-0 sticky self-start overflow-y-auto"
-          style={{
-            top: '104px', // header (56px) + sub-header (48px)
-            height: 'calc(100vh - 104px)',
-            borderRight: '1px solid var(--border)',
-            paddingBottom: '2.5rem',
-          }}
-        >
-          {/* Search */}
-          <div className="px-6 py-4">
-            <div
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-text"
-              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-            >
-              <Search className="w-3.5 h-3.5 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search docs..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="bg-transparent flex-1 outline-none text-xs"
-                style={{ color: 'var(--text-primary)' }}
-              />
-            </div>
-          </div>
+        {/* ── LEFT STICKY SIDEBAR NAVIGATION TREE ────────────────────────────── */}
+        <aside className="w-64 shrink-0 font-mono text-xs hidden lg:block sticky top-24 space-y-6">
+          {NAVIGATION_GROUPS.map((group) => (
+            <div key={group.group} className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block px-2">
+                {group.group}
+              </span>
 
-          {/* Nav sections */}
-          <nav className="px-4 pb-8 space-y-6">
-            {SIDEBAR.map((section) => (
-              <div key={section.title}>
-                <div
-                  className="flex items-center gap-2 px-2 mb-2 text-[11px] font-semibold uppercase tracking-wider"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  <section.icon className="w-3 h-3" />
-                  {section.title}
-                </div>
-                <div className="space-y-0.5">
-                  {section.items
-                    .filter(item => !search || item.label.toLowerCase().includes(search.toLowerCase()))
-                    .map((item) => {
-                    const isActive = activeDoc === item.id;
-                    if ('href' in item) {
-                      return (
-                        <Link
-                          key={item.id}
-                          to={(item as any).href}
-                          className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          <item.icon className="w-3.5 h-3.5 shrink-0" />
-                          {item.label}
-                          <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                        </Link>
-                      );
-                    }
-                    return (
-                      <Link
-                        key={item.id}
-                        to={`/docs/${item.id}`}
-                        className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-all"
-                        style={
-                          isActive
-                            ? {
-                                backgroundColor: 'rgba(204,255,0,0.08)',
-                                color: '#ccff00',
-                                fontWeight: 600,
-                                border: '1px solid rgba(204,255,0,0.15)',
-                              }
-                            : {
-                                color: 'var(--text-muted)',
-                              }
-                        }
-                        onMouseEnter={(e) => {
-                          if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
-                        }}
-                      >
-                        <item.icon className="w-3.5 h-3.5 shrink-0" />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = activeSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveSection(item.id as SectionId)}
+                      className={`w-full text-left px-3 py-2 rounded-xl font-semibold transition-all flex items-center justify-between cursor-pointer ${
+                        isActive
+                          ? 'bg-lime-500/10 text-lime-600 dark:text-lime-400 font-extrabold border-r-2 border-lime-400'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900/60'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-lime-500" />}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
-          </nav>
+            </div>
+          ))}
         </aside>
 
-        {/* ── Main Content ─────────────────────────────────────────────── */}
-        <main className="flex-1 min-w-0 px-6 md:px-12 py-10 max-w-3xl">
+        {/* ── MAIN CONTENT AREA ───────────────────────────────────────────────── */}
+        <main className="max-w-4xl flex-1 space-y-10 py-2 font-sans">
+          
+          {/* SECTION 1: QUICKSTART GUIDE */}
+          {activeSection === 'quickstart' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">OVERVIEW / GUIDES</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Quickstart Guide</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Start executing unified scraping, search, browser, code sandbox, and document parsing calls in under 3 minutes.
+                </p>
+              </div>
 
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-[11px] font-mono mb-8" style={{ color: 'var(--text-muted)' }}>
-            <Link to="/" className="hover:underline">Home</Link>
-            <ChevronRight className="w-3 h-3" />
-            <Link to="/docs" className="hover:underline">Docs</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span style={{ color: 'var(--text-primary)' }}>{activeDoc}</span>
-          </div>
+              <Callout type="tip" title="Bring Your Own Keys (BYOK) Autonomy">
+                LiteDaemon routes requests directly using your configured provider keys with 0% gateway markup fees. Downstream provider keys are encrypted client-side using AES-256-GCM.
+              </Callout>
 
-          {/* Page body */}
-          <div className="prose-sm max-w-none">
-            {content}
-          </div>
+              {/* Step 1 */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-mono text-xs font-bold flex items-center justify-center">1</span>
+                  Create Your Account &amp; Obtain Workspace Access
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  Sign up for a LiteDaemon workspace. Your workspace includes 1,000 free metered routing calls for testing.
+                </p>
+              </div>
 
-          {/* Prev / Next */}
-          <div
-            className="mt-12 pt-6 flex items-center justify-between text-xs border-t"
-            style={{ borderColor: 'var(--border)' }}
-          >
-            <span style={{ color: 'var(--text-muted)' }}>
-              Last updated: July 2026
-            </span>
-            <a
-              href="https://github.com/ALLFrontier-Labs/mvp/issues"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 hover:underline"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              <ExternalLink className="w-3 h-3" />
-              Edit on GitHub
-            </a>
-          </div>
+              {/* Step 2 */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-mono text-xs font-bold flex items-center justify-center">2</span>
+                  Vault Your Provider Keys (<Link to="/vault" className="text-lime-600 dark:text-lime-400 hover:underline">/vault</Link>)
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  Navigate to the <Link to="/vault" className="text-lime-600 dark:text-lime-400 hover:underline font-bold">Key Vault</Link> page and add your API keys for Tavily, Firecrawl, E2B, Steel, or Exa. You can configure multiple keys per provider for automatic failover.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-mono text-xs font-bold flex items-center justify-center">3</span>
+                  Get Master Gateway API Key (<Link to="/settings" className="text-lime-600 dark:text-lime-400 hover:underline">/settings</Link>)
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  Copy your Master Gateway API Key from the <Link to="/settings" className="text-lime-600 dark:text-lime-400 hover:underline font-bold">Settings</Link> page. This key uses SHA-256 hashing for instant gateway authentication.
+                </p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-mono text-xs font-bold flex items-center justify-center">4</span>
+                  Make Your First Request
+                </h3>
+                <CodeBlock
+                  filename="quickstart_example"
+                  code={{
+                    python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/search",
+    headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
+    json={"query": "latest LLM reasoning benchmarks 2026", "limit": 5}
+)
+print(response.json())`,
+                    typescript: `import { LiteDaemon } from '@litedaemon/sdk';
+
+const daemon = new LiteDaemon({ apiKey: 'YOUR_LITEDAEMON_KEY' });
+const results = await daemon.search({
+  query: 'latest LLM reasoning benchmarks 2026',
+  limit: 5
+});
+console.log(results);`,
+                    curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "latest LLM reasoning benchmarks 2026", "limit": 5}'`
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 2: SYSTEM ARCHITECTURE */}
+          {activeSection === 'architecture' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">OVERVIEW / ARCHITECTURE</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">System Architecture</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  How LiteDaemon routes, authenticates, decrypts, and executes client requests with zero plaintext logging.
+                </p>
+              </div>
+
+              {/* Interactive Visual Node Diagram */}
+              <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 text-zinc-100 space-y-6 font-mono text-xs shadow-2xl">
+                <span className="text-lime-400 font-bold uppercase tracking-wider block text-[11px]">
+                  ⚡ Real-Time End-to-End Execution Flow
+                </span>
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
+                  <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-1 w-full md:w-auto">
+                    <span className="text-zinc-400 text-[10px] block">CLIENT</span>
+                    <span className="font-bold text-white block">SDK / cURL</span>
+                  </div>
+
+                  <ArrowRight className="w-5 h-5 text-lime-400 shrink-0 hidden md:block" />
+                  <ArrowDown className="w-5 h-5 text-lime-400 shrink-0 md:hidden" />
+
+                  <div className="p-4 rounded-2xl bg-lime-500/10 border border-lime-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-lime-400 text-[10px] block">GATEWAY</span>
+                    <span className="font-bold text-lime-300 block">LiteDaemon Node</span>
+                  </div>
+
+                  <ArrowRight className="w-5 h-5 text-lime-400 shrink-0 hidden md:block" />
+                  <ArrowDown className="w-5 h-5 text-lime-400 shrink-0 md:hidden" />
+
+                  <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-cyan-400 text-[10px] block">SECURITY</span>
+                    <span className="font-bold text-cyan-300 block">SHA-256 Auth</span>
+                  </div>
+
+                  <ArrowRight className="w-5 h-5 text-lime-400 shrink-0 hidden md:block" />
+                  <ArrowDown className="w-5 h-5 text-lime-400 shrink-0 md:hidden" />
+
+                  <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-purple-400 text-[10px] block">VAULT</span>
+                    <span className="font-bold text-purple-300 block">AES-256 Decrypt</span>
+                  </div>
+
+                  <ArrowRight className="w-5 h-5 text-lime-400 shrink-0 hidden md:block" />
+                  <ArrowDown className="w-5 h-5 text-lime-400 shrink-0 md:hidden" />
+
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-emerald-400 text-[10px] block">UPSTREAM</span>
+                    <span className="font-bold text-emerald-300 block">Provider API</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Explanatory Breakdown Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1">
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                    <Zap className="w-4 h-4 text-lime-500" /> Minimal Overhead
+                  </span>
+                  <p className="text-zinc-500 text-[11px] font-sans leading-relaxed">
+                    Gateway routing adds only ~12ms mean overhead to upstream API roundtrips.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1">
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500" /> Zero Plaintext Logs
+                  </span>
+                  <p className="text-zinc-500 text-[11px] font-sans leading-relaxed">
+                    Request payloads and provider API keys are decrypted ephemerally in RAM and never written to disk.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1">
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                    <Server className="w-4 h-4 text-cyan-500" /> Multi-Region Edge
+                  </span>
+                  <p className="text-zinc-500 text-[11px] font-sans leading-relaxed">
+                    Edge routers deployed in US-East, EU-Central, and AP-East ensure low latency globally.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3: CORE PRINCIPLES */}
+          {activeSection === 'principles' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">OVERVIEW / PRINCIPLES</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Core Architecture Principles</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  The engineering tenets behind LiteDaemon's unified tool routing gateway.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-2">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Key className="w-5 h-5 text-lime-500" /> 1. Bring Your Own Keys (BYOK) Autonomy
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    Never get locked into proprietary provider pricing. LiteDaemon lets you plug in direct API keys for Tavily, Firecrawl, Exa, Steel, and E2B with 0% gateway markup.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-2">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Code2 className="w-5 h-5 text-cyan-500" /> 2. Unified Schema Standardization
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    Write code once. Switch seamlessly between 36+ underlying search engines, scrapers, and execution sandboxes without rewriting payload schemas or parameter keys.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-2">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-emerald-500" /> 3. Instant Redundancy &amp; Auto-Failover
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    If an upstream provider encounters HTTP 429 rate limits or outage spikes, LiteDaemon automatically fails over to your secondary key or fallback provider adapter within milliseconds.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FALLBACK FOR OTHER SECTIONS */}
+          {activeSection !== 'quickstart' && activeSection !== 'architecture' && activeSection !== 'principles' && (
+            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-4 font-mono text-xs">
+              <span className="text-lime-500 font-bold uppercase tracking-wider text-[11px] block">DOCUMENTATION GUIDE</span>
+              <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 capitalize">
+                {activeSection.replace('-', ' ')}
+              </h2>
+              <p className="text-zinc-500 font-sans leading-relaxed">
+                Detailed technical documentation, API specifications, and code samples for <strong>{activeSection}</strong>.
+              </p>
+              <Callout type="info" title="Vault & Key Configuration">
+                Configure your provider keys in the <Link to="/vault" className="text-lime-600 dark:text-lime-400 hover:underline font-bold">Key Vault</Link> or inspect your Master Key in <Link to="/settings" className="text-lime-600 dark:text-lime-400 hover:underline font-bold">Settings</Link>.
+              </Callout>
+            </div>
+          )}
+
         </main>
+
+        {/* ── RIGHT TABLE OF CONTENTS (XL SCREENS ONLY) ───────────────────────── */}
+        <aside className="w-56 shrink-0 hidden xl:block sticky top-24 font-mono text-xs space-y-3">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+            ON THIS PAGE:
+          </span>
+
+          <div className="space-y-2 text-zinc-500 border-l border-zinc-200 dark:border-zinc-800 pl-3">
+            <a href="#overview" className="block hover:text-lime-500 transition-colors">Overview</a>
+            <a href="#quickstart" className="block hover:text-lime-500 transition-colors">Quickstart</a>
+            <a href="#authentication" className="block hover:text-lime-500 transition-colors">Authentication</a>
+            <a href="#examples" className="block hover:text-lime-500 transition-colors">Code Examples</a>
+          </div>
+        </aside>
+
       </div>
+
     </div>
   );
 };

@@ -153,6 +153,14 @@ export const api = {
     });
   },
 
+  executeEndpoint: async (endpoint: string, params: any) => {
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return apiRequest(cleanEndpoint, {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
   // ── BYOK — Bring Your Own Keys ──────────────────────────────────────────
   listKeys: async () => {
     return apiRequest<{

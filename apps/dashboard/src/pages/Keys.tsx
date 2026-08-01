@@ -8,6 +8,7 @@ import {
   CheckCircle2, Save, ToggleLeft, ToggleRight, Layers, Shield
 } from 'lucide-react';
 import { api } from '../lib/api';
+import { KeyConfigModal } from '../components/KeyConfigModal';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PROVIDERS CATALOG FOR BYOK ROUTING (28 Providers across 5 Core Tool Routes)
@@ -113,6 +114,10 @@ export const Keys: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<EndpointCategory>('all');
   const [searchQuery, setSearchQuery]   = useState('');
   const [selectedProvider, setSelectedProvider] = useState<ProviderMeta | null>(null);
+
+  // KeyConfigModal Popup state
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [configModalProvider, setConfigModalProvider] = useState<ProviderMeta | null>(null);
 
   // Accordion State & Actions
   const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({});
@@ -903,7 +908,10 @@ export const Keys: React.FC = () => {
             return (
               <div
                 key={p.id}
-                onClick={() => setSelectedProvider(p)}
+                onClick={() => {
+                  setConfigModalProvider(p);
+                  setConfigModalOpen(true);
+                }}
                 className="rounded-2xl p-5 border transition-all duration-200 cursor-pointer group flex flex-col justify-between space-y-4 bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md dark:hover:shadow-[0_0_15px_rgba(163,230,53,0.06)]"
               >
                 {/* Top Row: Provider Name + Endpoint Badge */}
@@ -942,6 +950,16 @@ export const Keys: React.FC = () => {
           })}
         </div>
       )}
+
+      {/* Interactive Key Configuration Modal */}
+      <KeyConfigModal
+        isOpen={configModalOpen}
+        provider={configModalProvider}
+        existingPrimaryKeys={configModalProvider ? keysByProvider.get(configModalProvider.id)?.prioritized : []}
+        existingFallbackKeys={configModalProvider ? keysByProvider.get(configModalProvider.id)?.fallback : []}
+        onClose={() => { setConfigModalOpen(false); setConfigModalProvider(null); }}
+        onKeysUpdated={load}
+      />
     </div>
   );
 };

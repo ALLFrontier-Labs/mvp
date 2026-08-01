@@ -1088,6 +1088,289 @@ print(response.json())`
             </div>
           )}
 
+          {/* SECTION 14: TYPESCRIPT / NODE.JS SDK GUIDE */}
+          {activeSection === 'sdk-ts' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">OFFICIAL SDKS / TYPESCRIPT</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">TypeScript / Node.js SDK</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Fully typed client library for Node.js, Next.js, and browser environments.
+                </p>
+              </div>
+
+              {/* Environment Variable Setup Callout */}
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs space-y-1">
+                <span className="text-lime-400 text-[10px] font-bold uppercase tracking-wider block">Environment Setup:</span>
+                <code className="text-emerald-400 text-xs block">export LITEDAEMON_API_KEY="ld_live_your_master_key"</code>
+              </div>
+
+              {/* Package Installation */}
+              <div className="space-y-2 font-mono text-xs">
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 block">Package Installation:</span>
+                <pre className="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-emerald-400">
+                  npm install @litedaemon/sdk # or pnpm add @litedaemon/sdk
+                </pre>
+              </div>
+
+              <CodeBlock
+                filename="typescript_sdk_example"
+                code={{
+                  typescript: `import { LiteDaemon } from '@litedaemon/sdk';
+
+const daemon = new LiteDaemon({
+  apiKey: process.env.LITEDAEMON_API_KEY
+});
+
+// Execute Unified Search across Tavily / Exa
+const searchResults = await daemon.search({
+  query: 'latest LLM reasoning benchmarks 2026',
+  provider: 'auto',
+  max_results: 5
+});
+
+// Execute Web Scrape & Markdown Extraction
+const scrapeResults = await daemon.scrape({
+  url: 'https://news.ycombinator.com',
+  formats: ['markdown']
+});
+
+// Execute Python Code in Isolated Sandbox
+const sandboxOutput = await daemon.execute({
+  language: 'python',
+  code: 'print("Hello from LiteDaemon Sandbox!")'
+});`,
+                  python: `# TypeScript SDK Usage (See Python tab for Python SDK)`,
+                  curl: `# cURL Equivalent:
+curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "latest LLM reasoning benchmarks 2026"}'`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 15: PYTHON SDK GUIDE */}
+          {activeSection === 'sdk-python' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">OFFICIAL SDKS / PYTHON</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Python SDK</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Synchronous and asynchronous Python client with Pydantic model validation.
+                </p>
+              </div>
+
+              {/* Environment Setup */}
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs space-y-1">
+                <span className="text-lime-400 text-[10px] font-bold uppercase tracking-wider block">Environment Setup:</span>
+                <code className="text-emerald-400 text-xs block">export LITEDAEMON_API_KEY="ld_live_your_master_key"</code>
+              </div>
+
+              {/* Package Installation */}
+              <div className="space-y-2 font-mono text-xs">
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 block">Package Installation:</span>
+                <pre className="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-emerald-400">
+                  pip install litedaemon
+                </pre>
+              </div>
+
+              <CodeBlock
+                filename="python_sdk_example"
+                code={{
+                  python: `import os
+from litedaemon import LiteDaemon
+
+ld = LiteDaemon(api_key=os.getenv("LITEDAEMON_API_KEY"))
+
+# Synchronous Search Call
+search_res = ld.search(
+    query="AI agent benchmarks 2026",
+    max_results=5,
+    provider="auto"
+)
+print("Search Results:", search_res.results)
+
+# Asynchronous Web Scrape
+async def main():
+    scrape_res = await ld.async_scrape(
+        url="https://example.com",
+        formats=["markdown"]
+    )
+    print("Markdown Content:", scrape_res.data.markdown)
+`,
+                  typescript: `// Python SDK Usage (See TypeScript tab for Node.js SDK)`,
+                  curl: `# cURL Equivalent:
+curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+  -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "AI agent benchmarks 2026"}'`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 16: LANGCHAIN INTEGRATION GUIDE */}
+          {activeSection === 'langchain' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">FRAMEWORK INTEGRATIONS / LANGCHAIN</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">LangChain Integration</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Connect LiteDaemon unified proxy search and scrapers directly to LangChain AgentExecutor.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs space-y-1">
+                <span className="text-lime-400 text-[10px] font-bold uppercase tracking-wider block">Environment Setup:</span>
+                <code className="text-emerald-400 text-xs block">export LITEDAEMON_API_KEY="ld_live_your_master_key"</code>
+              </div>
+
+              <CodeBlock
+                filename="langchain_agent"
+                code={{
+                  python: `from langchain.agents import initialize_agent, AgentType
+from langchain_openai import ChatOpenAI
+from litedaemon.langchain import LiteDaemonSearchTool, LiteDaemonScrapeTool
+
+# Initialize LiteDaemon Tools with BYOK Routing
+tools = [
+    LiteDaemonSearchTool(api_key="ld_live_your_master_key"),
+    LiteDaemonScrapeTool(api_key="ld_live_your_master_key"),
+]
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+agent = initialize_agent(
+    tools,
+    llm,
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True
+)
+
+response = agent.run("Search for 2026 LLM benchmarks and extract key findings.")
+print(response)`,
+                  typescript: `import { ChatOpenAI } from "@langchain/openai";
+import { initializeAgentExecutorWithOptions } from "langchain/agents";
+import { LiteDaemonSearchTool } from "@litedaemon/langchain";
+
+const tools = [new LiteDaemonSearchTool({ apiKey: process.env.LITEDAEMON_API_KEY })];
+const llm = new ChatOpenAI({ modelName: "gpt-4o" });
+
+const executor = await initializeAgentExecutorWithOptions(tools, llm, {
+  agentType: "zero-shot-react-description",
+});
+
+const result = await executor.call({ input: "Search for 2026 AI agent tools" });
+console.log(result.output);`,
+                  curl: `# LangChain Runnable Example`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 17: CREWAI INTEGRATION GUIDE */}
+          {activeSection === 'crewai' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">FRAMEWORK INTEGRATIONS / CREWAI</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">CrewAI Integration</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Empower multi-agent CrewAI teams with unified search, scraping, and code execution tools.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs space-y-1">
+                <span className="text-lime-400 text-[10px] font-bold uppercase tracking-wider block">Environment Setup:</span>
+                <code className="text-emerald-400 text-xs block">export LITEDAEMON_API_KEY="ld_live_your_master_key"</code>
+              </div>
+
+              <CodeBlock
+                filename="crewai_team"
+                code={{
+                  python: `from crewai import Agent, Task, Crew, Process
+from litedaemon.crewai import LiteDaemonToolSet
+
+# Initialize LiteDaemon ToolSet
+tools = LiteDaemonToolSet(api_key="ld_live_your_master_key").get_tools()
+
+# Define Senior Researcher Agent
+researcher = Agent(
+    role='Senior Market Analyst',
+    goal='Gather live research using LiteDaemon BYOK unified proxy tools',
+    backstory='Expert analyst leveraging multi-provider failover routing.',
+    tools=tools,
+    verbose=True
+)
+
+task = Task(
+    description='Search for AI agent reasoning benchmarks and summarize trends.',
+    expected_output='Brief bulleted report',
+    agent=researcher
+)
+
+crew = Crew(agents=[researcher], tasks=[task], process=Process.sequential)
+result = crew.kickoff()
+print(result)`,
+                  typescript: `// CrewAI Python Integration (See Python tab)`,
+                  curl: `# CrewAI Runnable Example`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 18: AUTOGEN INTEGRATION GUIDE */}
+          {activeSection === 'autogen' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">FRAMEWORK INTEGRATIONS / AUTOGEN</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Microsoft AutoGen Integration</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Function registration pattern for AutoGen ConversationalAgent sessions.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono text-xs space-y-1">
+                <span className="text-lime-400 text-[10px] font-bold uppercase tracking-wider block">Environment Setup:</span>
+                <code className="text-emerald-400 text-xs block">export LITEDAEMON_API_KEY="ld_live_your_master_key"</code>
+              </div>
+
+              <CodeBlock
+                filename="autogen_session"
+                code={{
+                  python: `import autogen
+from litedaemon import LiteDaemon
+
+ld = LiteDaemon()
+
+user_proxy = autogen.UserProxyAgent(
+    name="user_proxy",
+    human_input_mode="NEVER",
+    max_consecutive_auto_reply=2
+)
+
+assistant = autogen.AssistantAgent(
+    name="assistant",
+    llm_config={"config_list": [{"model": "gpt-4o"}]}
+)
+
+@user_proxy.register_for_execution()
+@assistant.register_for_llm(description="Execute web search via LiteDaemon unified routing")
+def web_search(query: str) -> dict:
+    return ld.search(query=query, provider="auto")
+
+# Initiate conversation
+user_proxy.initiate_chat(
+    assistant,
+    message="Find the latest LLM reasoning benchmarks for 2026."
+)`,
+                  typescript: `// Microsoft AutoGen Python Integration (See Python tab)`,
+                  curl: `# AutoGen Runnable Example`
+                }}
+              />
+            </div>
+          )}
+
           {/* FALLBACK FOR OTHER SECTIONS */}
           {activeSection !== 'quickstart' &&
            activeSection !== 'architecture' &&
@@ -1101,7 +1384,12 @@ print(response.json())`
            activeSection !== 'browser' &&
            activeSection !== 'execute' &&
            activeSection !== 'document' &&
-           activeSection !== 'errors' && (
+           activeSection !== 'errors' &&
+           activeSection !== 'sdk-ts' &&
+           activeSection !== 'sdk-python' &&
+           activeSection !== 'langchain' &&
+           activeSection !== 'crewai' &&
+           activeSection !== 'autogen' && (
             <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-4 font-mono text-xs">
               <span className="text-lime-500 font-bold uppercase tracking-wider text-[11px] block">DOCUMENTATION GUIDE</span>
               <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 capitalize">

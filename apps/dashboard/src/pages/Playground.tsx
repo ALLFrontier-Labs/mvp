@@ -7,6 +7,8 @@ import {
   Sliders, Settings, ArrowRight, CornerDownRight, Server
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
+import { PlaygroundPresets, PresetItem } from '../components/PlaygroundPresets';
+import { ResponseInspector } from '../components/ResponseInspector';
 
 type TabEndpoint = '/v1/scrape' | '/v1/search' | '/v1/browser' | '/v1/execute' | '/v1/document';
 
@@ -81,6 +83,28 @@ export const Playground: React.FC = () => {
   const [timeoutMs, setTimeoutMs]                 = useState(15000);
   const [waitSelector, setWaitSelector]           = useState('#content');
   const [proxyRegion, setProxyRegion]             = useState('US-East');
+
+  const handleSelectPreset = (preset: PresetItem) => {
+    setActiveEndpoint(preset.endpoint);
+    if (preset.endpoint === '/v1/scrape') {
+      setScrapeUrl(preset.payload.url || 'https://news.ycombinator.com');
+      setScrapeFormat(preset.payload.format || 'markdown');
+      setScrapeProvider(preset.payload.provider || 'firecrawl');
+    } else if (preset.endpoint === '/v1/search') {
+      setSearchQuery(preset.payload.query || 'latest LLM reasoning benchmarks 2026');
+      setSearchLimit(preset.payload.limit || 5);
+      setSearchProvider(preset.payload.provider || 'tavily');
+    } else if (preset.endpoint === '/v1/browser') {
+      setBrowserScript(preset.payload.script || '');
+      setBrowserWidth(preset.payload.width || 1920);
+      setBrowserHeight(preset.payload.height || 1080);
+      setBrowserProvider(preset.payload.provider || 'steel');
+    } else if (preset.endpoint === '/v1/execute') {
+      setExecuteCode(preset.payload.code || '');
+      setExecuteTimeout(preset.payload.timeout || 30);
+      setExecuteProvider(preset.payload.provider || 'e2b');
+    }
+  };
 
   const apiKey = getStoredApiKey() || 'YOUR_LITEDAEMON_KEY';
 
@@ -247,6 +271,9 @@ export const Playground: React.FC = () => {
         <ShieldCheck className="w-4 h-4 text-lime-500 shrink-0" />
         <span>Live Routing Mode — Playground queries route directly through your encrypted Vault keys with instant failover support.</span>
       </div>
+
+      {/* ── QUICK-TEST PRESETS BAR ────────────────────────────────────────────── */}
+      <PlaygroundPresets onSelectPreset={handleSelectPreset} />
 
       {/* ── SPLIT-SCREEN WORKBENCH LAYOUT (12 COLS GRID) ─────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -608,118 +635,17 @@ export const Playground: React.FC = () => {
         </div>
 
         {/* ── RIGHT EXECUTION & INSPECTOR PANEL (6 COLS) ─────────────────────── */}
-        <div className="lg:col-span-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 p-5 shadow-sm dark:shadow-2xl flex flex-col justify-between space-y-5">
-          
-          <div className="space-y-4">
-            {/* Inspector Top Row & Sub-tabs */}
-            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
-              <h3 className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2 font-mono">
-                <Terminal className="w-4 h-4 text-lime-500" />
-                <span>Request &amp; Response Inspector</span>
-              </h3>
-
-              <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-mono text-xs">
-                <button
-                  onClick={() => setInspectorTab('curl')}
-                  className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                    inspectorTab === 'curl'
-                      ? 'bg-lime-400 text-zinc-950 shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  cURL Preview
-                </button>
-                <button
-                  onClick={() => setInspectorTab('response')}
-                  className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                    inspectorTab === 'response'
-                      ? 'bg-lime-400 text-zinc-950 shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  Response Body
-                </button>
-              </div>
-            </div>
-
-            {/* TAB 1: Live cURL Generator Preview */}
-            {inspectorTab === 'curl' && (
-              <div className="space-y-2 font-mono">
-                <div className="flex items-center justify-between text-xs text-zinc-500">
-                  <span>Live Executable cURL Snippet:</span>
-                  <button
-                    onClick={copyCurlToClipboard}
-                    className="text-lime-600 dark:text-lime-400 hover:underline text-[11px] flex items-center gap-1"
-                  >
-                    {copiedCurl ? <><Check className="w-3 h-3" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy cURL</>}
-                  </button>
-                </div>
-
-                <pre className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed max-h-96">
-                  {generatedCurl}
-                </pre>
-              </div>
-            )}
-
-            {/* TAB 2: Formatted JSON Response Body */}
-            {inspectorTab === 'response' && (
-              <div className="space-y-3 font-mono">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    {responseStatus === 200 ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold">
-                        ✓ 200 OK
-                      </span>
-                    ) : responseStatus ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-[11px] font-bold">
-                        ✗ {responseStatus} Error
-                      </span>
-                    ) : (
-                      <span className="text-zinc-500 text-[11px]">No request executed yet</span>
-                    )}
-
-                    {responseLatency && (
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        {responseLatency}ms
-                      </span>
-                    )}
-                  </div>
-
-                  {responseResult && (
-                    <button
-                      onClick={copyResponseToClipboard}
-                      className="text-lime-600 dark:text-lime-400 hover:underline text-[11px] flex items-center gap-1"
-                    >
-                      {copiedResponse ? <><Check className="w-3 h-3" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy Result</>}
-                    </button>
-                  )}
-                </div>
-
-                {responseError ? (
-                  <pre className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs overflow-x-auto">
-                    {responseError}
-                  </pre>
-                ) : responseResult ? (
-                  <pre className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs overflow-x-auto max-h-96">
-                    {JSON.stringify(responseResult, null, 2)}
-                  </pre>
-                ) : (
-                  <div className="p-12 text-center text-zinc-400 dark:text-zinc-500 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-2 font-sans">
-                    <Play className="w-8 h-8 text-zinc-400 mx-auto opacity-50" />
-                    <p className="text-xs">Click <strong>▶ Execute Request</strong> to send a live test call.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-          </div>
-
-          {/* Footer Diagnostic Bar */}
-          <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-zinc-500">
-            <span>Protocol: <strong>HTTPS / REST Proxy</strong></span>
-            <span>Auth: <strong>Encrypted BYOK</strong></span>
-          </div>
-
+        <div className="lg:col-span-6">
+          <ResponseInspector
+            executing={executing}
+            result={responseResult}
+            status={responseStatus}
+            latencyMs={responseLatency}
+            error={responseError}
+            endpoint={activeEndpoint}
+            provider={currentPayload.provider === 'auto' ? 'tavily' : currentPayload.provider}
+            generatedCurl={generatedCurl}
+          />
         </div>
 
       </div>

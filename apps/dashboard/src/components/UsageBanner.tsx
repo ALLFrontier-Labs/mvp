@@ -20,18 +20,18 @@ export const UsageBanner: React.FC<UsageBannerProps> = ({
   const percentage = Math.min(100, Math.round((used / cap) * 100));
 
   // Determine State
-  let fillClass = 'bg-lime-400';
+  let fillClass = 'bg-gradient-to-r from-lime-400 to-emerald-400';
   let badgeText = 'Free Allowance Active';
-  let badgeClass = 'bg-lime-500/10 text-lime-400 border-lime-500/30';
+  let badgeClass = 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-500/30';
 
   if (used >= 80 && used < 100) {
-    fillClass = 'bg-amber-400';
+    fillClass = 'bg-gradient-to-r from-amber-400 to-orange-400';
     badgeText = 'Approaching 100 Free Calls Cap';
-    badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    badgeClass = 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30';
   } else if (used >= 100) {
-    fillClass = 'bg-emerald-400';
+    fillClass = 'bg-gradient-to-r from-emerald-400 to-teal-400';
     badgeText = 'Pay-As-You-Go Billed (+5% Markup)';
-    badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+    badgeClass = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
   }
 
   // Calculate reset date (start + 30 days)
@@ -54,8 +54,8 @@ export const UsageBanner: React.FC<UsageBannerProps> = ({
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-rose-300">Payment Method Required</p>
-              <p className="text-rose-400/80 mt-0.5">
+              <p className="font-bold text-rose-600 dark:text-rose-300">Payment Method Required</p>
+              <p className="text-rose-700/80 dark:text-rose-400/80 mt-0.5">
                 Payment method required to continue making API calls past 100 free allowance. Requests without balance will return HTTP 402.
               </p>
             </div>
@@ -80,41 +80,40 @@ export const UsageBanner: React.FC<UsageBannerProps> = ({
 
       {/* Main Progress Card */}
       <div
-        className="rounded-2xl p-5 border space-y-4 shadow-xl transition-all"
-        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        className="rounded-2xl p-5 border space-y-4 shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 Monthly Free Call Usage
               </span>
               <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold border ${badgeClass}`}>
                 {badgeText}
               </span>
             </div>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              Billing cycle reset: <strong className="font-mono text-zinc-300">{formatDate(resetDate)}</strong> (30-day auto-reset)
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Billing cycle reset: <strong className="font-mono text-zinc-800 dark:text-zinc-200">{formatDate(resetDate)}</strong> (30-day auto-reset)
             </p>
           </div>
 
           <div className="text-right shrink-0">
-            <span className="text-xl font-extrabold font-mono" style={{ color: used >= 100 ? '#4ade80' : 'var(--text-primary)' }}>
+            <span className="text-xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100">
               {used}
             </span>
-            <span className="text-sm font-mono text-zinc-500"> / {cap} Free Calls</span>
+            <span className="text-sm font-mono text-zinc-500 dark:text-zinc-400"> / {cap} Free Calls</span>
           </div>
         </div>
 
-        {/* Real Progress Bar */}
+        {/* Real Progress Bar with Lime-to-Emerald Gradient */}
         <div className="space-y-1.5">
-          <div className="w-full h-3 rounded-full overflow-hidden bg-zinc-800/80 p-0.5 border border-zinc-700/50">
+          <div className="w-full h-3 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800/80 p-0.5 border border-zinc-200 dark:border-zinc-700/50">
             <div
               className={`h-full rounded-full transition-all duration-500 shadow-sm ${fillClass}`}
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500">
+          <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
             <span>0 calls</span>
             <span>{percentage}% of 100 free cap</span>
             <span>100 calls (Pass-Through + 5% Markup)</span>

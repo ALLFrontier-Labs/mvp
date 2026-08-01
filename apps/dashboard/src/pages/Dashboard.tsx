@@ -18,7 +18,9 @@ import {
   Key,
   Radio,
   Cpu,
-  Lock
+  Lock,
+  ArrowRight,
+  TrendingUp
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { UsageBanner } from '../components/UsageBanner';
@@ -92,8 +94,8 @@ export const Dashboard: React.FC = () => {
     if (count === 0) {
       return {
         count: 0,
-        badgeText: '0 Keys',
-        badgeClass: 'bg-[#0d1117] border-slate-800 text-slate-500',
+        badgeText: '0 Keys (Pass-through)',
+        badgeClass: 'bg-zinc-100 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700/50',
         providersText: defaultsText,
       };
     }
@@ -111,17 +113,17 @@ export const Dashboard: React.FC = () => {
 
     return {
       count,
-      badgeText: `${count} Active Key${count > 1 ? 's' : ''}`,
-      badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold',
+      badgeText: `${count} Key${count > 1 ? 's' : ''} Active`,
+      badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-semibold',
       providersText: names.join(', '),
     };
   };
 
-  const scrapeInfo   = useMemo(() => getCategoryKeyInfo('scrape',   'Supports Firecrawl, Jina, Apify & more...'),   [byokKeys]);
-  const documentInfo = useMemo(() => getCategoryKeyInfo('document', 'Supports LlamaParse, Unstructured & more...'), [byokKeys]);
-  const searchInfo   = useMemo(() => getCategoryKeyInfo('search',   'Supports Tavily, Exa, Serper, Brave & more...'),   [byokKeys]);
-  const browserInfo  = useMemo(() => getCategoryKeyInfo('browser',  'Supports Browserbase, Steel & more...'),  [byokKeys]);
-  const executeInfo  = useMemo(() => getCategoryKeyInfo('execute',  'Supports Daytona, E2B & more...'),  [byokKeys]);
+  const scrapeInfo   = useMemo(() => getCategoryKeyInfo('scrape',   'Firecrawl, Jina, Apify & Spider'),   [byokKeys]);
+  const documentInfo = useMemo(() => getCategoryKeyInfo('document', 'LlamaParse & Document AI'), [byokKeys]);
+  const searchInfo   = useMemo(() => getCategoryKeyInfo('search',   'Tavily, Exa & Serper'),   [byokKeys]);
+  const browserInfo  = useMemo(() => getCategoryKeyInfo('browser',  'Browserbase & Steel Browser'),  [byokKeys]);
+  const executeInfo  = useMemo(() => getCategoryKeyInfo('execute',  'E2B & Daytona Sandboxes'),  [byokKeys]);
 
   return (
     <motion.div 
@@ -131,78 +133,113 @@ export const Dashboard: React.FC = () => {
       animate="show"
     >
       
-      {/* ── High-Tech Live Gateway Telemetry Panel ───────────────────────────── */}
-      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-[#0d1117] to-slate-950 border border-slate-800 p-6 shadow-2xl group">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/10 transition-all" />
+      {/* ── ROW 1: Gateway Control Center Telemetry Header ─────────────────── */}
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border shadow-sm dark:shadow-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 group"
+      >
+        <div className="absolute top-0 right-0 w-96 h-96 bg-lime-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-lime-500/10 transition-all" />
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                <span>Gateway Operational • 0ms Latency Overhead</span>
+                <span className="font-semibold">Gateway Operational • 0ms Latency Overhead</span>
               </div>
             </div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-              <Cpu className="w-6 h-6 text-emerald-400" />
-              Developer Gateway Overview
+            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+              <Cpu className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+              Gateway Control Center
             </h1>
-            <p className="text-slate-400 text-sm">
-              Unified BYOK execution gateway &amp; multi-key failover router for autonomous AI Agents.
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+              Real-time BYOK routing, tool execution metrics, and vault security.
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 shrink-0">
             <button
               onClick={loadData}
               disabled={loading}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-mono font-medium flex items-center space-x-1.5 transition-all border border-slate-800"
+              className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-mono font-medium flex items-center space-x-2 transition-all border border-zinc-200 dark:border-zinc-700/60"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
             </button>
             <Link
               to="/providers"
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs font-mono flex items-center space-x-1.5 transition-all shadow-lg shadow-emerald-500/20"
+              className="px-4 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs font-mono flex items-center space-x-2 transition-all shadow-md hover:shadow-lime-400/20"
             >
               <Layers className="w-4 h-4" />
               <span>Browse Catalog</span>
             </Link>
           </div>
         </div>
-
-        {/* Live Telemetry Rolling Ticker Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800/80 font-mono">
-          <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Total BYOK Executions</span>
-              <span className="text-lg font-extrabold text-white">{totalCalls.toLocaleString()}</span>
-            </div>
-            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">429 Rate-Limits Rescued</span>
-              <span className="text-lg font-extrabold text-teal-400">{rescuedRateLimits.toLocaleString()}</span>
-            </div>
-            <ShieldCheck className="w-4 h-4 text-teal-400" />
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/80 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Active Encryption Vaults</span>
-              <span className="text-lg font-extrabold text-cyan-400">{activeVaults} Configured</span>
-            </div>
-            <Lock className="w-4 h-4 text-cyan-400" />
-          </div>
-        </div>
       </motion.div>
 
-      {/* ── 1.5 Usage Progress & Allowance Banner ────────────────────────────── */}
+      {/* ── ROW 2: 3 High-Level Metric Stat Cards ───────────────────────────── */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Stat 1: Total Tool Requests */}
+        <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
+              Total Tool Requests
+            </span>
+            <span className="text-3xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 mt-2 block">
+              {totalCalls.toLocaleString()}
+            </span>
+            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+              Cumulative tool calls
+            </span>
+          </div>
+          <div className="p-3 rounded-2xl bg-lime-500/10 text-lime-600 dark:text-lime-400 shrink-0">
+            <Radio className="w-6 h-6 animate-pulse" />
+          </div>
+        </div>
+
+        {/* Stat 2: Failovers Handled */}
+        <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
+              Failovers Handled
+            </span>
+            <span className="text-3xl font-extrabold font-mono text-teal-600 dark:text-teal-400 mt-2 block">
+              {rescuedRateLimits.toLocaleString()}
+            </span>
+            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+              Auto-rotated keys &amp; limits
+            </span>
+          </div>
+          <div className="p-3 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 shrink-0">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+        </div>
+
+        {/* Stat 3: Configured Keys */}
+        <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
+              Configured Keys
+            </span>
+            <span className="text-3xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 mt-2 block">
+              {activeVaults} Vaulted
+            </span>
+            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+              AES-256-GCM encrypted
+            </span>
+          </div>
+          <div className="p-3 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shrink-0">
+            <Lock className="w-6 h-6" />
+          </div>
+        </div>
+
+      </motion.div>
+
+      {/* ── ROW 3: Free Monthly Allowance Progress Banner ───────────────────── */}
       <motion.div variants={itemVariants}>
         <UsageBanner
           monthlyCallCount={stats?.total_calls || 0}
@@ -211,21 +248,21 @@ export const Dashboard: React.FC = () => {
       </motion.div>
 
       {error && (
-        <motion.div variants={itemVariants} className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400 flex items-center space-x-2">
+        <motion.div variants={itemVariants} className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400 flex items-center space-x-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
         </motion.div>
       )}
 
-      {/* New User Onboarding — shown when balance=$0 and no calls yet */}
+      {/* New User Onboarding Banner — shown when balance=$0 and no calls yet */}
       {stats && stats.balance_usd === 0 && stats.total_calls === 0 && !loading && (
-        <motion.div variants={itemVariants} className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/30 to-slate-900 p-6 md:p-8 space-y-6">
+        <motion.div variants={itemVariants} className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-zinc-900/40 to-emerald-500/10 p-6 sm:p-8 space-y-6">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-emerald-500" />
               Welcome to LiteDaemon! Let's get you started.
             </h2>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
               Add your BYOK API keys for Tavily, Firecrawl, E2B &amp; more to execute agent workflows.
             </p>
           </div>
@@ -236,19 +273,17 @@ export const Dashboard: React.FC = () => {
                 step: '1',
                 icon: ShieldCheck,
                 title: 'Add Your BYOK Keys',
-                desc: 'Add prioritized & fallback API keys for your search, scraping, browser & sandbox tools.',
+                desc: 'Add prioritized & fallback API keys for search, scraping, browser & sandbox tools.',
                 action: '/keys',
                 actionLabel: 'Manage BYOK Keys →',
-                done: false,
               },
               {
                 step: '2',
                 icon: Layers,
                 title: 'Browse Tool Catalog',
-                desc: '10+ tool providers across 5 execution endpoints. All using your BYOK keys.',
+                desc: '36+ tool providers across 5 execution endpoints using your BYOK keys.',
                 action: '/providers',
                 actionLabel: 'Browse Tool Catalog →',
-                done: false,
               },
               {
                 step: '3',
@@ -257,218 +292,252 @@ export const Dashboard: React.FC = () => {
                 desc: 'POST /v1/scrape or /v1/search with provider: "auto" for automated failover.',
                 action: '/playground',
                 actionLabel: 'Open Playground →',
-                done: false,
               },
             ].map(s => (
               <Link
                 key={s.step}
                 to={s.action}
-                className="group p-5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition-all space-y-3"
+                className="group p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 hover:border-lime-500/40 transition-all space-y-3 shadow-sm dark:shadow-none"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center">
                     {s.step}
                   </span>
-                  <s.icon className="w-4 h-4 text-emerald-400" />
-                  <span className="font-semibold text-white text-sm">{s.title}</span>
+                  <s.icon className="w-4 h-4 text-emerald-500" />
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{s.title}</span>
                 </div>
-                <p className="text-slate-400 text-xs leading-relaxed">{s.desc}</p>
-                <span className="text-emerald-400 text-xs font-mono group-hover:underline">{s.actionLabel}</span>
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">{s.desc}</p>
+                <span className="text-emerald-600 dark:text-emerald-400 text-xs font-mono group-hover:underline">{s.actionLabel}</span>
               </Link>
             ))}
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 font-mono text-xs text-slate-400">
-            <span className="text-slate-300 font-semibold">Quick test (after adding a BYOK key):</span>
-            <pre className="mt-2 text-emerald-300 overflow-x-auto">
-{`curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
-  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
-  -d '{"params": {"query": "Latest AI agent news"}}'`}
-            </pre>
           </div>
         </motion.div>
       )}
 
-      {/* Primary Wallet & Metric Cards */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* ── ROW 4: Two-Column Balance & Usage Split ──────────────────────────── */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Card 1: Wallet Balance Card */}
-        <div className="md:col-span-2 rounded-2xl glass-card border border-emerald-500/30 p-6 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all pointer-events-none" />
-          <div>
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
-              <span>Wallet Prepaid Balance</span>
-              <Wallet className="w-4 h-4 text-emerald-400" />
+        {/* Left Column (40% width): Prepaid Credit Balance */}
+        <div className="lg:col-span-5 rounded-3xl p-6 sm:p-7 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-lime-500/10 rounded-full blur-2xl group-hover:bg-lime-500/20 transition-all pointer-events-none" />
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-mono uppercase tracking-wider font-semibold">
+              <span>Prepaid Credit Balance</span>
+              <Wallet className="w-4 h-4 text-lime-600 dark:text-lime-400" />
             </div>
-            <div className="mt-3 text-4xl font-extrabold font-mono text-emerald-400 tracking-tight">
-              {stats ? `$${stats.balance_usd.toFixed(4)}` : '$0.0000'}
+
+            <div>
+              <div className="text-4xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 tracking-tight">
+                {stats ? `$${stats.balance_usd.toFixed(4)}` : '$0.0000'}
+              </div>
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                Used for BYOK gateway routing fees and provider execution post 100 free calls.
+              </p>
             </div>
-            <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
-              Used for BYOK gateway routing fees, multi-key failover processing &amp; usage fees.
-            </p>
+
+            {/* Quick Top-Up Pills */}
+            <div className="pt-2">
+              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 block mb-2 font-semibold">
+                Quick Top-Up Deposit:
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                {['10', '25', '50', '100'].map((amt) => (
+                  <Link
+                    key={amt}
+                    to="/billing"
+                    className="px-3 py-1.5 rounded-xl font-mono text-xs font-semibold transition-colors bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60"
+                  >
+                    +${amt}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-mono">Quick Top-Up:</span>
-            <div className="flex items-center space-x-2">
-              {['10', '25', '50', '100'].map((amt) => (
-                <Link
-                  key={amt}
-                  to={`/billing`}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-mono text-xs transition-colors"
-                >
-                  +${amt}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Monthly Requests */}
-        <div className="rounded-2xl glass-card p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
-            <span>MONTHLY REQUESTS</span>
-            <Activity className="w-4 h-4 text-teal-400" />
-          </div>
-          <div>
-            <div className="mt-3 text-3xl font-bold font-mono text-white">
-              {totalCalls.toLocaleString()}
-            </div>
-            <p className="mt-1.5 text-xs text-slate-400 font-mono">
-              Total Calls this month
-            </p>
-          </div>
-          <div className="mt-4 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
-              <Sparkles className="w-3 h-3" />
-              Active Gateway Routing
+          <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            <span className="flex items-center gap-1.5">
+              <RefreshCw className="w-3.5 h-3.5 text-emerald-500" />
+              Auto-recharge ready
             </span>
+            <Link to="/billing" className="text-lime-600 dark:text-lime-400 font-bold hover:underline">
+              Billing Settings →
+            </Link>
           </div>
         </div>
 
-        {/* Card 3: Total Gateway Usage */}
-        <div className="rounded-2xl glass-card p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase tracking-wider">
-            <span>Total Usage</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div>
-            <div className="mt-3 text-3xl font-bold font-mono text-white">
-              {stats ? `$${stats.total_spent_usd.toFixed(4)}` : '$0.0000'}
+        {/* Right Column (60% width): Monthly Gateway Volume */}
+        <div className="lg:col-span-7 rounded-3xl p-6 sm:p-7 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-mono uppercase tracking-wider font-semibold">
+              <span>Monthly Gateway Volume</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-lime-500/10 text-lime-600 dark:text-lime-400 border border-lime-500/30">
+                <Sparkles className="w-3 h-3" /> 5% Pass-Through Markup
+              </div>
             </div>
-            <p className="mt-1.5 text-xs text-slate-400 font-mono">
-              Total Gateway Usage
-            </p>
+
+            {/* Side-by-Side Volume Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
+                <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-zinc-400 block font-bold">
+                  Total Calls Billed (Post 100)
+                </span>
+                <span className="text-2xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 mt-1 block">
+                  {stats?.billed_calls ?? 0} Calls
+                </span>
+                <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
+                  {stats && stats.total_calls <= 100 ? '100% Covered by Free Tier' : 'Billed at 5% Markup'}
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
+                <span className="text-[10px] font-mono uppercase text-zinc-500 dark:text-zinc-400 block font-bold">
+                  Calculated Pass-Through Cost
+                </span>
+                <span className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
+                  {stats ? `$${stats.total_spent_usd.toFixed(4)}` : '$0.0000'}
+                </span>
+                <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
+                  Raw Provider Cost × 1.05
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="mt-4 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span>BYOK Gateway Routing</span>
+
+          <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            <span className="flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-lime-500" />
+              Transparent Micro-Billing
+            </span>
+            <Link to="/docs/billing" className="text-lime-600 dark:text-lime-400 font-bold hover:underline">
+              Billing Docs Specs →
+            </Link>
           </div>
         </div>
 
       </motion.div>
 
-      {/* Endpoint Quick Test Grid */}
+      {/* ── ROW 5: Bottom Section — Unified Tool Endpoints ──────────────────── */}
       <motion.div variants={itemVariants} className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Terminal className="w-5 h-5 text-emerald-400" />
-            <span>Unified Endpoints &amp; Providers</span>
+          <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <Terminal className="w-5 h-5 text-lime-600 dark:text-lime-400" />
+            <span>Unified Tool Endpoints</span>
           </h2>
-          <Link to="/keys" className="text-xs font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+          <Link to="/keys" className="text-xs font-mono text-lime-600 dark:text-lime-400 hover:underline flex items-center gap-1 font-bold">
             <Key className="w-3.5 h-3.5" /> Manage BYOK Keys →
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
           
           {/* Card 1: Scrape */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between h-full group">
+          <Link
+            to="/keys"
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">/v1/scrape</span>
+                <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">/v1/scrape</span>
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${scrapeInfo.badgeClass}`}>
                   {scrapeInfo.badgeText}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-relaxed line-clamp-2">
                 {scrapeInfo.providersText}
               </p>
             </div>
-            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
-              Output: Clean Markdown, HTML &amp; Metadata
+            <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
+              <span>Clean Markdown &amp; HTML</span>
+              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
             </div>
           </Link>
 
           {/* Card 2: Document */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col justify-between h-full group">
+          <Link
+            to="/keys"
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-amber-400 whitespace-nowrap">/v1/document</span>
+                <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">/v1/document</span>
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${documentInfo.badgeClass}`}>
                   {documentInfo.badgeText}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-relaxed line-clamp-2">
                 {documentInfo.providersText}
               </p>
             </div>
-            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
-              Output: Markdown &amp; JSON Schema
+            <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
+              <span>Markdown &amp; JSON Schema</span>
+              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
             </div>
           </Link>
 
           {/* Card 3: Search */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-teal-500/40 transition-all flex flex-col justify-between h-full group">
+          <Link
+            to="/keys"
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-teal-400 whitespace-nowrap">/v1/search</span>
+                <span className="font-mono text-xs font-bold text-teal-600 dark:text-teal-400 whitespace-nowrap">/v1/search</span>
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${searchInfo.badgeClass}`}>
                   {searchInfo.badgeText}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-relaxed line-clamp-2">
                 {searchInfo.providersText}
               </p>
             </div>
-            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
-              Output: Title, URL, Snippet &amp; Raw Results
+            <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
+              <span>Title, URL &amp; Snippets</span>
+              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
             </div>
           </Link>
 
           {/* Card 4: Browser */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col justify-between h-full group">
+          <Link
+            to="/keys"
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-cyan-400 whitespace-nowrap">/v1/browser</span>
+                <span className="font-mono text-xs font-bold text-cyan-600 dark:text-cyan-400 whitespace-nowrap">/v1/browser</span>
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${browserInfo.badgeClass}`}>
                   {browserInfo.badgeText}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-relaxed line-clamp-2">
                 {browserInfo.providersText}
               </p>
             </div>
-            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
-              Output: CDP Session &amp; Debug Stream URL
+            <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
+              <span>CDP Session &amp; Debug Stream</span>
+              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
             </div>
           </Link>
 
           {/* Card 5: Execute */}
-          <Link to="/keys" className="p-5 rounded-2xl bg-[#0d1117] border border-slate-800 hover:border-purple-500/40 transition-all flex flex-col justify-between h-full group">
+          <Link
+            to="/keys"
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-purple-400 whitespace-nowrap">/v1/execute</span>
+                <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 whitespace-nowrap">/v1/execute</span>
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${executeInfo.badgeClass}`}>
                   {executeInfo.badgeText}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors leading-relaxed line-clamp-2">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-relaxed line-clamp-2">
                 {executeInfo.providersText}
               </p>
             </div>
-            <div className="text-[11px] text-slate-500 font-mono pt-3 border-t border-slate-800/40 mt-3">
-              Output: stdout, stderr, execution artifacts
+            <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
+              <span>stdout, stderr &amp; artifacts</span>
+              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
             </div>
           </Link>
 

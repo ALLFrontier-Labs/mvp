@@ -4,13 +4,93 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LiteDaemon — Unified BYOK Infrastructure Gateway</title>
+    
+    <!-- Primary Metadata -->
+    <title>LiteDaemon — Unified Tool Engine &amp; BYOK API Gateway</title>
+    <meta name="description" content="Route Tavily, Firecrawl, E2B, Exa, and 30+ provider tools through your own keys with zero-overhead failover and unified OpenAPI execution." />
+    <meta name="keywords" content="BYOK gateway, AI agents, Tavily, Firecrawl, E2B sandbox, Steel browser, API gateway, LLM tools, Unified proxy" />
+    <meta name="author" content="LiteDaemon, Inc." />
+    
+    <!-- OpenGraph Metadata -->
+    <meta property="og:title" content="LiteDaemon — Unified BYOK Gateway" />
+    <meta property="og:description" content="Unified proxy routing across search engines, scrapers, headless browsers, and code sandboxes." />
+    <meta property="og:url" content="https://mvp-production-c1e8.up.railway.app" />
+    <meta property="og:site_name" content="LiteDaemon" />
+    <meta property="og:type" content="website" />
+    
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LiteDaemon API Gateway" />
+    <meta name="twitter:description" content="Bring-Your-Own-Key infrastructure for AI agents." />
+    
+    <!-- JSON-LD Schema.org Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "LiteDaemon API Gateway",
+        "operatingSystem": "All",
+        "applicationCategory": "DeveloperApplication",
+        "description": "Unified BYOK tool proxy engine for web search, scraping, browser automation, and code execution sandboxes.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#0a0d14] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white min-h-screen">
-    <div id="root"></div>
+  <body class="bg-[#0a0d14] text-slate-100 font-sans antialiased selection:bg-lime-400 selection:text-zinc-950 min-h-screen">
+    
+    <!-- Pre-rendered Static HTML Shell inside #root for Web Crawlers & AI Readability -->
+    <div id="root">
+      <header class="w-full border-b px-4 h-14 flex items-center justify-between font-sans">
+        <a href="/" class="flex items-center gap-2 font-bold text-lg">
+          <span>LiteDaemon</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-5 text-sm">
+          <a href="/providers">Tools</a>
+          <a href="/playground">Playground</a>
+          <a href="/rankings">Rankings</a>
+          <a href="/pricing">Pricing</a>
+          <a href="/docs">Docs</a>
+        </nav>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-12 space-y-12">
+        <section class="text-center space-y-4">
+          <h1 class="text-4xl font-extrabold">Transparent, Predictable BYOK Gateway Pricing</h1>
+          <p class="text-lg text-slate-400">
+            Route Tavily, Firecrawl, E2B, Exa, and 30+ providers through your own keys with zero-overhead failover.
+          </p>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <article class="p-6 rounded-2xl border border-slate-800">
+            <h2 class="text-xl font-bold">Developer Free</h2>
+            <p>$0 / month — 100 Free Gateway Routing Requests / month.</p>
+          </article>
+          <article class="p-6 rounded-2xl border border-lime-400">
+            <h2 class="text-xl font-bold">Pro Gateway</h2>
+            <p>$29 / month — Includes $20 Prepaid Gateway Balance &amp; Unlimited Vault Keys.</p>
+          </article>
+          <article class="p-6 rounded-2xl border border-slate-800">
+            <h2 class="text-xl font-bold">Dedicated Enterprise</h2>
+            <p>$499+ / month — Dedicated Single-Tenant Proxy Edge Routers &amp; Custom SLAs.</p>
+          </article>
+        </section>
+      </main>
+
+      <footer class="border-t py-8 text-center text-xs text-slate-500">
+        <p>© 2026 LiteDaemon, Inc. All rights reserved.</p>
+      </footer>
+    </div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

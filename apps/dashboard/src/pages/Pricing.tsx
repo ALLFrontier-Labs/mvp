@@ -101,6 +101,132 @@ export const Pricing: React.FC = () => {
         </div>
       </section>
 
+      {/* ── 1.5 PRICING CARDS ────────────────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Card 1: Free Tier */}
+          <div
+            className="rounded-3xl p-8 border space-y-6 flex flex-col justify-between shadow-xl relative overflow-hidden"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  Resets every 30 days
+                </span>
+                <span className="text-xs font-mono text-zinc-500">Tier 1</span>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-extrabold text-white">Free Monthly Allowance</h3>
+                <p className="text-xs text-zinc-400 mt-2 leading-relaxed font-sans">
+                  100 free API calls every month across all integrated tools (Tavily, Exa, E2B, Firecrawl, etc.).
+                </p>
+              </div>
+
+              <div className="py-2">
+                <span className="text-4xl font-extrabold font-mono text-white">$0</span>
+                <span className="text-xs font-mono text-zinc-400"> / month</span>
+              </div>
+
+              <ul className="space-y-3 text-xs text-zinc-300 font-sans pt-2 border-t border-zinc-800">
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>100 free API calls per billing month</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Full access to all 36+ integrated tool engines</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Ephemeral in-memory key vault &amp; zero disk logging</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Automatic monthly resets back to 0</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              to="/auth"
+              className="w-full py-3.5 rounded-2xl text-center text-xs font-extrabold border transition-all hover:opacity-80"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+            >
+              Get Started For Free
+            </Link>
+          </div>
+
+          {/* Card 2: Pay-As-You-Go */}
+          <div
+            className="rounded-3xl p-8 border space-y-6 flex flex-col justify-between shadow-2xl relative overflow-hidden"
+            style={{ 
+              backgroundColor: 'var(--bg-card)', 
+              borderColor: 'rgba(163, 230, 53, 0.4)',
+              boxShadow: '0 0 30px rgba(163, 230, 53, 0.08)' 
+            }}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5"
+                  style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Post 100 Calls
+                </span>
+                <span className="text-xs font-mono text-lime-400 font-semibold">Standard Plan</span>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-extrabold text-white">Pay-As-You-Go (BYOK / Pass-Through)</h3>
+                <p className="text-xs text-zinc-400 mt-2 leading-relaxed font-sans">
+                  For usage beyond 100 calls.
+                </p>
+              </div>
+
+              <div className="py-2 space-y-1">
+                <div className="text-2xl font-extrabold font-mono text-lime-400">
+                  Raw Provider Cost + 5% Markup
+                </div>
+                <div className="inline-block px-2.5 py-1 rounded bg-lime-400/10 border border-lime-400/30 text-[11px] font-mono text-lime-300">
+                  <code>Final Cost = Raw Provider Cost × 1.05</code>
+                </div>
+              </div>
+
+              <ul className="space-y-3 text-xs text-zinc-300 font-sans pt-2 border-t border-zinc-800">
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
+                  <span>Direct provider key pass-through (Tavily, E2B, Exa, etc.)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
+                  <span>Exact transparent calculation: <code>Final Cost = Raw Provider Cost × 1.05</code></span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
+                  <span>Automatic monthly resets back to free tier</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
+                  <span>Multi-key priority &amp; automated fallback failover</span>
+                </li>
+              </ul>
+            </div>
+
+            <Link
+              to="/auth"
+              className="w-full py-3.5 rounded-2xl text-center text-xs font-extrabold shadow-lg transition-all hover:opacity-90"
+              style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
+            >
+              Start Routing API Calls →
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
       {/* ── 2. FEATURE COMPARISON MATRIX TABLE ──────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div 
@@ -142,7 +268,7 @@ export const Pricing: React.FC = () => {
                 {/* Monthly Free Calls */}
                 <tr>
                   <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Monthly Free Allowance</td>
-                  <td className="p-5 text-center font-bold text-emerald-400">100 free calls / mo (resets monthly)</td>
+                  <td className="p-5 text-center font-bold text-emerald-400">100 free calls / mo (resets every 30 days)</td>
                   <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
                     100 free calls / mo
                   </td>

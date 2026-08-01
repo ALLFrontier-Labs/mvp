@@ -12,11 +12,12 @@ export class InsufficientFundsError extends Error {
 // of the transaction. No other transaction can read or write this row until
 // COMMIT or ROLLBACK — eliminates concurrent overdraft.
 export async function debitLedger(
-  userId:      string,
-  amountUsd:   number,
-  providerId:  string,
-  jobId:       string,
-  description: string
+  userId:          string,
+  amountUsd:       number,
+  providerId:      string,
+  jobId:           string,
+  description:     string,
+  rawProviderCost?: number
 ): Promise<void> {
   // BYOK or $0 call — strictly skip wallet debit & ledger entry
   if (!amountUsd || amountUsd <= 0) return;
@@ -48,7 +49,7 @@ export async function debitLedger(
     // Atomic conditional UPDATE — guarantees protection against concurrent overdrafts
     const updateRes = await client.query(
       `UPDATE users
-       SET balance_usd = balance_usd - $1
+       SET balance_usd = balance_usd - $1, credit_balance = balance_usd - $1
        WHERE id = $2 AND balance_usd >= $1
        RETURNING balance_usd`,
       [required, userId]
@@ -62,13 +63,15 @@ export async function debitLedger(
     }
 
     const newBalance = parseFloat(updateRes.rows[0].balance_usd);
+    const rawCost = rawProviderCost || Math.round((amountUsd / 1.05) * 1e8) / 1e8;
+    const markup  = Math.round((required - rawCost) * 1e8) / 1e8;
 
     // Append immutable ledger entry — never delete or update these rows
     await client.query(
       `INSERT INTO ledger_entries
-         (user_id, type, direction, amount_usd, provider_id, job_id, description, balance_after)
-       VALUES ($1, 'debit', 'debit', $2, $3, $4, $5, $6)`,
-      [userId, required, providerId, jobId, description, newBalance]
+         (user_id, type, direction, amount_usd, raw_provider_cost, markup_amount, total_deducted, provider_id, job_id, description, balance_after)
+       VALUES ($1, 'debit', 'debit', $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [userId, required, rawCost, markup, required, providerId, jobId, description, newBalance]
     );
 
     await client.query('COMMIT');

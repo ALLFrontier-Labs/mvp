@@ -11,12 +11,17 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- NUMERIC(18,8) gives 8 decimal places — financial-grade precision for micro-billing
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE users (
-  id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
-  email       TEXT            NOT NULL UNIQUE,
-  balance_usd NUMERIC(18, 8)  NOT NULL DEFAULT 0,
-  plan        TEXT            NOT NULL DEFAULT 'free',
-  is_active   BOOLEAN         NOT NULL DEFAULT true,
-  created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+  id                       UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+  email                    TEXT            NOT NULL UNIQUE,
+  balance_usd              NUMERIC(18, 8)  NOT NULL DEFAULT 0,
+  credit_balance           NUMERIC(18, 8)  NOT NULL DEFAULT 0,
+  monthly_call_count       INTEGER         NOT NULL DEFAULT 0,
+  billing_period_start     TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+  stripe_customer_id       TEXT,
+  stripe_payment_method_id TEXT,
+  plan                     TEXT            NOT NULL DEFAULT 'free',
+  is_active                BOOLEAN         NOT NULL DEFAULT true,
+  created_at               TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -71,16 +76,19 @@ VALUES
 -- Never update or delete rows. Append only.
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE ledger_entries (
-  id            UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       UUID            NOT NULL REFERENCES users(id),
-  type          TEXT            NOT NULL,
-  direction     TEXT            NOT NULL,
-  amount_usd    NUMERIC(18, 8)  NOT NULL,
-  provider_id   TEXT            REFERENCES providers(id),
-  job_id        UUID,
-  description   TEXT            NOT NULL,
-  balance_after NUMERIC(18, 8)  NOT NULL,
-  created_at    TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+  id                UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           UUID            NOT NULL REFERENCES users(id),
+  type              TEXT            NOT NULL,
+  direction         TEXT            NOT NULL,
+  amount_usd        NUMERIC(18, 8)  NOT NULL,
+  raw_provider_cost NUMERIC(18, 8),
+  markup_amount     NUMERIC(18, 8),
+  total_deducted    NUMERIC(18, 8),
+  provider_id       TEXT            REFERENCES providers(id),
+  job_id            UUID,
+  description       TEXT            NOT NULL,
+  balance_after     NUMERIC(18, 8)  NOT NULL,
+  created_at        TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_ledger_user    ON ledger_entries(user_id);
 CREATE INDEX idx_ledger_created ON ledger_entries(created_at DESC);

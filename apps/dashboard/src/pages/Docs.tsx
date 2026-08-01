@@ -1106,7 +1106,7 @@ res = requests.post(
         {[
           { label: 'Monthly Base Fee',     value: '$0 / month',           highlight: true },
           { label: 'Free Requests',        value: '100 requests/month',   highlight: true },
-          { label: 'Free Period Reset',    value: '1st of each month, 00:00 UTC' },
+          { label: 'Free Period Reset',    value: 'Every 30 days from billing period start' },
           { label: 'Overage Routing Fee',  value: '5% of provider list price' },
           { label: 'Minimum Top-Up',       value: '$5.00 USD' },
           { label: 'Billing Method',       value: 'Prepaid wallet balance' },

@@ -21,6 +21,7 @@ import {
   Lock
 } from 'lucide-react';
 import { api } from '../lib/api';
+import { UsageBanner } from '../components/UsageBanner';
 
 interface ByokKeyInfo {
   id: string;
@@ -199,6 +200,14 @@ export const Dashboard: React.FC = () => {
             <Lock className="w-4 h-4 text-cyan-400" />
           </div>
         </div>
+      </motion.div>
+
+      {/* ── 1.5 Usage Progress & Allowance Banner ────────────────────────────── */}
+      <motion.div variants={itemVariants}>
+        <UsageBanner
+          monthlyCallCount={stats?.total_calls || 0}
+          balanceUsd={stats?.balance_usd || 0}
+        />
       </motion.div>
 
       {error && (

@@ -1,6 +1,7 @@
-// services/byokPricing.ts — 1,000 Free Monthly Requests & 5% BYOK Fee Engine
+// services/byokPricing.ts — 100 Free Monthly Calls & 5% Provider Markup Engine
 import { pool } from '../db/client';
 import { calc5PercentFee } from '../config/provider-prices';
+import { shouldResetBillingPeriod } from '../lib/billing/usage';
 
 export interface ByokAllowanceCheck {
   allowed: boolean;
@@ -25,7 +26,7 @@ export async function preCheckAndEvaluateByok(
   providerId: string = 'tavily'
 ): Promise<ByokAllowanceCheck> {
   const userRes = await pool.query(
-    'SELECT balance_usd, byok_requests_this_month, byok_last_reset_at FROM users WHERE id = $1',
+    'SELECT balance_usd, monthly_call_count, byok_requests_this_month, billing_period_start, byok_last_reset_at FROM users WHERE id = $1',
     [userId]
   );
 
@@ -35,30 +36,28 @@ export async function preCheckAndEvaluateByok(
 
   const row = userRes.rows[0];
   const currentBalance = parseFloat(row.balance_usd || '0');
-  let requestsThisMonth = parseInt(row.byok_requests_this_month || '0', 10);
-  const lastResetAt = row.byok_last_reset_at ? new Date(row.byok_last_reset_at) : new Date();
+  let requestsThisMonth = parseInt(row.monthly_call_count || row.byok_requests_this_month || '0', 10);
+  const lastResetAt = row.billing_period_start || row.byok_last_reset_at ? new Date(row.billing_period_start || row.byok_last_reset_at) : new Date();
 
-  // 1. Month Reset Check (UTC Month/Year comparison)
+  // 1. Month Reset Check (30-day or UTC Month/Year comparison)
   const now = new Date();
-  const isNewMonth =
-    now.getUTCFullYear() > lastResetAt.getUTCFullYear() ||
-    (now.getUTCFullYear() === lastResetAt.getUTCFullYear() && now.getUTCMonth() > lastResetAt.getUTCMonth());
+  const isResetNeeded = shouldResetBillingPeriod(lastResetAt, now);
 
-  if (isNewMonth) {
+  if (isResetNeeded) {
     requestsThisMonth = 0;
     await pool.query(
-      'UPDATE users SET byok_requests_this_month = 0, byok_last_reset_at = NOW() WHERE id = $1',
+      'UPDATE users SET monthly_call_count = 0, byok_requests_this_month = 0, billing_period_start = NOW(), byok_last_reset_at = NOW() WHERE id = $1',
       [userId]
     );
   }
 
   const nextCount = requestsThisMonth + 1;
 
-  // 2. Request Allowance Check
-  if (nextCount <= 1000) {
-    // Free Allowance (Calls 1..1000)
+  // 2. Request Allowance Check (Calls 1..100)
+  if (nextCount <= 100) {
+    // Free Allowance (Calls 1..100)
     await pool.query(
-      'UPDATE users SET byok_requests_this_month = byok_requests_this_month + 1 WHERE id = $1',
+      'UPDATE users SET monthly_call_count = monthly_call_count + 1, byok_requests_this_month = byok_requests_this_month + 1 WHERE id = $1',
       [userId]
     );
     return {
@@ -70,7 +69,7 @@ export async function preCheckAndEvaluateByok(
     };
   }
 
-  // 3. Paid Request Check (Calls > 1000) -> 5% BYOK Gateway Fee
+  // 3. Paid Request Check (Calls > 100) -> Provider Pass-Through + 5% Markup
   const calculatedFee = calc5PercentFee(providerId);
 
   if (currentBalance < calculatedFee) {
@@ -83,8 +82,8 @@ export async function preCheckAndEvaluateByok(
       errorResponse: {
         statusCode: 402,
         payload: {
-          error: 'Insufficient wallet balance',
-          message: 'You have exceeded your 1,000 free monthly BYOK requests. Please top up your wallet (min $5) to continue routing requests.',
+          error: 'Insufficient Balance',
+          message: 'Every LiteDaemon account receives 100 free API calls per billing month across all integrated tools. Requests beyond 100 calls require an active balance. Requests with insufficient funds return HTTP 402 prior to provider invocation.',
           byok_requests_this_month: nextCount,
           required_balance: calculatedFee,
           current_balance: currentBalance,
@@ -95,7 +94,7 @@ export async function preCheckAndEvaluateByok(
 
   // Balance is sufficient
   await pool.query(
-    'UPDATE users SET byok_requests_this_month = byok_requests_this_month + 1 WHERE id = $1',
+    'UPDATE users SET monthly_call_count = monthly_call_count + 1, byok_requests_this_month = byok_requests_this_month + 1 WHERE id = $1',
     [userId]
   );
 

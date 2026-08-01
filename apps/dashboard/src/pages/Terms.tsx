@@ -48,7 +48,7 @@ export const Terms: React.FC = () => {
             </div>
             <div className="space-y-3 text-xs font-mono text-zinc-400">
               <p className="text-zinc-300">
-                • <strong>Free Monthly Allowance:</strong> Every account receives 100 free BYOK request proxies per UTC calendar month. Allowance resets automatically on the 1st of every month at 00:00 UTC.
+                • <strong>Free Monthly Allowance:</strong> Every LiteDaemon account receives 100 free API calls per billing month across all integrated tools (Tavily, Exa, E2B, Firecrawl, etc.). Free monthly call counters automatically reset to 0 every 30 days from the start of the user's billing period.
               </p>
               <p className="text-zinc-300">
                 • <strong>Overage Routing Fee:</strong> Requests exceeding 100 calls per month incur a 5% micro-fee based on standard provider list prices.

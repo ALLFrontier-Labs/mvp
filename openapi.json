@@ -1,0 +1,55 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "LiteDaemon AI Tool Gateway API",
+    "description": "Unified Gateway and Orchestration Platform for AI Tools (Tavily, Exa, E2B, Firecrawl, Serper, Browserbase). Every account receives 100 free API calls per billing month. Paid tier (call 101+) applies 5% provider markup. Insufficient balance returns HTTP 402.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://gateway.litedaemon.com/v1",
+      "description": "Production Gateway Server"
+    }
+  ],
+  "paths": {
+    "/search": {
+      "post": {
+        "summary": "Unified Search Endpoint",
+        "description": "Routes search query across Tavily, Exa, or Serper. First 100 calls/month are free. Call 101+ applies 5% markup.",
+        "responses": {
+          "200": { "description": "Search execution successful" },
+          "402": { "description": "HTTP 402 Payment Required — Insufficient Balance for Call 101+" }
+        }
+      }
+    },
+    "/scrape": {
+      "post": {
+        "summary": "Unified Scraping Endpoint",
+        "description": "Routes scraping requests across Firecrawl, Jina, Apify, Spider. First 100 calls/month free.",
+        "responses": {
+          "200": { "description": "Scrape successful" },
+          "402": { "description": "HTTP 402 Payment Required" }
+        }
+      }
+    },
+    "/execute": {
+      "post": {
+        "summary": "Unified Code Execution Endpoint",
+        "description": "Executes code inside E2B sandbox environment. First 100 calls/month free.",
+        "responses": {
+          "200": { "description": "Execution successful" },
+          "402": { "description": "HTTP 402 Payment Required" }
+        }
+      }
+    },
+    "/usage": {
+      "get": {
+        "summary": "Get User Usage Statistics",
+        "description": "Returns total calls, billed calls, total spent, monthly call count, and wallet balance.",
+        "responses": {
+          "200": { "description": "Usage stats object" }
+        }
+      }
+    }
+  }
+}

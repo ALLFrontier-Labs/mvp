@@ -70,10 +70,15 @@ export interface ProviderAdapter {
 // ── Domain types ──────────────────────────────────────────────────────────────
 
 export interface LDUser {
-  id:          string;
-  email:       string;
-  balance_usd: string;  // string because pg returns NUMERIC as string
-  plan:        string;
+  id:                       string;
+  email:                    string;
+  balance_usd:              string;  // string because pg returns NUMERIC as string
+  credit_balance?:          string;
+  monthly_call_count?:      number;
+  billing_period_start?:    string;
+  stripe_customer_id?:      string | null;
+  stripe_payment_method_id?: string | null;
+  plan:                     string;
 }
 
 export interface LDProvider {

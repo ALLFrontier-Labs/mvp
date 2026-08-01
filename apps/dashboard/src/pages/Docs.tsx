@@ -136,13 +136,58 @@ const Callout: React.FC<{
 
 export const Docs: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<DocTab>('docs');
   const [activeSection, setActiveSection] = useState<SectionId>('quickstart');
 
+  // Synchronize active tab and section with URL route changes
+  React.useEffect(() => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes('api-reference') || path.includes('/v1/') || path.includes('/api')) {
+      setActiveTab('api-reference');
+      if (path.includes('search')) setActiveSection('search');
+      else if (path.includes('scrape')) setActiveSection('scrape');
+      else if (path.includes('browser')) setActiveSection('browser');
+      else if (path.includes('execute')) setActiveSection('execute');
+      else if (path.includes('document')) setActiveSection('document');
+      else if (path.includes('errors')) setActiveSection('errors');
+      else if (path.includes('tools')) setActiveSection('tools');
+      else setActiveSection('api-ref');
+    } else if (path.includes('sdks')) {
+      setActiveTab('sdks');
+      if (path.includes('python')) setActiveSection('sdk-python');
+      else setActiveSection('sdk-ts');
+    } else if (path.includes('langchain')) {
+      setActiveTab('docs');
+      setActiveSection('langchain');
+    } else if (path.includes('crewai')) {
+      setActiveTab('docs');
+      setActiveSection('crewai');
+    } else if (path.includes('autogen')) {
+      setActiveTab('docs');
+      setActiveSection('autogen');
+    }
+  }, [location.pathname]);
+
+  const handleTabSelect = (tab: DocTab) => {
+    setActiveTab(tab);
+    if (tab === 'docs') {
+      setActiveSection('quickstart');
+      navigate('/docs');
+    } else if (tab === 'api-reference') {
+      setActiveSection('api-ref');
+      navigate('/docs/api-reference');
+    } else if (tab === 'sdks') {
+      setActiveSection('sdk-ts');
+      navigate('/docs/sdks');
+    }
+  };
+
   // Sidebar Menu Navigation Structure
-  const NAVIGATION_GROUPS = [
+  const ALL_NAVIGATION_GROUPS = [
     {
       group: 'OVERVIEW',
+      tab: 'docs',
       items: [
         { id: 'quickstart', label: 'Quickstart Guide' },
         { id: 'architecture', label: 'System Architecture' },
@@ -151,6 +196,7 @@ export const Docs: React.FC = () => {
     },
     {
       group: 'AUTHENTICATION & KEYS',
+      tab: 'docs',
       items: [
         { id: 'keys-vault', label: 'API Keys & Vault' },
         { id: 'key-encryption', label: 'Key Encryption' },
@@ -159,6 +205,7 @@ export const Docs: React.FC = () => {
     },
     {
       group: 'TOOL PROVIDERS & APIS',
+      tab: 'api-reference',
       items: [
         { id: 'api-ref', label: 'API Reference Index' },
         { id: 'search', label: '/v1/search' },
@@ -172,6 +219,7 @@ export const Docs: React.FC = () => {
     },
     {
       group: 'OFFICIAL SDKS',
+      tab: 'sdks',
       items: [
         { id: 'sdk-ts', label: 'TypeScript / Node.js' },
         { id: 'sdk-python', label: 'Python SDK' },
@@ -179,6 +227,7 @@ export const Docs: React.FC = () => {
     },
     {
       group: 'FRAMEWORK INTEGRATIONS',
+      tab: 'docs',
       items: [
         { id: 'langchain', label: 'LangChain' },
         { id: 'crewai', label: 'CrewAI' },
@@ -186,6 +235,9 @@ export const Docs: React.FC = () => {
       ],
     },
   ];
+
+  // Dynamically filter categories based on active tab
+  const visibleGroups = ALL_NAVIGATION_GROUPS.filter(g => g.tab === activeTab);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans selection:bg-lime-400 selection:text-zinc-950">
@@ -208,7 +260,7 @@ export const Docs: React.FC = () => {
             {(['docs', 'api-reference', 'sdks'] as DocTab[]).map(t => (
               <button
                 key={t}
-                onClick={() => setActiveTab(t)}
+                onClick={() => handleTabSelect(t)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                   activeTab === t
                     ? 'bg-lime-400 text-zinc-950 shadow-sm'
@@ -237,7 +289,7 @@ export const Docs: React.FC = () => {
 
         {/* ── LEFT STICKY SIDEBAR NAVIGATION TREE ────────────────────────────── */}
         <aside className="w-64 shrink-0 font-mono text-xs hidden lg:block sticky top-24 space-y-6">
-          {NAVIGATION_GROUPS.map((group) => (
+          {visibleGroups.map((group) => (
             <div key={group.group} className="space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block px-2">
                 {group.group}

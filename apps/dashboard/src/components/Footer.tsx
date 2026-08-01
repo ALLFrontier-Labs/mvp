@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { DaemonLogo } from './DaemonLogo';
 
 const FOOTER_COLUMNS = [
   {
@@ -57,21 +58,8 @@ export const Footer: React.FC = () => {
 
         {/* Column 1: Brand Logo & Clean Copyright */}
         <div className="col-span-2 sm:col-span-1 space-y-4">
-          <Link to="/" className="flex items-center gap-2 group w-fit">
-            <svg
-              className="w-5 h-5 transition-transform group-hover:scale-105"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              style={{ color: '#ccff00' }}
-            >
-              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" />
-            </svg>
-            <span
-              className="font-bold tracking-tight text-sm"
-              style={{ color: 'var(--text-primary)' }}
-            >
-              LiteDaemon
-            </span>
+          <Link to="/" className="flex items-center group w-fit focus:outline-none">
+            <DaemonLogo size={24} showText={true} />
           </Link>
 
           <p className="text-sm font-normal" style={{ color: 'var(--text-muted)' }}>

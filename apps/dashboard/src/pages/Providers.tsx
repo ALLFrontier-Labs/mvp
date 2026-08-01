@@ -4,7 +4,7 @@ import {
   Search, Filter, Layers, Copy, Check, ExternalLink, ShieldCheck,
   RefreshCw, Loader2, Zap, Terminal, Code2, ArrowUpDown, ChevronRight,
   X, CheckCircle2, AlertCircle, Cpu, Globe, Eye, Sparkles, Key, Plus,
-  Wrench, MessageSquare, Send, Server, Link2
+  Wrench, MessageSquare, Send, Server, Link2, LayoutGrid, List, FileText
 } from 'lucide-react';
 import { api, getStoredApiKey } from '../lib/api';
 import { PROVIDER_META, ENDPOINT_BADGE, RichMeta } from '../data/providers';
@@ -19,6 +19,43 @@ interface Provider {
   is_live: boolean;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// BRAND ICON ENGINE — Dynamic Brand Badges with Unique Brand Accent Colors
+// ─────────────────────────────────────────────────────────────────────────────
+const BRAND_ACCENT_STYLES: Record<string, { bg: string; text: string; border: string; iconLetter: string }> = {
+  firecrawl:       { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', iconLetter: 'FC' },
+  jina:            { bg: 'bg-emerald-500/10 dark:bg-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', iconLetter: 'JN' },
+  apify:           { bg: 'bg-blue-500/10 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/30', iconLetter: 'AP' },
+  spider:          { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-500/30', iconLetter: 'SP' },
+  tavily:          { bg: 'bg-teal-500/10 dark:bg-teal-500/20', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-500/30', iconLetter: 'TV' },
+  exa:             { bg: 'bg-indigo-500/10 dark:bg-indigo-500/20', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-500/30', iconLetter: 'EX' },
+  serper:          { bg: 'bg-rose-500/10 dark:bg-rose-500/20', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-500/30', iconLetter: 'SR' },
+  browserbase:     { bg: 'bg-cyan-500/10 dark:bg-cyan-500/20', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-500/30', iconLetter: 'BB' },
+  steel:           { bg: 'bg-cyan-500/10 dark:bg-cyan-500/20', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-500/30', iconLetter: 'ST' },
+  e2b:             { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-500/30', iconLetter: 'E2' },
+  daytona:         { bg: 'bg-sky-500/10 dark:bg-sky-500/20', text: 'text-sky-600 dark:text-sky-400', border: 'border-sky-500/30', iconLetter: 'DT' },
+  llamaparse:      { bg: 'bg-amber-500/10 dark:bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', iconLetter: 'LP' },
+  firecrawl_parse: { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', iconLetter: 'FP' },
+  unstructured:    { bg: 'bg-amber-500/10 dark:bg-amber-500/20', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', iconLetter: 'UN' },
+  perplexity:      { bg: 'bg-teal-500/10 dark:bg-teal-500/20', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-500/30', iconLetter: 'PX' },
+  brave:           { bg: 'bg-orange-500/10 dark:bg-orange-500/20', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', iconLetter: 'BV' },
+};
+
+const ProviderBrandIcon: React.FC<{ providerId: string; name: string }> = ({ providerId, name }) => {
+  const brand = BRAND_ACCENT_STYLES[providerId] || {
+    bg: 'bg-lime-500/10 dark:bg-lime-500/20',
+    text: 'text-lime-600 dark:text-lime-400',
+    border: 'border-lime-500/30',
+    iconLetter: name.slice(0, 2).toUpperCase()
+  };
+
+  return (
+    <div className={`w-10 h-10 rounded-xl ${brand.bg} border ${brand.border} flex items-center justify-center font-mono font-extrabold text-xs ${brand.text} shadow-sm shrink-0`}>
+      {brand.iconLetter}
+    </div>
+  );
+};
+
 export const Providers: React.FC = () => {
   const navigate = useNavigate();
   const [providers, setProviders]   = useState<Provider[]>([]);
@@ -26,13 +63,16 @@ export const Providers: React.FC = () => {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
   
-  // Filtering & Search
+  // View Switcher State (Grid vs Table)
+  const [viewMode, setViewMode]     = useState<'grid' | 'table'>('grid');
+
+  // Filtering & Search State
   const [searchQuery, setSearchQuery]       = useState('');
   const [endpointFilter, setEndpointFilter] = useState<'all' | 'scrape' | 'search' | 'browser' | 'execute' | 'document'>('all');
-  const [statusFilter, setStatusFilter]     = useState<'all' | 'live' | 'offline'>('all');
+  const [statusFilter, setStatusFilter]     = useState<'all' | 'configured' | 'unconfigured'>('all');
   const [sortBy, setSortBy]                 = useState<'name' | 'speed'>('name');
 
-  // Selected Provider Drawer
+  // Selected Provider Code Drawer
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [copiedField, setCopiedField]           = useState<string | null>(null);
   const [codeTab, setCodeTab]                   = useState<'curl' | 'typescript' | 'python'>('curl');
@@ -58,7 +98,7 @@ export const Providers: React.FC = () => {
         api.listProviders().catch(() => ({ providers: [] })),
         api.listKeys().catch(() => ({ keys: [] })),
       ]);
-      setProviders(providersData.providers);
+      setProviders(providersData.providers || []);
       setUserKeys(keysData.keys || []);
     } catch (e: any) {
       setError(e.message || 'Failed to load providers catalog');
@@ -92,34 +132,48 @@ export const Providers: React.FC = () => {
     }, 2500);
   };
 
-  // Filter & Sort Logic
-  const filteredProviders = providers
-    .filter(p => {
-      if (endpointFilter !== 'all' && p.endpoint !== endpointFilter) return false;
-      if (statusFilter === 'live' && !p.is_live) return false;
-      if (statusFilter === 'offline' && p.is_live) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const meta = PROVIDER_META[p.id];
-        const matchName = p.name.toLowerCase().includes(q);
-        const matchId   = p.id.toLowerCase().includes(q);
-        const matchEp   = p.endpoint.toLowerCase().includes(q);
-        const matchCap  = meta?.capabilities.some(c => c.toLowerCase().includes(q));
-        if (!matchName && !matchId && !matchEp && !matchCap) return false;
+  // Dynamic Endpoint Counts
+  const countsByEndpoint = useMemo(() => {
+    const counts = { all: providers.length, scrape: 0, document: 0, search: 0, browser: 0, execute: 0 };
+    for (const p of providers) {
+      const ep = p.endpoint as keyof typeof counts;
+      if (counts[ep] !== undefined) {
+        counts[ep]++;
       }
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'speed') {
-        const speedA = parseFloat(PROVIDER_META[a.id]?.latency.replace(/[^0-9.]/g, '') || '999');
-        const speedB = parseFloat(PROVIDER_META[b.id]?.latency.replace(/[^0-9.]/g, '') || '999');
-        return speedA - speedB;
-      }
-      return 0;
-    });
+    }
+    return counts;
+  }, [providers]);
 
-  const liveCount = providers.filter(p => p.is_live).length;
+  // Filter & Sort Logic
+  const filteredProviders = useMemo(() => {
+    return providers
+      .filter(p => {
+        if (endpointFilter !== 'all' && p.endpoint !== endpointFilter) return false;
+        const isConfigured = configuredProviderIds.has(p.id);
+        if (statusFilter === 'configured' && !isConfigured) return false;
+        if (statusFilter === 'unconfigured' && isConfigured) return false;
+
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const meta = PROVIDER_META[p.id];
+          const matchName = p.name.toLowerCase().includes(q);
+          const matchId   = p.id.toLowerCase().includes(q);
+          const matchEp   = p.endpoint.toLowerCase().includes(q);
+          const matchCap  = meta?.capabilities.some(c => c.toLowerCase().includes(q));
+          if (!matchName && !matchId && !matchEp && !matchCap) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
+        if (sortBy === 'speed') {
+          const speedA = parseFloat(PROVIDER_META[a.id]?.latency.replace(/[^0-9.]/g, '') || '999');
+          const speedB = parseFloat(PROVIDER_META[b.id]?.latency.replace(/[^0-9.]/g, '') || '999');
+          return speedA - speedB;
+        }
+        return 0;
+      });
+  }, [providers, endpointFilter, statusFilter, searchQuery, sortBy, configuredProviderIds]);
 
   // Code Snippet Generator
   const generateSnippet = (p: Provider, lang: 'curl' | 'typescript' | 'python') => {
@@ -157,7 +211,7 @@ headers = {
 }
 payload = ${JSON.stringify({ provider: p.id, params: meta.sampleParams }, null, 4)}
 
-response = requests.post(url, headers=headers, json=payload)
+response = requests.post(url, json=payload, headers=headers)
 print(response.json())`;
     }
 
@@ -165,324 +219,379 @@ print(response.json())`;
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 selection:bg-emerald-500 selection:text-slate-950">
-      
-      {/* Top Banner / Metrics */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-r from-emerald-950/30 via-slate-900/90 to-slate-900 border border-emerald-500/20 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="space-y-2 max-w-2xl relative z-10">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>BYOK Infrastructure Router</span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <span>Provider Catalog</span>
-            <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-normal border border-slate-700">
-              Unified Tool Gateway
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 font-sans selection:bg-lime-400 selection:text-zinc-950">
+
+      {/* ── HEADER BANNER & SUMMARY STATS BAR ───────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+        <div className="space-y-1.5 max-w-2xl">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-lime-500/10 border border-lime-500/20 text-lime-600 dark:text-lime-400 text-xs font-mono font-bold flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-lime-500" />
+              </span>
+              <span>{providers.length || 36} Active Adapters</span>
             </span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+            <Layers className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+            <span>Provider Catalog &amp; Native Adapters</span>
           </h1>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            Explore supported scraping, search, browser, and sandbox providers. Connect your API keys to enable automatic failovers.
+
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
+            Unified proxy routing across search engines, scraping engines, headless browsers, document parsers, and sandboxes.
           </p>
         </div>
 
-        {/* Quick Stat Cards */}
-        <div className="grid grid-cols-2 gap-3 relative z-10 font-mono text-xs shrink-0">
-          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">NATIVE ADAPTERS</span>
-            <div className="text-xl font-bold text-white">{providers.length || 36}</div>
+        {/* Action Pills Bar */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 text-xs font-mono font-semibold flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
+            <Key className="w-4 h-4 text-emerald-500" />
+            <span>Your Keys Connected: <strong className="text-emerald-600 dark:text-emerald-400">{userConfiguredKeysCount} Configured</strong></span>
           </div>
-          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-            <span className="text-slate-500 text-[10px] uppercase">YOUR KEYS</span>
-            <div className="text-xl font-bold text-emerald-400 flex items-center gap-1.5">
-              <Key className="w-4 h-4 text-emerald-400" />
-              {userConfiguredKeysCount} Keys Connected
-            </div>
-          </div>
+
+          <button
+            onClick={() => setIsRequestModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs font-mono flex items-center gap-1.5 transition-all shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Request Adapter</span>
+          </button>
         </div>
       </div>
 
-      {/* Control Bar: Search, Filters & Sorting */}
-      <div className="space-y-4">
+      {/* ── UNIFIED FILTER TOOLBAR, SEARCH & VIEW SWITCHER ──────────────────── */}
+      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none space-y-4">
         
-        {/* Search and Sort Row */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Top Row: Search Input & View Switcher Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           
-          {/* Dynamic Search Box */}
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[280px]">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search ${filteredProviders.length} providers by name, capability (e.g. Markdown, SERP, CDP), or endpoint...`}
-              className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 font-mono text-xs transition-colors"
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search 36 providers by name, capability, or endpoint..."
+              className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs placeholder-zinc-400 focus:border-lime-500 focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-3 text-slate-500 hover:text-slate-300 p-0.5"
+                className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          {/* Controls: Status & Sorting */}
-          <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
-            
-            {/* Status Filter Dropdown */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e: any) => setStatusFilter(e.target.value)}
-              className="px-3 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-slate-300 font-mono text-xs focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+              onChange={e => setStatusFilter(e.target.value as any)}
+              className="px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:border-lime-500 focus:outline-none font-mono"
             >
-              <option value="all">All Status ({providers.length})</option>
-              <option value="live">Live Only ({liveCount})</option>
+              <option value="all">All Status</option>
+              <option value="configured">Connected Only</option>
+              <option value="unconfigured">Not Configured</option>
             </select>
 
             {/* Sort Dropdown */}
-            <div className="flex items-center space-x-2 bg-[#121620] border border-slate-800 px-3 py-2 rounded-xl text-xs font-mono text-slate-300">
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-              <select
-                value={sortBy}
-                onChange={(e: any) => setSortBy(e.target.value)}
-                className="bg-transparent text-slate-300 focus:outline-none cursor-pointer"
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+              className="px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:border-lime-500 focus:outline-none font-mono"
+            >
+              <option value="name">Sort by Name</option>
+              <option value="speed">Sort by Speed</option>
+            </select>
+
+            {/* Dual View Mode Switcher */}
+            <div className="flex items-center p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 shrink-0 font-mono">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+                title="Grid View"
               >
-                <option value="name">Name: A to Z</option>
-                <option value="speed">Speed: Fastest First</option>
-              </select>
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Grid</span>
+              </button>
+
+              <button
+                onClick={() => setViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'table'
+                    ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+                title="Table View"
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>Table</span>
+              </button>
             </div>
 
-            {/* Refresh */}
-            <button
-              onClick={loadData}
-              disabled={loading}
-              className="p-2.5 rounded-xl bg-[#121620] hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-              title="Refresh provider status"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
           </div>
         </div>
 
-        {/* Endpoint Category Filter Badges */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none font-mono text-xs">
+        {/* Bottom Row: Endpoint Category Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none font-mono">
           {[
-            { id: 'all', label: 'All Endpoints', count: providers.length },
-            { id: 'scrape', label: '/v1/scrape', count: providers.filter(p => p.endpoint === 'scrape').length, color: 'text-emerald-400' },
-            { id: 'document', label: '/v1/document', count: providers.filter(p => p.endpoint === 'document').length, color: 'text-amber-400' },
-            { id: 'search', label: '/v1/search', count: providers.filter(p => p.endpoint === 'search').length, color: 'text-teal-400' },
-            { id: 'browser', label: '/v1/browser', count: providers.filter(p => p.endpoint === 'browser').length, color: 'text-cyan-400' },
-            { id: 'execute', label: '/v1/execute', count: providers.filter(p => p.endpoint === 'execute').length, color: 'text-purple-400' },
-          ].map(badge => {
-            const isSelected = endpointFilter === badge.id;
+            { id: 'all', label: `All Endpoints (${countsByEndpoint.all})` },
+            { id: 'scrape', label: `/v1/scrape (${countsByEndpoint.scrape || 12})` },
+            { id: 'document', label: `/v1/document (${countsByEndpoint.document || 4})` },
+            { id: 'search', label: `/v1/search (${countsByEndpoint.search || 11})` },
+            { id: 'browser', label: `/v1/browser (${countsByEndpoint.browser || 4})` },
+            { id: 'execute', label: `/v1/execute (${countsByEndpoint.execute || 5})` },
+          ].map(tab => {
+            const isActive = endpointFilter === tab.id;
             return (
               <button
-                key={badge.id}
-                onClick={() => setEndpointFilter(badge.id as any)}
-                className={`px-3.5 py-1.5 rounded-xl border transition-all flex items-center space-x-2 whitespace-nowrap ${
-                  isSelected
-                    ? 'bg-slate-800 text-white border-emerald-500/50 shadow-sm'
-                    : 'bg-[#121620]/60 text-slate-400 border-slate-800/80 hover:border-slate-700 hover:text-slate-200'
+                key={tab.id}
+                onClick={() => setEndpointFilter(tab.id as any)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  isActive
+                    ? 'bg-lime-400 text-zinc-950 font-bold shadow-sm'
+                    : 'bg-zinc-100 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 border border-zinc-200 dark:border-zinc-700/50'
                 }`}
               >
-                <span className={badge.color || 'text-white'}>{badge.label}</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 font-bold">
-                  {badge.count}
-                </span>
+                {tab.label}
               </button>
             );
           })}
         </div>
+
       </div>
 
-      {/* Main Table */}
+      {/* ── LOADING / ERROR / RESULTS DISPLAY ─────────────────────────────────── */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center h-64 text-slate-500 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-          <p className="font-mono text-xs">Loading provider network live status...</p>
+        <div className="flex items-center justify-center h-48 text-zinc-500 dark:text-zinc-400 font-mono text-xs">
+          <Loader2 className="w-5 h-5 animate-spin mr-2 text-lime-500" /> Loading provider adapters catalog…
         </div>
       ) : error ? (
-        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-6 text-sm text-rose-400 text-center flex items-center justify-center gap-2">
-          <AlertCircle className="w-5 h-5" />
-          <span>{error}</span>
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2 font-mono">
+          <AlertCircle className="w-4 h-4" /> {error}
         </div>
       ) : filteredProviders.length === 0 ? (
-        <div className="rounded-2xl glass-card border border-slate-800 p-12 text-center space-y-3">
-          <Filter className="w-10 h-10 text-slate-700 mx-auto" />
-          <p className="text-slate-300 text-sm font-semibold">No providers match your search filters.</p>
-          <p className="text-slate-500 text-xs font-mono">Try adjusting your query or resetting status/endpoint filters.</p>
+        <div className="rounded-2xl p-12 text-center bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-zinc-500 space-y-2">
+          <Search className="w-8 h-8 text-zinc-400 mx-auto" />
+          <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">No adapters matched your query</p>
           <button
             onClick={() => { setSearchQuery(''); setEndpointFilter('all'); setStatusFilter('all'); }}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-emerald-400 border border-slate-700"
+            className="text-xs text-lime-600 dark:text-lime-400 font-bold hover:underline"
           >
-            Reset Filters
+            Clear catalog filters
           </button>
         </div>
+      ) : viewMode === 'grid' ? (
+        
+        /* ── DYNAMIC 3-COLUMN RESPONSIVE CARD GRID VIEW ─────────────────────── */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredProviders.map(p => {
+            const meta = PROVIDER_META[p.id] || {
+              description: 'Standard AI Tool Provider Adapter.',
+              website: 'https://litedaemon.com',
+              latency: '~450ms',
+              capabilities: ['REST Proxy', 'JSON Output'],
+              iconBg: 'from-zinc-500/20 to-zinc-700/20 text-zinc-300 border-zinc-700'
+            };
+            const isConfigured = configuredProviderIds.has(p.id);
+
+            return (
+              <div
+                key={p.id}
+                className="relative flex flex-col justify-between p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 hover:border-lime-500/50 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] transition-all group font-sans"
+              >
+                <div className="space-y-3.5">
+                  {/* Card Top Row: Brand Logo + Provider Name + Docs Link + Endpoint Tag */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <ProviderBrandIcon providerId={p.id} name={p.name} />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-extrabold text-base text-zinc-900 dark:text-zinc-100 group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">
+                            {p.name}
+                          </h3>
+                          <a
+                            href={meta.website}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                            title="Provider Documentation"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                        <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 block capitalize">
+                          {p.adapter_type || 'native'} adapter
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border shrink-0 ${ENDPOINT_BADGE[p.endpoint] || 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'}`}>
+                      {p.endpoint}
+                    </span>
+                  </div>
+
+                  {/* Provider Description */}
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                    {meta.description}
+                  </p>
+
+                  {/* Capability Tags */}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {meta.capabilities.slice(0, 3).map((cap, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 text-[10px] font-mono font-medium text-zinc-600 dark:text-zinc-400"
+                      >
+                        {cap}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card Footer Row */}
+                <div className="pt-4 mt-4 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between font-mono text-xs">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-lime-500" />
+                    {meta.latency} SYNC
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {isConfigured ? (
+                      <button
+                        onClick={() => navigate('/keys')}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1"
+                      >
+                        <Check className="w-3 h-3" /> Connected
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => navigate('/keys')}
+                        className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold text-[10px] border border-zinc-200 dark:border-zinc-700"
+                      >
+                        + Add Key
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setSelectedProvider(p)}
+                      className="px-2.5 py-1 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-[10px] flex items-center gap-1 transition-all shadow-sm"
+                    >
+                      <Code2 className="w-3 h-3" /> Code
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
       ) : (
-        <div className="rounded-2xl glass-card border border-slate-800/80 overflow-hidden shadow-2xl space-y-0">
+
+        /* ── COMPACT TABLE VIEW ────────────────────────────────────────────────── */
+        <div className="rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 overflow-hidden shadow-sm dark:shadow-none font-sans">
           <div className="overflow-x-auto">
-            <table className="w-full text-left font-mono text-xs border-collapse">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[11px]">
-                  <th className="p-4 pl-6">Provider</th>
-                  <th className="p-4">Endpoint</th>
-                  <th className="p-4">Capabilities</th>
-                  <th className="p-4">Latency</th>
-                  <th className="p-4 text-right">BYOK COST MODEL</th>
-                  <th className="p-4 text-center">Status</th>
-                  <th className="p-4 pr-6 text-right">Actions</th>
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <th className="py-3.5 px-4 font-semibold">PROVIDER</th>
+                  <th className="py-3.5 px-4 font-semibold">ENDPOINT</th>
+                  <th className="py-3.5 px-4 font-semibold">CAPABILITIES</th>
+                  <th className="py-3.5 px-4 font-semibold">LATENCY</th>
+                  <th className="py-3.5 px-4 font-semibold">STATUS</th>
+                  <th className="py-3.5 px-4 font-semibold text-right">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {filteredProviders.map((p) => {
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-xs">
+                {filteredProviders.map(p => {
                   const meta = PROVIDER_META[p.id] || {
-                    description: '', website: '#', latency: '~1.0s',
-                    capabilities: [], iconBg: 'bg-slate-800 text-slate-300'
+                    description: 'Standard Adapter',
+                    website: 'https://litedaemon.com',
+                    latency: '~450ms',
+                    capabilities: ['JSON'],
                   };
-                  const epBadge = ENDPOINT_BADGE[p.endpoint] || ENDPOINT_BADGE.scrape;
-                  const isSelected = selectedProvider?.id === p.id;
-                  const hasKey = configuredProviderIds.has(p.id);
+                  const isConfigured = configuredProviderIds.has(p.id);
 
                   return (
                     <tr
                       key={p.id}
-                      onClick={() => setSelectedProvider(p)}
-                      className={`hover:bg-slate-800/40 transition-colors cursor-pointer group ${
-                        isSelected ? 'bg-emerald-500/10' : ''
-                      } ${!p.is_live ? 'opacity-65' : ''}`}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
                     >
-                      {/* Provider Name + Avatar + ID */}
-                      <td className="p-4 pl-6">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-sm bg-gradient-to-br ${meta.iconBg}`}>
-                            {p.name.slice(0, 2).toUpperCase()}
-                          </div>
+                      {/* Provider Logo + Name */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <ProviderBrandIcon providerId={p.id} name={p.name} />
                           <div>
-                            <div className="font-bold text-white group-hover:text-emerald-400 transition-colors text-sm flex items-center gap-1.5">
-                              <span>{p.name}</span>
-                              <a
-                                href={meta.website}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-slate-600 hover:text-slate-300"
-                                title="Open provider website"
-                              >
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            </div>
-                            <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                              id: <span className="text-slate-400">{p.id}</span>
-                            </div>
+                            <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100 block">
+                              {p.name}
+                            </span>
+                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate max-w-xs block font-sans">
+                              {meta.description}
+                            </span>
                           </div>
                         </div>
                       </td>
 
-                      {/* Endpoint Badge */}
-                      <td className="p-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold border ${epBadge.bg} ${epBadge.text} ${epBadge.border}`}>
-                          {epBadge.label}
+                      {/* Endpoint */}
+                      <td className="py-3.5 px-4 font-mono">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${ENDPOINT_BADGE[p.endpoint] || 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'}`}>
+                          {p.endpoint}
                         </span>
                       </td>
 
-                      {/* Capabilities Pills */}
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-1.5 max-w-xs">
-                          {(meta.capabilities || []).slice(0, 3).map((cap, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300"
-                            >
+                      {/* Capabilities */}
+                      <td className="py-3.5 px-4 font-mono">
+                        <div className="flex flex-wrap gap-1">
+                          {meta.capabilities.slice(0, 2).map((cap, i) => (
+                            <span key={i} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                               {cap}
                             </span>
                           ))}
-                          {(meta.capabilities || []).length > 3 && (
-                            <span className="px-1.5 py-0.5 rounded bg-slate-900 text-[10px] text-slate-500">
-                              +{(meta.capabilities || []).length - 3}
-                            </span>
-                          )}
                         </div>
                       </td>
 
-                      {/* Latency & Mode */}
-                      <td className="p-4 text-slate-300">
-                        <div className="flex items-center space-x-1.5">
-                          <span className="text-white font-semibold">{meta.latency || '~800ms'}</span>
-                          <span className={`text-[9px] uppercase px-1.5 py-0.2 rounded border font-bold ${
-                            p.response_type === 'async'
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                              : 'bg-slate-800 text-slate-400 border-slate-700'
-                          }`}>
-                            {p.response_type}
-                          </span>
-                        </div>
+                      {/* Latency */}
+                      <td className="py-3.5 px-4 font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                        {meta.latency}
                       </td>
 
-                      {/* Dynamic BYOK Cost Model Column */}
-                      <td className="p-4 text-right">
-                        {hasKey ? (
-                          <>
-                            <div className="text-xs font-bold text-emerald-400">Key Active</div>
-                            <div className="text-[10px] text-emerald-500/80">0% Gateway Markup</div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-xs font-semibold text-slate-400">BYOK Required</div>
-                            <div className="text-[10px] text-slate-500">No key connected</div>
-                          </>
-                        )}
-                      </td>
-
-                      {/* User Key Status Badge with Aligned Flex Indicators */}
-                      <td className="p-4 text-center">
-                        {hasKey ? (
-                          <span className="inline-flex items-center justify-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <span className="relative flex h-1.5 w-1.5">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                            </span>
-                            <span>Connected</span>
+                      {/* Status */}
+                      <td className="py-3.5 px-4 font-mono">
+                        {isConfigured ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                            ✓ Connected
                           </span>
                         ) : (
-                          <span className="inline-flex items-center justify-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-slate-500 border border-slate-800">
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-                            <span>Not Configured</span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-[10px]">
+                            Not Configured
                           </span>
                         )}
                       </td>
 
-                      {/* Action Buttons */}
-                      <td className="p-4 pr-6 text-right">
-                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                          {hasKey ? (
-                            <>
-                              <button
-                                onClick={() => navigate('/keys')}
-                                className="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition-colors flex items-center gap-1"
-                              >
-                                <Key className="w-3 h-3" />
-                                Manage Key
-                              </button>
-                              <button
-                                onClick={() => setSelectedProvider(p)}
-                                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-700 transition-colors flex items-center gap-1"
-                              >
-                                <Code2 className="w-3 h-3 text-emerald-400" />
-                                &lt;/&gt; Code
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={() => navigate(`/keys?provider=${p.id}`)}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-sm flex items-center gap-1"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              Add Key
-                            </button>
-                          )}
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right font-mono">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => navigate('/keys')}
+                            className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[10px] font-bold border border-zinc-200 dark:border-zinc-700"
+                          >
+                            + Add Key
+                          </button>
+                          <button
+                            onClick={() => setSelectedProvider(p)}
+                            className="px-2.5 py-1 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-[10px]"
+                          >
+                            Code
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -491,306 +600,222 @@ print(response.json())`;
               </tbody>
             </table>
           </div>
-
-          {/* Full-Width Custom Provider Banner Callout Card */}
-          <div className="p-6 bg-gradient-to-r from-[#0d1117] via-slate-900 to-[#0d1117] border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-emerald-400" />
-                <h4 className="text-sm font-bold text-white">Need a custom tool or unlisted provider?</h4>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                LiteDaemon supports custom REST proxies and custom webhook adapters for internal AI agent workflows.
-              </p>
-            </div>
-            <button
-              onClick={() => { setIsRequestModalOpen(true); setCustomSubmitted(null); }}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 hover:text-emerald-300 text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              + Request Adapter / Add Custom Proxy
-            </button>
-          </div>
         </div>
       )}
 
-      {/* ── Custom Request & Proxy Modal (Dialog) ───────────────────────────── */}
-      {isRequestModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-lg bg-[#0d1117] border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl font-mono text-xs">
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-2">
-                <Wrench className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-white">Custom Adapter &amp; REST Proxy</h3>
-              </div>
-              <button
-                onClick={() => setIsRequestModalOpen(false)}
-                className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Tabs */}
-            <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
-              <button
-                onClick={() => setCustomModalTab('request')}
-                className={`flex-1 py-2 text-center rounded-lg transition-all font-semibold ${
-                  customModalTab === 'request'
-                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Request Adapter
-              </button>
-              <button
-                onClick={() => setCustomModalTab('proxy')}
-                className={`flex-1 py-2 text-center rounded-lg transition-all font-semibold ${
-                  customModalTab === 'proxy'
-                    ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Custom Proxy
-              </button>
-            </div>
-
-            {customSubmitted ? (
-              <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto animate-bounce" />
-                <p className="text-emerald-300 font-semibold text-xs leading-relaxed">{customSubmitted}</p>
-              </div>
-            ) : (
-              <form onSubmit={handleCustomSubmit} className="space-y-4">
-                {customModalTab === 'request' ? (
-                  <>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Provider Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={customFormState.name}
-                        onChange={e => setCustomFormState({ ...customFormState, name: e.target.value })}
-                        placeholder="e.g. Fal.ai / ElevenLabs / Firecrawl V2"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">API Documentation URL</label>
-                      <input
-                        type="url"
-                        required
-                        value={customFormState.url}
-                        onChange={e => setCustomFormState({ ...customFormState, url: e.target.value })}
-                        placeholder="https://docs.example.com/api"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Endpoint Base URL</label>
-                      <input
-                        type="url"
-                        required
-                        value={customFormState.url}
-                        onChange={e => setCustomFormState({ ...customFormState, url: e.target.value })}
-                        placeholder="https://my-internal-proxy.company.com/v1"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-300 font-semibold">Auth Header Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={customFormState.authHeader}
-                        onChange={e => setCustomFormState({ ...customFormState, authHeader: e.target.value })}
-                        placeholder="Authorization or X-API-Key"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="pt-3 flex items-center justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsRequestModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>{customModalTab === 'request' ? 'Submit Request' : 'Save Custom Proxy'}</span>
-                  </button>
-                </div>
-              </form>
-            )}
-
-          </div>
-        </div>
-      )}
-
-      {/* ── Slide-Over Code & Detail Drawer ────────────────────────────────── */}
+      {/* ── CODE SNIPPET INSPECTOR SLIDE-OVER DRAWER ────────────────────────── */}
       {selectedProvider && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+        <div
+          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex justify-end"
+          onClick={() => setSelectedProvider(null)}
+        >
           <div
-            className="absolute inset-0"
-            onClick={() => setSelectedProvider(null)}
-          />
-
-          <div className="relative w-full max-w-2xl bg-[#0a0d14] border-l border-slate-800 h-full overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl z-10">
-            
-            {/* Header */}
-            <div className="flex items-start justify-between border-b border-slate-800 pb-5">
-              <div className="flex items-center space-x-4">
-                <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center font-bold text-lg bg-gradient-to-br ${PROVIDER_META[selectedProvider.id]?.iconBg}`}>
-                  {selectedProvider.name.slice(0, 2).toUpperCase()}
-                </div>
+            className="w-full max-w-xl bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 h-screen flex flex-col justify-between p-6 overflow-hidden shadow-2xl font-sans"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="space-y-2 border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <ProviderBrandIcon providerId={selectedProvider.id} name={selectedProvider.name} />
                 <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span>{selectedProvider.name}</span>
-                    <a
-                      href={PROVIDER_META[selectedProvider.id]?.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-slate-500 hover:text-slate-300"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </h2>
-                  <div className="flex items-center space-x-2 mt-1 font-mono text-xs">
-                    <span className="text-slate-500">id: {selectedProvider.id}</span>
-                    <button
-                      onClick={() => copyToClipboard(selectedProvider.id, 'provider_id')}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
-                    >
-                      {copiedField === 'provider_id' ? 'Copied!' : 'Copy ID'}
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100">{selectedProvider.name}</h2>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${ENDPOINT_BADGE[selectedProvider.endpoint]}`}>
+                      {selectedProvider.endpoint}
+                    </span>
                   </div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">
+                    Native LiteDaemon REST Proxy Adapter
+                  </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelectedProvider(null)}
-                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Provider Spec Badges */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Endpoint</span>
-                <div className="text-emerald-400 font-bold">/v1/{selectedProvider.endpoint}</div>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Billing Model</span>
-                <div className="text-white font-bold">Pure BYOK</div>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Est. Latency</span>
-                <div className="text-teal-400 font-bold">{PROVIDER_META[selectedProvider.id]?.latency}</div>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Execution</span>
-                <div className="text-white font-bold uppercase">{selectedProvider.response_type}</div>
-              </div>
-            </div>
-
-            {/* Overview Description */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-mono font-bold uppercase text-slate-400">Adapter Overview</h3>
-              <p className="text-slate-300 text-xs leading-relaxed p-4 rounded-xl bg-[#121620]/60 border border-slate-800/80">
-                {PROVIDER_META[selectedProvider.id]?.description}
-              </p>
-            </div>
-
-            {/* Capability Badges */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-mono font-bold uppercase text-slate-400">Supported Capabilities</h3>
-              <div className="flex flex-wrap gap-2">
-                {(PROVIDER_META[selectedProvider.id]?.capabilities || []).map((cap, i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-xs flex items-center gap-1.5"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>{cap}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Code Snippet Inspector */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-mono font-bold uppercase text-slate-400 flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-emerald-400" />
-                  <span>Integration Code Snippet</span>
-                </h3>
-
-                <div className="flex items-center space-x-1 bg-[#121620] p-1 rounded-lg border border-slate-800 font-mono text-[11px]">
-                  {(['curl', 'typescript', 'python'] as const).map((lang) => (
+            {/* Code Snippet Drawer Body */}
+            <div className="overflow-y-auto flex-1 py-6 space-y-6">
+              
+              {/* Language Tabs */}
+              <div className="flex items-center justify-between font-mono text-xs">
+                <div className="flex gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  {(['curl', 'typescript', 'python'] as const).map(lang => (
                     <button
                       key={lang}
                       onClick={() => setCodeTab(lang)}
-                      className={`px-2.5 py-1 rounded-md transition-colors capitalize ${
-                        codeTab === lang ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                      className={`px-3 py-1.5 rounded-lg font-bold capitalize transition-all ${
+                        codeTab === lang
+                          ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }`}
                     >
-                      {lang === 'typescript' ? 'TypeScript' : lang === 'python' ? 'Python' : 'cURL'}
+                      {lang}
                     </button>
                   ))}
                 </div>
+
+                <button
+                  onClick={() => copyToClipboard(generateSnippet(selectedProvider, codeTab), 'snippet')}
+                  className="flex items-center gap-1.5 text-lime-600 dark:text-lime-400 font-bold hover:underline"
+                >
+                  {copiedField === 'snippet' ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Code</>}
+                </button>
               </div>
 
-              <div className="relative rounded-xl bg-[#080b10] border border-slate-800 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2 bg-slate-900/60 border-b border-slate-800/80 font-mono text-[10px] text-slate-400">
-                  <span>Endpoint: POST /v1/{selectedProvider.endpoint}</span>
-                  <button
-                    onClick={() => copyToClipboard(generateSnippet(selectedProvider, codeTab), 'code_snippet')}
-                    className="flex items-center space-x-1.5 text-emerald-400 hover:text-emerald-300 font-semibold"
-                  >
-                    {copiedField === 'code_snippet' ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy Code</span>
-                      </>
-                    )}
-                  </button>
+              {/* Code Display */}
+              <pre className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed max-h-96">
+                {generateSnippet(selectedProvider, codeTab)}
+              </pre>
+
+              {/* Direct BYOK Routing Specs */}
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs font-mono">
+                <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 font-bold">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span>BYOK Multi-Key Rotation Support</span>
+                </div>
+                <p className="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed font-sans">
+                  LiteDaemon encrypts your raw {selectedProvider.name} API key with AES-256-GCM. Pass your single master key in headers, and LiteDaemon handles provider failover automatically.
+                </p>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 flex justify-between items-center font-mono text-xs">
+              <button
+                onClick={() => { setSelectedProvider(null); navigate('/keys'); }}
+                className="px-4 py-2 rounded-xl bg-lime-400 text-zinc-950 hover:bg-lime-300 font-bold flex items-center gap-1"
+              >
+                <Key className="w-3.5 h-3.5" /> Configure Key in Vault
+              </button>
+              <button
+                onClick={() => setSelectedProvider(null)}
+                className="px-4 py-2 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold"
+              >
+                Close Drawer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CUSTOM ADAPTER / REST PROXY REQUEST MODAL ───────────────────────── */}
+      {isRequestModalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 font-sans">
+          <div className="w-full max-w-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-5 shadow-2xl text-xs">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+              <div className="space-y-1">
+                <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-lime-500" /> Custom Adapter Workflow
+                </h3>
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                  Request a new native provider integration or register an instant REST proxy.
+                </p>
+              </div>
+              <button onClick={() => setIsRequestModalOpen(false)} className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Sub-Tabs */}
+            <div className="flex p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-mono">
+              <button
+                onClick={() => setCustomModalTab('request')}
+                className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                  customModalTab === 'request'
+                    ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+              >
+                + Request Provider Adapter
+              </button>
+              <button
+                onClick={() => setCustomModalTab('proxy')}
+                className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                  customModalTab === 'proxy'
+                    ? 'bg-lime-400 text-zinc-950 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+              >
+                ⚡ Register Custom REST Proxy
+              </button>
+            </div>
+
+            {/* Submission Banner */}
+            {customSubmitted ? (
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-xs space-y-1">
+                <div className="flex items-center gap-2 font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Success!
+                </div>
+                <p>{customSubmitted}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleCustomSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-800 dark:text-zinc-200 mb-1">
+                    {customModalTab === 'request' ? 'Provider / API Name' : 'Custom Proxy Service Name'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customFormState.name}
+                    onChange={e => setCustomFormState({ ...customFormState, name: e.target.value })}
+                    placeholder={customModalTab === 'request' ? 'e.g. Cohere Web Search, Browserless.io' : 'e.g. My Internal Scraping Microservice'}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none"
+                  />
                 </div>
 
-                <pre className="p-4 font-mono text-xs text-emerald-300 overflow-x-auto leading-relaxed max-h-80">
-                  {generateSnippet(selectedProvider, codeTab)}
-                </pre>
-              </div>
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-800 dark:text-zinc-200 mb-1">
+                    {customModalTab === 'request' ? 'Provider Website or Documentation URL' : 'Target Service Base URL'}
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    value={customFormState.url}
+                    onChange={e => setCustomFormState({ ...customFormState, url: e.target.value })}
+                    placeholder={customModalTab === 'request' ? 'https://provider.com/docs/api' : 'https://api.internal.domain/v1'}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none font-mono"
+                  />
+                </div>
 
-            {/* BYOK Gateway Info */}
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 space-y-1 font-mono">
-              <div className="text-slate-200 font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Pure BYOK Routing Engine</span>
-              </div>
-              <p>
-                Requests sent to <code className="text-emerald-400">/v1/{selectedProvider.endpoint}</code> with provider <code className="text-white">"{selectedProvider.id}"</code> use your configured BYOK keys with 0% platform markup.
-              </p>
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-800 dark:text-zinc-200 mb-1">
+                    Use Case Details / Header Auth Config
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={customFormState.useCase}
+                    onChange={e => setCustomFormState({ ...customFormState, useCase: e.target.value })}
+                    placeholder="Describe your target requirements or specific header authentication specs..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-3 font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setIsRequestModalOpen(false)}
+                    className="px-4 py-2 rounded-xl text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-md"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Submit Workflow
+                  </button>
+                </div>
+              </form>
+            )}
 
           </div>
         </div>

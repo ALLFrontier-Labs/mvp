@@ -4,6 +4,7 @@ import { Search, Sun, Moon } from 'lucide-react';
 import { Logo } from './Logo';
 import { CommandPalette } from './CommandPalette';
 import { ProfileDropdown } from './ProfileDropdown';
+import { WorkspaceModal, WorkspaceItem } from './WorkspaceModal';
 import { getStoredApiKey, clearStoredApiKey } from '../lib/api';
 import { useTheme } from '../context/ThemeContext';
 
@@ -11,7 +12,17 @@ export const Header: React.FC = () => {
   const location = useLocation();
   const navigate  = useNavigate();
   const apiKey    = getStoredApiKey();
-  const [isCmdOpen, setIsCmdOpen] = useState(false);
+  const [isCmdOpen, setIsCmdOpen]                     = useState(false);
+  const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
+  const [activeWorkspace, setActiveWorkspace]         = useState<WorkspaceItem>({
+    id: 'ws-personal',
+    name: 'Personal Workspace',
+    role: 'Owner',
+    calls: '10 Metered Calls',
+    balance: '$9.9500 Balance',
+    keysCount: 6,
+    billingType: 'Personal Prepaid',
+  });
   const { resolvedTheme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
@@ -119,13 +130,24 @@ export const Header: React.FC = () => {
                 Sign Up
               </Link>
             ) : (
-              <ProfileDropdown onLogout={handleLogout} />
+              <ProfileDropdown
+                onLogout={handleLogout}
+                activeWorkspaceName={activeWorkspace.name}
+                onOpenWorkspaces={() => setIsWorkspaceModalOpen(true)}
+              />
             )}
           </div>
         </div>
       </header>
 
       <CommandPalette isOpen={isCmdOpen} onClose={() => setIsCmdOpen(false)} />
+
+      <WorkspaceModal
+        isOpen={isWorkspaceModalOpen}
+        onClose={() => setIsWorkspaceModalOpen(false)}
+        activeWorkspaceId={activeWorkspace.id}
+        onSelectWorkspace={(ws) => setActiveWorkspace(ws)}
+      />
     </>
   );
 };

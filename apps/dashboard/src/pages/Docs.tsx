@@ -26,6 +26,7 @@ type SectionId =
   | 'execute'
   | 'document'
   | 'errors'
+  | 'sdks-hub'
   | 'sdk-ts'
   | 'sdk-python'
   | 'langchain'
@@ -178,7 +179,7 @@ export const Docs: React.FC = () => {
       setActiveSection('api-ref');
       navigate('/docs/api-reference');
     } else if (tab === 'sdks') {
-      setActiveSection('sdk-ts');
+      setActiveSection('sdks-hub');
       navigate('/docs/sdks');
     }
   };
@@ -221,6 +222,7 @@ export const Docs: React.FC = () => {
       group: 'OFFICIAL SDKS',
       tab: 'sdks',
       items: [
+        { id: 'sdks-hub', label: 'SDKs Landing Hub' },
         { id: 'sdk-ts', label: 'TypeScript / Node.js' },
         { id: 'sdk-python', label: 'Python SDK' },
       ],
@@ -800,32 +802,42 @@ print(response.json())`,
             </div>
           )}
 
-          {/* SECTION 7: API REFERENCE INDEX */}
+          {/* SECTION 7: API REFERENCE LANDING HUB */}
           {activeSection === 'api-ref' && (
-            <div className="space-y-6 animate-in fade-in">
+            <div className="space-y-8 animate-in fade-in">
               <div>
-                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / INDEX</span>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / HUB</span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Unified API Reference</h2>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
-                  Complete OpenAPI specification for LiteDaemon's 5 core adapter routes across 36+ underlying tool providers.
+                  Standardized HTTP REST endpoints for web scraping, neural search, cloud browsers, sandbox execution, and document parsing across 36+ underlying tool providers.
                 </p>
               </div>
 
               {/* Base Gateway Card */}
               <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 text-zinc-100 space-y-4 font-mono text-xs shadow-2xl">
-                <span className="text-lime-400 font-bold uppercase tracking-wider block text-[11px]">
-                  🌐 Base Gateway Endpoint URL
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-lime-400 font-bold uppercase tracking-wider block text-[11px]">
+                    🌐 Base Gateway Endpoint URL
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-md bg-lime-400/10 text-lime-400 border border-lime-400/20 text-[10px] font-bold">PRODUCTION EDGE ROUTER</span>
+                </div>
                 <div className="flex items-center gap-2 bg-zinc-900 p-3.5 rounded-xl border border-zinc-800">
                   <code className="flex-1 text-xs text-lime-400 font-mono">https://mvp-production-c1e8.up.railway.app/v1</code>
-                  <span className="px-2.5 py-0.5 rounded-md bg-lime-400/10 text-lime-400 border border-lime-400/20 text-[10px] font-bold">PRODUCTION GATEWAY</span>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText('https://mvp-production-c1e8.up.railway.app/v1')}
+                    className="px-3 py-1.5 rounded-lg bg-lime-400 text-zinc-950 font-bold text-[11px] hover:bg-lime-300 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Base URL</span>
+                  </button>
                 </div>
               </div>
 
               {/* Required Headers Table */}
               <div className="space-y-3 font-mono text-xs">
                 <span className="font-bold uppercase tracking-wider text-zinc-400 block text-[11px]">
-                  Required Request HTTP Headers:
+                  Required HTTP Headers:
                 </span>
                 <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                   <table className="w-full text-left border-collapse">
@@ -856,6 +868,193 @@ print(response.json())`,
                   </table>
                 </div>
               </div>
+
+              {/* Interactive Endpoint Grid */}
+              <div className="space-y-4">
+                <span className="font-mono font-bold uppercase tracking-wider text-zinc-400 block text-xs">
+                  Unified Core API Endpoints:
+                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* Card 1: /v1/search */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold border border-emerald-500/20">POST /v1/search</span>
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold">Search Proxy</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <span>🔍 Search &amp; Neural Retrieval</span>
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                        Unified web search proxy across Tavily, Exa, Serper, and Google Custom Search.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-2 font-mono text-[10px]">
+                        {['Tavily', 'Exa', 'Serper', 'Brave'].map(p => (
+                          <span key={p} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold border border-zinc-200 dark:border-zinc-700">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('search')}
+                      className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore Endpoint Docs →</span>
+                    </button>
+                  </div>
+
+                  {/* Card 2: /v1/scrape */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold border border-emerald-500/20">POST /v1/scrape</span>
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold">Web Scraper</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <span>🌐 Web Scrape &amp; Markdown</span>
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                        Clean Markdown &amp; HTML extraction with automated anti-bot bypass and proxy rotation.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-2 font-mono text-[10px]">
+                        {['Firecrawl', 'Jina', 'Spider', 'Apify'].map(p => (
+                          <span key={p} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold border border-zinc-200 dark:border-zinc-700">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('scrape')}
+                      className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore Endpoint Docs →</span>
+                    </button>
+                  </div>
+
+                  {/* Card 3: /v1/browser */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold border border-emerald-500/20">POST /v1/browser</span>
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold">Cloud Browser</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <span>🖥️ Headless Browser Sessions</span>
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                        Headless browser automation, Puppeteer WebSocket sessions, and screenshot capture.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-2 font-mono text-[10px]">
+                        {['Steel', 'Browserbase', 'Browserless'].map(p => (
+                          <span key={p} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold border border-zinc-200 dark:border-zinc-700">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('browser')}
+                      className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore Endpoint Docs →</span>
+                    </button>
+                  </div>
+
+                  {/* Card 4: /v1/execute */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold border border-emerald-500/20">POST /v1/execute</span>
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold">Code Sandbox</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <span>⚡ Isolated Code Sandboxes</span>
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                        Isolated Python and JavaScript code sandbox execution environments.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-2 font-mono text-[10px]">
+                        {['E2B', 'Daytona', 'Modal'].map(p => (
+                          <span key={p} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold border border-zinc-200 dark:border-zinc-700">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('execute')}
+                      className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore Endpoint Docs →</span>
+                    </button>
+                  </div>
+
+                  {/* Card 5: /v1/document */}
+                  <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all col-span-1 md:col-span-2">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold border border-emerald-500/20">POST /v1/document</span>
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold">Document Parser</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <span>📄 Document Parsing &amp; OCR</span>
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                        Convert PDF, DOCX, and scanned image documents into clean structured text and tables.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 pt-2 font-mono text-[10px]">
+                        {['LlamaParse', 'Unstructured'].map(p => (
+                          <span key={p} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold border border-zinc-200 dark:border-zinc-700">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('document')}
+                      className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore Endpoint Docs →</span>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Gateway Architecture Matrix */}
+              <div className="space-y-3 font-mono text-xs pt-4">
+                <span className="font-bold uppercase tracking-wider text-zinc-400 block text-[11px]">
+                  Gateway Performance &amp; SLA Metrics:
+                </span>
+                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Gateway Rate Limit</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">600 req/min (Pro) • Custom (Enterprise)</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Proxy Overhead Latency</td>
+                        <td className="p-3 text-cyan-600 dark:text-cyan-400 font-bold">~12ms Average Global Latency</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Status Codes</td>
+                        <td className="p-3 text-lime-600 dark:text-lime-400 font-bold">200 (Success) • 401 (Auth) • 402 (Balance) • 429 (Rate) • 502 (Upstream)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -1137,6 +1336,157 @@ print(response.json())`
                   </table>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* SECTION 13.5: OFFICIAL SDKS LANDING HUB */}
+          {activeSection === 'sdks-hub' && (
+            <div className="space-y-8 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">OFFICIAL SDKS / OVERVIEW</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Official Client SDKs &amp; Libraries</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Type-safe, production-ready client libraries for Node.js, TypeScript, Python, and REST direct integrations.
+                </p>
+              </div>
+
+              {/* Language SDK Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Card 1: TypeScript / Node.js SDK */}
+                <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="px-2.5 py-1 rounded-lg bg-lime-400/10 text-lime-600 dark:text-lime-400 font-extrabold border border-lime-400/20">v1.4.0 • Stable</span>
+                      <span className="text-[10px] text-zinc-400 uppercase font-bold">NPM PACKAGE</span>
+                    </div>
+
+                    <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <span>TypeScript / Node.js SDK</span>
+                    </h3>
+
+                    <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-emerald-400 font-mono text-xs flex items-center justify-between">
+                      <code>npm install @litedaemon/sdk</code>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText('npm install @litedaemon/sdk')}
+                        className="p-1 text-zinc-400 hover:text-white"
+                        title="Copy command"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 font-mono text-[11px]">
+                      <span className="text-purple-400">import</span> &#123; LiteDaemon &#125; <span className="text-purple-400">from</span> <span className="text-emerald-400">'@litedaemon/sdk'</span>;<br/>
+                      <span className="text-blue-400">const</span> ld = <span className="text-blue-400">new</span> LiteDaemon();<br/>
+                      <span className="text-blue-400">const</span> res = <span className="text-purple-400">await</span> ld.search(&#123; query: <span className="text-emerald-400">'AI agents 2026'</span> &#125;);
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection('sdk-ts')}
+                    className="w-full py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-mono font-extrabold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-md"
+                  >
+                    <span>View TypeScript SDK Docs →</span>
+                  </button>
+                </div>
+
+                {/* Card 2: Python SDK */}
+                <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="px-2.5 py-1 rounded-lg bg-lime-400/10 text-lime-600 dark:text-lime-400 font-extrabold border border-lime-400/20">v1.2.1 • Stable</span>
+                      <span className="text-[10px] text-zinc-400 uppercase font-bold">PyPI PACKAGE</span>
+                    </div>
+
+                    <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <span>Python SDK</span>
+                    </h3>
+
+                    <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-emerald-400 font-mono text-xs flex items-center justify-between">
+                      <code>pip install litedaemon</code>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText('pip install litedaemon')}
+                        className="p-1 text-zinc-400 hover:text-white"
+                        title="Copy command"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 font-mono text-[11px]">
+                      <span className="text-purple-400">from</span> litedaemon <span className="text-purple-400">import</span> LiteDaemon<br/>
+                      ld = LiteDaemon()<br/>
+                      res = ld.scrape(url=<span className="text-emerald-400">"https://example.com"</span>, format=<span className="text-emerald-400">"markdown"</span>)
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection('sdk-python')}
+                    className="w-full py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-mono font-extrabold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-md"
+                  >
+                    <span>View Python SDK Docs →</span>
+                  </button>
+                </div>
+
+                {/* Card 3: AI Framework Adapters */}
+                <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-extrabold border border-cyan-500/20">LangChain • CrewAI • AutoGen</span>
+                      <span className="text-[10px] text-zinc-400 uppercase font-bold">FRAMEWORK WRAPPERS</span>
+                    </div>
+
+                    <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <span>🤖 AI Agent Framework Integration</span>
+                    </h3>
+
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                      Native tool wrappers to plug LiteDaemon unified BYOK proxy endpoints directly into your autonomous AI agent execution loops.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection('langchain')}
+                    className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>View Framework Guides →</span>
+                  </button>
+                </div>
+
+                {/* Card 4: Direct REST / cURL */}
+                <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-4 flex flex-col justify-between hover:border-lime-400/50 transition-all">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 font-extrabold border border-purple-500/20">HTTP / OpenAPI 3.0</span>
+                      <span className="text-[10px] text-zinc-400 uppercase font-bold">DIRECT REST</span>
+                    </div>
+
+                    <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <span>🌐 Direct REST HTTP API</span>
+                    </h3>
+
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
+                      Zero-dependency HTTP integration via standard REST POST requests in Go, Rust, Java, C#, or bash cURL scripts.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection('api-ref')}
+                    className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-lime-400 hover:text-zinc-950 font-mono font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>View cURL Quickstart →</span>
+                  </button>
+                </div>
+
+              </div>
+
             </div>
           )}
 
@@ -1437,6 +1787,7 @@ user_proxy.initiate_chat(
            activeSection !== 'execute' &&
            activeSection !== 'document' &&
            activeSection !== 'errors' &&
+           activeSection !== 'sdks-hub' &&
            activeSection !== 'sdk-ts' &&
            activeSection !== 'sdk-python' &&
            activeSection !== 'langchain' &&

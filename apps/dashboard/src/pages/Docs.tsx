@@ -20,6 +20,12 @@ type SectionId =
   | 'failover'
   | 'tools'
   | 'api-ref'
+  | 'search'
+  | 'scrape'
+  | 'browser'
+  | 'execute'
+  | 'document'
+  | 'errors'
   | 'sdk-ts'
   | 'sdk-python'
   | 'langchain'
@@ -154,8 +160,14 @@ export const Docs: React.FC = () => {
     {
       group: 'TOOL PROVIDERS & APIS',
       items: [
+        { id: 'api-ref', label: 'API Reference Index' },
+        { id: 'search', label: '/v1/search' },
+        { id: 'scrape', label: '/v1/scrape' },
+        { id: 'browser', label: '/v1/browser' },
+        { id: 'execute', label: '/v1/execute' },
+        { id: 'document', label: '/v1/document' },
+        { id: 'errors', label: 'Error Dictionary' },
         { id: 'tools', label: 'Supported Providers (36+)' },
-        { id: 'api-ref', label: 'API Reference' },
       ],
     },
     {
@@ -736,13 +748,360 @@ print(response.json())`,
             </div>
           )}
 
+          {/* SECTION 7: API REFERENCE INDEX */}
+          {activeSection === 'api-ref' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / INDEX</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Unified API Reference</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Complete OpenAPI specification for LiteDaemon's 5 core adapter routes across 36+ underlying tool providers.
+                </p>
+              </div>
+
+              {/* Base Gateway Card */}
+              <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 text-zinc-100 space-y-4 font-mono text-xs shadow-2xl">
+                <span className="text-lime-400 font-bold uppercase tracking-wider block text-[11px]">
+                  🌐 Base Gateway Endpoint URL
+                </span>
+                <div className="flex items-center gap-2 bg-zinc-900 p-3.5 rounded-xl border border-zinc-800">
+                  <code className="flex-1 text-xs text-lime-400 font-mono">https://mvp-production-c1e8.up.railway.app/v1</code>
+                  <span className="px-2.5 py-0.5 rounded-md bg-lime-400/10 text-lime-400 border border-lime-400/20 text-[10px] font-bold">PRODUCTION GATEWAY</span>
+                </div>
+              </div>
+
+              {/* Required Headers Table */}
+              <div className="space-y-3 font-mono text-xs">
+                <span className="font-bold uppercase tracking-wider text-zinc-400 block text-[11px]">
+                  Required Request HTTP Headers:
+                </span>
+                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 font-bold text-[11px]">
+                        <th className="p-3">HEADER KEY</th>
+                        <th className="p-3">VALUE / PATTERN</th>
+                        <th className="p-3">DESCRIPTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      <tr>
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Authorization</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">Bearer ld_live_...</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Master Gateway Bearer token</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Content-Type</td>
+                        <td className="p-3 text-cyan-600 dark:text-cyan-400 font-bold">application/json</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">JSON request payload format</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">X-Provider-Override</td>
+                        <td className="p-3 text-purple-600 dark:text-purple-400 font-bold">tavily | firecrawl | auto</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Optional upstream adapter override</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 8: /v1/search ENDPOINT GUIDE */}
+          {activeSection === 'search' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / SEARCH</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">POST /v1/search</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Unified web search and neural retrieval proxy across Tavily, Exa, Serper, Brave, and Perplexity.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 font-mono text-xs space-y-1">
+                <span className="text-zinc-400 text-[10px] uppercase font-bold block">Supported Upstream Adapters:</span>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {['Tavily', 'Exa', 'Serper', 'Brave Search', 'Google Custom', 'Perplexity'].map(p => (
+                    <span key={p} className="px-2.5 py-1 rounded-lg bg-lime-500/10 text-lime-600 dark:text-lime-400 border border-lime-500/20 font-bold">
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <CodeBlock
+                filename="search_request"
+                code={{
+                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "latest LLM reasoning benchmarks 2026", "max_results": 5, "search_depth": "advanced"}'`,
+                  typescript: `import { LiteDaemon } from '@litedaemon/sdk';
+
+const daemon = new LiteDaemon({ apiKey: 'YOUR_LITEDAEMON_KEY' });
+const response = await daemon.search({
+  query: 'latest LLM reasoning benchmarks 2026',
+  max_results: 5,
+  search_depth: 'advanced'
+});
+console.log(response.results);`,
+                  python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/search",
+    headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
+    json={"query": "latest LLM reasoning benchmarks 2026", "max_results": 5}
+)
+print(response.json())`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 9: /v1/scrape ENDPOINT GUIDE */}
+          {activeSection === 'scrape' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / SCRAPE</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">POST /v1/scrape</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Web scraping, clean Markdown extraction, and anti-bot stealth proxy across Firecrawl, Jina, Apify, and Spider.
+                </p>
+              </div>
+
+              <CodeBlock
+                filename="scrape_request"
+                code={{
+                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"url": "https://news.ycombinator.com", "formats": ["markdown"], "only_main_content": true}'`,
+                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://news.ycombinator.com',
+    formats: ['markdown'],
+    only_main_content: true
+  })
+});
+const data = await response.json();`,
+                  python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/scrape",
+    headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
+    json={"url": "https://news.ycombinator.com", "formats": ["markdown"]}
+)
+print(response.json())`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 10: /v1/browser ENDPOINT GUIDE */}
+          {activeSection === 'browser' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / BROWSER</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">POST /v1/browser</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Cloud headless Puppeteer/Playwright browser session automation across Steel Browser and Browserbase.
+                </p>
+              </div>
+
+              <CodeBlock
+                filename="browser_request"
+                code={{
+                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/browser \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"script": "await page.goto(\\"https://example.com\\");", "viewport": {"width": 1920, "height": 1080}}'`,
+                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/browser', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    script: 'await page.goto("https://example.com");',
+    viewport: { width: 1920, height: 1080 }
+  })
+});`,
+                  python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/browser",
+    headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
+    json={"script": "await page.goto('https://example.com');"}
+)
+print(response.json())`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 11: /v1/execute ENDPOINT GUIDE */}
+          {activeSection === 'execute' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / EXECUTE</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">POST /v1/execute</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Isolated cloud code execution sandboxes across E2B Sandbox, Daytona, and Modal Labs.
+                </p>
+              </div>
+
+              <CodeBlock
+                filename="execute_request"
+                code={{
+                  python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/execute",
+    headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
+    json={"language": "python", "code": "print('Hello from LiteDaemon Sandbox 2026!')", "timeout_seconds": 30}
+)
+print(response.json())`,
+                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/execute', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    language: 'javascript',
+    code: 'console.log("Hello from Sandbox!");',
+    timeout_seconds: 30
+  })
+});`,
+                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/execute \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"language": "python", "code": "print(\\"Hello from Sandbox!\\")"}'`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 12: /v1/document ENDPOINT GUIDE */}
+          {activeSection === 'document' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / DOCUMENT</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">POST /v1/document</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  PDF, DOCX, and image OCR parsing engine across LlamaParse, Unstructured.io, and Firecrawl Parse.
+                </p>
+              </div>
+
+              <CodeBlock
+                filename="document_request"
+                code={{
+                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/document \\
+  -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"document_url": "https://example.com/doc.pdf", "parsing_instruction": "Extract tabular financial metrics"}'`,
+                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/document', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    document_url: 'https://example.com/doc.pdf',
+    parsing_instruction: 'Extract tabular financial metrics'
+  })
+});`,
+                  python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/document",
+    headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
+    json={"document_url": "https://example.com/doc.pdf"}
+)
+print(response.json())`
+                }}
+              />
+            </div>
+          )}
+
+          {/* SECTION 13: GLOBAL ERROR DICTIONARY */}
+          {activeSection === 'errors' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">API REFERENCE / ERRORS</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Global Error Dictionary</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Standardized HTTP status codes and gateway mitigation triggers.
+                </p>
+              </div>
+
+              <div className="space-y-3 font-mono text-xs">
+                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 font-bold text-[11px]">
+                        <th className="p-3">HTTP CODE</th>
+                        <th className="p-3">NAME</th>
+                        <th className="p-3">DESCRIPTION &amp; GATEWAY MITIGATION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      <tr>
+                        <td className="p-3 text-amber-500 font-bold">400</td>
+                        <td className="p-3 text-zinc-900 dark:text-zinc-100 font-bold">Bad Request</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Invalid payload parameters or missing required query string.</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 text-rose-500 font-bold">401</td>
+                        <td className="p-3 text-zinc-900 dark:text-zinc-100 font-bold">Unauthorized</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Missing or invalid Master Gateway Bearer token.</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-amber-500 font-bold">402</td>
+                        <td className="p-3 text-zinc-900 dark:text-zinc-100 font-bold">Payment Required</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Insufficient prepaid routing wallet balance.</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 text-cyan-500 font-bold">429</td>
+                        <td className="p-3 text-zinc-900 dark:text-zinc-100 font-bold">Rate Limit Exceeded</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">⚡ Triggers automatic failover to secondary BYOK key.</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-purple-500 font-bold">502</td>
+                        <td className="p-3 text-zinc-900 dark:text-zinc-100 font-bold">Upstream Provider Error</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Upstream tool provider returned an error or timed out.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* FALLBACK FOR OTHER SECTIONS */}
           {activeSection !== 'quickstart' &&
            activeSection !== 'architecture' &&
            activeSection !== 'principles' &&
            activeSection !== 'keys-vault' &&
            activeSection !== 'key-encryption' &&
-           activeSection !== 'failover' && (
+           activeSection !== 'failover' &&
+           activeSection !== 'api-ref' &&
+           activeSection !== 'search' &&
+           activeSection !== 'scrape' &&
+           activeSection !== 'browser' &&
+           activeSection !== 'execute' &&
+           activeSection !== 'document' &&
+           activeSection !== 'errors' && (
             <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-4 font-mono text-xs">
               <span className="text-lime-500 font-bold uppercase tracking-wider text-[11px] block">DOCUMENTATION GUIDE</span>
               <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 capitalize">

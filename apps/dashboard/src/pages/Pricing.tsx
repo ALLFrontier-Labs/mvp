@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Check, X, ChevronDown, Sparkles
+  Check, X, ChevronDown, Sparkles, Shield, Zap, Key, Activity,
+  HelpCircle, CreditCard, ArrowRight, CheckCircle2, Lock
 } from 'lucide-react';
-import { getStoredApiKey } from '../lib/api';
+import { PricingCalculator } from '../components/PricingCalculator';
 
 interface FAQItem {
   q: string;
@@ -12,469 +13,280 @@ interface FAQItem {
 
 const FAQS: { category: string; items: FAQItem[] }[] = [
   {
-    category: 'Billing and Pricing',
+    category: 'BYOK Architecture & Billing',
     items: [
       {
         q: 'How does the BYOK (Bring Your Own Key) model work?',
-        a: 'LiteDaemon is a 100% BYOK tool engine gateway. You add your own API keys for Tavily, E2B, Firecrawl, Exa, Browserbase, or any of our 36+ supported tools into your encrypted vault. All tool calls route through your keys with 0% gateway fee markup.',
+        a: 'LiteDaemon is a 100% BYOK tool engine gateway. You add your direct API keys for Tavily, E2B, Firecrawl, Exa, Steel, or any of our 36+ supported tools into your encrypted vault. Requests route through your direct keys with 0% margin markup.',
       },
       {
-        q: 'Can I access all 36+ tool engines on the Free Tier?',
-        a: 'Yes! Every developer gets full access to all 36+ search, scraping, browser, code sandbox, document parsing, and embedding engines from day one by bringing their own provider API key.',
-      },
-      {
-        q: 'Do you mark up provider execution costs?',
-        a: 'No! When routing requests via your connected BYOK keys, LiteDaemon passes through native provider rates with zero fee markup up to $25,000/mo list price execution.',
+        q: 'What is the 5% micro-routing fee?',
+        a: 'Instead of charging 40-70% markups like traditional API re-sellers, LiteDaemon charges a flat 5% micro-routing fee to cover global edge proxies, instant failover monitoring, and telemetry logging.',
       },
       {
         q: 'Are failed or fallback attempts billed?',
-        a: 'Never. If an upstream provider returns a 429 rate limit or 500 error, LiteDaemon automatically retries with your next healthy key in <10ms. You are only billed for successful execution responses.',
+        a: 'Never. If an upstream provider returns a 429 rate limit or 500 error, LiteDaemon automatically retries with your backup key in <10ms. You are only billed for successful executions.',
       },
     ],
   },
   {
-    category: 'Tools and Gateway Features',
+    category: 'Security & Reliability',
     items: [
       {
-        q: 'How do I integrate LiteDaemon into LangChain, CrewAI, or AutoGen?',
-        a: 'Simply point your tool base URL to https://gateway.litedaemon.com/v1 and supply your LiteDaemon master key. Zero framework code rewrites required.',
+        q: 'How are my provider API keys protected?',
+        a: 'Master API Keys are SHA-256 hashed for instant gateway validation. Downstream provider keys are encrypted at rest using AES-256-GCM and decrypted strictly in RAM for the duration of the HTTP request.',
       },
       {
-        q: 'Do you store or log tool payload data?',
-        a: 'No. LiteDaemon enforces an ephemeral, memory-only routing policy. Prompts, search queries, code sandbox scripts, and extracted DOM contents are processed strictly in RAM and never stored on disk or used for model training.',
-      },
-      {
-        q: 'Can I set spend caps and rate limits?',
-        a: 'Yes. You can configure global monthly spend limits, per-key rate limits, and automated fallback priorities inside your LiteDaemon dashboard.',
-      },
-    ],
-  },
-  {
-    category: 'Reliability and Uptime',
-    items: [
-      {
-        q: 'What happens if a provider experiences an outage or rate limit?',
-        a: 'Our intelligent router detects upstream errors in milliseconds and seamlessly rotates to your backup BYOK key or fallback provider adapter within the same HTTP request lifecycle.',
-      },
-      {
-        q: 'Where can I check live uptime and provider benchmarks?',
-        a: 'You can check real-time p50/p90/p99 latency percentiles, uptime percentages, and failover status across all 36+ engines on our Rankings leaderboard.',
+        q: 'What happens if a provider experiences an outage?',
+        a: 'Our intelligent router detects upstream errors in milliseconds and seamlessly rotates to your backup BYOK key or secondary fallback provider adapter within the same HTTP request lifecycle.',
       },
     ],
   },
 ];
 
 export const Pricing: React.FC = () => {
+  const [isAnnual, setIsAnnual]         = useState(true);
   const [openFaqIndex, setOpenFaqIndex] = useState<string | null>('0-0');
 
   const toggleFaq = (key: string) => {
     setOpenFaqIndex((prev) => (prev === key ? null : key));
   };
 
+  const proPrice = isAnnual ? 23 : 29;
+
   return (
-    <div className="min-h-screen font-sans transition-colors duration-200" style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16 font-sans selection:bg-lime-400 selection:text-zinc-950">
       
-      {/* ── 1. HERO SECTION ────────────────────────────────────────────────── */}
-      <section className="pt-20 pb-12 px-6 max-w-5xl mx-auto text-center space-y-4">
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-center" style={{ color: 'var(--text-primary)' }}>
-          Pricing
+      {/* ── 1. HERO HEADER & BILLING SWITCHER ───────────────────────────────── */}
+      <section className="text-center space-y-6 pt-4 max-w-4xl mx-auto">
+        
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-lime-500/10 border border-lime-500/20 text-lime-600 dark:text-lime-400 font-mono text-xs font-bold">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>BYOK Gateway Pricing Architecture</span>
+        </div>
+
+        <h1 className="text-3xl sm:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight">
+          Transparent, Predictable BYOK Gateway Pricing
         </h1>
-        <p className="text-sm sm:text-base max-w-xl mx-auto font-sans" style={{ color: 'var(--text-secondary)' }}>
-          100 free tool calls per month. 5% markup per call post 100 calls, or 0% gateway fee with BYOK.
+
+        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+          Route Tavily, Firecrawl, E2B, Exa, and 30+ providers through your own keys. No hidden markups—just zero-overhead failover and unified execution.
         </p>
 
-        <div className="flex items-center justify-center gap-4 pt-4 text-sm font-sans">
+        {/* Trust Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-zinc-500 dark:text-zinc-400 pt-2">
+          <span>✓ Pay only for what you use</span>
+          <span>•</span>
+          <span>✓ 100 Free requests/mo</span>
+          <span>•</span>
+          <span>✓ Cancel anytime</span>
+        </div>
+
+        {/* Interactive Monthly / Annual Billing Switcher */}
+        <div className="flex items-center justify-center gap-3 pt-6 font-mono text-xs">
+          <span className={`font-bold transition-colors ${!isAnnual ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500'}`}>
+            Monthly Billing
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setIsAnnual(!isAnnual)}
+            className={`w-14 h-8 rounded-full p-1 transition-colors cursor-pointer ${isAnnual ? 'bg-lime-400' : 'bg-zinc-300 dark:bg-zinc-700'}`}
+          >
+            <div className={`w-6 h-6 rounded-full bg-zinc-950 transition-transform ${isAnnual ? 'translate-x-6' : 'translate-x-0'}`} />
+          </button>
+
+          <div className="flex items-center gap-1.5">
+            <span className={`font-bold transition-colors ${isAnnual ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500'}`}>
+              Annual Billing
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-extrabold text-[10px] animate-pulse">
+              Save 20%
+            </span>
+          </div>
+        </div>
+
+      </section>
+
+      {/* ── 2. ENTERPRISE TIER CARDS ────────────────────────────────────────── */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch pt-4">
+        
+        {/* Card 1: Developer Free */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-6 flex flex-col justify-between">
+          <div className="space-y-4">
+            <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider block">
+              Developer Free
+            </span>
+
+            <div className="space-y-1">
+              <div className="text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">$0</div>
+              <span className="text-xs text-zinc-500">Free forever • No credit card required</span>
+            </div>
+
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-sans leading-relaxed">
+              For side projects, testing, and solo developers evaluating LiteDaemon unified endpoints.
+            </p>
+
+            <div className="space-y-3 pt-4 font-mono text-xs border-t border-zinc-200 dark:border-zinc-800">
+              {[
+                '100 Free Gateway Routing Requests / month',
+                '1 Active BYOK Key per provider',
+                'Access to all 5 unified endpoints (/v1/search, /v1/scrape, etc.)',
+                'Standard SHA-256 Auth & AES-256 Vault',
+                'Community Discord Support',
+              ].map((feat) => (
+                <div key={feat} className="flex items-start gap-2.5 text-zinc-700 dark:text-zinc-300">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <Link
             to="/auth"
-            className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-sm min-w-[150px] text-center"
-            style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
+            className="w-full py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold text-xs text-center transition-all block cursor-pointer"
           >
-            Get Started
+            Get Started Free
           </Link>
+        </div>
+
+        {/* Card 2: Pro Gateway (Highlighted / Most Popular) */}
+        <div className="relative bg-white dark:bg-zinc-900/90 border-2 border-lime-400 shadow-[0_0_30px_rgba(163,230,53,0.15)] rounded-3xl p-8 space-y-6 flex flex-col justify-between transform lg:-translate-y-2 z-10">
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-lime-400 text-zinc-950 font-mono font-extrabold text-[10px] tracking-wider uppercase shadow-md whitespace-nowrap">
+            MOST POPULAR • 5% MICRO-ROUTING FEE
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider block">
+              Pro Gateway
+            </span>
+
+            <div className="space-y-1">
+              <div className="text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">
+                ${proPrice} <span className="text-xs text-zinc-400 font-normal">/ month</span>
+              </div>
+              <span className="text-xs text-zinc-500 block">
+                {isAnnual ? 'Billed annually ($276/yr)' : 'Billed monthly'}
+              </span>
+            </div>
+
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-sans leading-relaxed">
+              For active AI agent developers and production applications needing high availability and auto-failover.
+            </p>
+
+            <div className="space-y-3 pt-4 font-mono text-xs border-t border-zinc-200 dark:border-zinc-800">
+              {[
+                'Includes $20 Prepaid Gateway Balance / month',
+                'Unlimited BYOK Vault Keys & Unlimited Providers',
+                'Automatic Primary ➔ Secondary Key Failover Routing',
+                'Real-time Telemetry, Request Logs & Latency Analytics',
+                'Playground Workbench & Custom Header Overrides',
+                '99.9% Gateway Uptime SLA',
+                'Priority Email & Discord Support',
+              ].map((feat) => (
+                <div key={feat} className="flex items-start gap-2.5 text-zinc-900 dark:text-zinc-100 font-bold">
+                  <Check className="w-4 h-4 text-lime-500 shrink-0 mt-0.5" />
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Link
+            to="/auth"
+            className="w-full py-3.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-extrabold text-xs text-center transition-all shadow-lg shadow-lime-400/20 block cursor-pointer"
+          >
+            Start 14-Day Pro Trial
+          </Link>
+        </div>
+
+        {/* Card 3: Dedicated Enterprise */}
+        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-xl space-y-6 flex flex-col justify-between">
+          <div className="space-y-4">
+            <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider block">
+              Dedicated Enterprise
+            </span>
+
+            <div className="space-y-1">
+              <div className="text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono">$499+</div>
+              <span className="text-xs text-zinc-500">Custom volume billing • Dedicated infrastructure</span>
+            </div>
+
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-sans leading-relaxed">
+              For high-volume AI agents, production pipelines, and enterprise teams requiring custom SLAs and HSM key security.
+            </p>
+
+            <div className="space-y-3 pt-4 font-mono text-xs border-t border-zinc-200 dark:border-zinc-800">
+              {[
+                'Dedicated Single-Tenant Proxy Edge Routers',
+                'Custom SLAs (99.99% Uptime Guarantee)',
+                'Custom Adapter Development for Proprietary APIs',
+                'IP Whitelisting & Hardware-Backed Key Storage (HSM)',
+                'SSO / SAML Authentication & Team RBAC',
+                'Dedicated Solutions Architect & 24/7 Slack Channel',
+              ].map((feat) => (
+                <div key={feat} className="flex items-start gap-2.5 text-zinc-700 dark:text-zinc-300">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <Link
             to="/contact-sales"
-            className="border px-6 py-3 rounded-2xl text-sm font-semibold transition-all hover:opacity-80 min-w-[150px] text-center"
-            style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+            className="w-full py-3 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 font-bold text-xs text-center transition-all hover:opacity-90 block cursor-pointer"
           >
-            Talk To Sales
+            Contact Enterprise Sales
           </Link>
         </div>
+
       </section>
 
-      {/* ── 1.5 PRICING CARDS ────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Card 1: Free Tier */}
-          <div
-            className="rounded-3xl p-8 border space-y-6 flex flex-col justify-between shadow-xl relative overflow-hidden"
-            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  Resets every 30 days
-                </span>
-                <span className="text-xs font-mono text-zinc-500">Tier 1</span>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-extrabold text-white">Free Monthly Allowance</h3>
-                <p className="text-xs text-zinc-400 mt-2 leading-relaxed font-sans">
-                  100 free API calls every month across all integrated tools (Tavily, Exa, E2B, Firecrawl, etc.).
-                </p>
-              </div>
-
-              <div className="py-2">
-                <span className="text-4xl font-extrabold font-mono text-white">$0</span>
-                <span className="text-xs font-mono text-zinc-400"> / month</span>
-              </div>
-
-              <ul className="space-y-3 text-xs text-zinc-300 font-sans pt-2 border-t border-zinc-800">
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>100 free API calls per billing month</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Full access to all 36+ integrated tool engines</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Ephemeral in-memory key vault &amp; zero disk logging</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Automatic monthly resets back to 0</span>
-                </li>
-              </ul>
-            </div>
-
-            <Link
-              to="/auth"
-              className="w-full py-3.5 rounded-2xl text-center text-xs font-extrabold border transition-all hover:opacity-80"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-            >
-              Get Started For Free
-            </Link>
-          </div>
-
-          {/* Card 2: Pay-As-You-Go */}
-          <div
-            className="rounded-3xl p-8 border space-y-6 flex flex-col justify-between shadow-2xl relative overflow-hidden"
-            style={{ 
-              backgroundColor: 'var(--bg-card)', 
-              borderColor: 'rgba(163, 230, 53, 0.4)',
-              boxShadow: '0 0 30px rgba(163, 230, 53, 0.08)' 
-            }}
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span 
-                  className="px-3 py-1 rounded-full text-xs font-mono font-bold flex items-center gap-1.5"
-                  style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> Post 100 Calls
-                </span>
-                <span className="text-xs font-mono text-lime-400 font-semibold">Standard Plan</span>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-extrabold text-white">Pay-As-You-Go (BYOK / Pass-Through)</h3>
-                <p className="text-xs text-zinc-400 mt-2 leading-relaxed font-sans">
-                  For usage beyond 100 calls.
-                </p>
-              </div>
-
-              <div className="py-2 space-y-1">
-                <div className="text-2xl font-extrabold font-mono text-lime-400">
-                  Raw Provider Cost + 5% Markup
-                </div>
-                <div className="inline-block px-2.5 py-1 rounded bg-lime-400/10 border border-lime-400/30 text-[11px] font-mono text-lime-300">
-                  <code>Final Cost = Raw Provider Cost × 1.05</code>
-                </div>
-              </div>
-
-              <ul className="space-y-3 text-xs text-zinc-300 font-sans pt-2 border-t border-zinc-800">
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
-                  <span>Direct provider key pass-through (Tavily, E2B, Exa, etc.)</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
-                  <span>Exact transparent calculation: <code>Final Cost = Raw Provider Cost × 1.05</code></span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
-                  <span>Automatic monthly resets back to free tier</span>
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-lime-400 shrink-0" />
-                  <span>Multi-key priority &amp; automated fallback failover</span>
-                </li>
-              </ul>
-            </div>
-
-            <Link
-              to="/auth"
-              className="w-full py-3.5 rounded-2xl text-center text-xs font-extrabold shadow-lg transition-all hover:opacity-90"
-              style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
-            >
-              Start Routing API Calls →
-            </Link>
-          </div>
-
-        </div>
+      {/* ── 3. INTERACTIVE BYOK COST SAVINGS ESTIMATOR ──────────────────────── */}
+      <section className="pt-4">
+        <PricingCalculator />
       </section>
 
-      {/* ── 2. FEATURE COMPARISON MATRIX TABLE ──────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <div 
-          className="rounded-3xl border overflow-hidden shadow-2xl"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-              
-              {/* Header Row */}
-              <thead>
-                <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                  <th className="p-5 w-1/4" />
-                  <th className="p-5 text-center text-sm font-bold w-1/4" style={{ color: 'var(--text-primary)' }}>
-                    Free Tier
-                  </th>
-                  <th 
-                    className="p-5 text-center text-sm font-bold w-1/4 border-x relative"
-                    style={{ 
-                      backgroundColor: 'rgba(204, 255, 0, 0.04)', 
-                      borderColor: 'rgba(204, 255, 0, 0.2)',
-                      color: 'var(--text-primary)' 
-                    }}
-                  >
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-1" style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}>
-                      <Sparkles className="w-3 h-3" /> Pay-as-you-go
-                    </div>
-                    <div>Standard Engine</div>
-                  </th>
-                  <th className="p-5 text-center text-sm font-bold w-1/4" style={{ color: 'var(--text-primary)' }}>
-                    Enterprise
-                  </th>
-                </tr>
-              </thead>
-
-              {/* Body Rows */}
-              <tbody className="divide-y text-xs" style={{ borderColor: 'var(--border)' }}>
-
-                {/* Monthly Free Calls */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Monthly Free Allowance</td>
-                  <td className="p-5 text-center font-bold text-emerald-400">100 free calls / mo (resets every 30 days)</td>
-                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
-                    100 free calls / mo
-                  </td>
-                  <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    Custom monthly quota
-                  </td>
-                </tr>
-
-                {/* Per Call Fee & Markup */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Execution Markup (Post 100 calls)</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>0% (up to 100 calls)</td>
-                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--accent)' }}>
-                    5% markup per call
-                  </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="underline cursor-pointer hover:opacity-80">Volume fee discounts</span>
-                  </td>
-                </tr>
-
-                {/* BYOK Key Markup */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>BYOK Connected Key Fee</td>
-                  <td className="p-5 text-center font-bold text-emerald-400">0% (up to 100 calls/mo)</td>
-                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--accent)' }}>
-                    5% routing fee per call (post 100 calls)
-                  </td>
-                  <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    Volume Fee Discounts
-                  </td>
-                </tr>
-
-                {/* Tool Engines */}
-                <tr>
-                  <td className="p-5 space-y-1">
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Tool Engines</div>
-                    <Link to="/providers" className="text-[11px] hover:underline flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-                      Explore 36+ engines &rarr;
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center font-semibold" style={{ color: 'var(--text-primary)' }}>36+ engines (BYOK)</td>
-                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
-                    36+ engines (BYOK)
-                  </td>
-                  <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    36+ engines (Dedicated Pools)
-                  </td>
-                </tr>
-
-                {/* Tool Providers */}
-                <tr>
-                  <td className="p-5 space-y-1">
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Tool Providers</div>
-                    <Link to="/providers" className="text-[11px] hover:underline flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-                      Explore providers &rarr;
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center font-semibold" style={{ color: 'var(--text-primary)' }}>36+ connected providers</td>
-                  <td className="p-5 text-center font-bold" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>
-                    36+ connected providers
-                  </td>
-                  <td className="p-5 text-center font-bold" style={{ color: 'var(--text-primary)' }}>
-                    36+ connected providers
-                  </td>
-                </tr>
-
-                {/* API Access */}
-                <tr>
-                  <td className="p-5 space-y-1">
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>API & Playground Access</div>
-                    <Link to="/playground" className="text-[11px] hover:underline flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-                      Try playground &rarr;
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                </tr>
-
-                {/* Activity Logs */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Activity Logs & Export</td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                </tr>
-
-                {/* Auto-routing & Failover */}
-                <tr>
-                  <td className="p-5 space-y-1">
-                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>Auto-routing & Multi-Key Failover</div>
-                    <Link to="/docs/failover" className="text-[11px] hover:underline flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-                      Learn more &rarr;
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-muted)' }}>Single Key / Provider</td>
-                  <td className="p-5 text-center font-semibold text-emerald-400" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}>
-                    Multi-Key Rotation Pool
-                  </td>
-                  <td className="p-5 text-center font-semibold text-emerald-400">
-                    Multi-Key Rotation Pool + Priority
-                  </td>
-                </tr>
-
-                {/* Budgets & Spend Controls */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Budgets & Spend Controls</td>
-                  <td className="p-5 text-center"><X className="w-4 h-4 mx-auto text-zinc-600" /></td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                </tr>
-
-                {/* Contractual SLAs */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Contractual SLAs</td>
-                  <td className="p-5 text-center"><X className="w-4 h-4 mx-auto text-zinc-600" /></td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}><X className="w-4 h-4 mx-auto text-zinc-600" /></td>
-                  <td className="p-5 text-center"><Check className="w-4 h-4 mx-auto text-emerald-400" /></td>
-                </tr>
-
-                {/* Support */}
-                <tr>
-                  <td className="p-5 font-semibold" style={{ color: 'var(--text-primary)' }}>Support</td>
-                  <td className="p-5 text-center" style={{ color: 'var(--text-secondary)' }}>Community Support</td>
-                  <td className="p-5 text-center font-medium" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)', color: 'var(--text-primary)' }}>Email Support</td>
-                  <td className="p-5 text-center font-medium" style={{ color: 'var(--text-primary)' }}>Support SLA with Shared Slack Channel</td>
-                </tr>
-
-                {/* Table Footer Buttons */}
-                <tr className="border-t" style={{ borderColor: 'var(--border)' }}>
-                  <td className="p-5" />
-                  <td className="p-5 text-center">
-                    <Link
-                      to="/auth"
-                      className="inline-block px-4 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 transition-opacity"
-                      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                    >
-                      Get Started For Free
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center" style={{ backgroundColor: 'rgba(204, 255, 0, 0.04)' }}>
-                    <Link
-                      to="/auth"
-                      className="inline-block px-4 py-2.5 rounded-xl text-xs font-extrabold shadow-md hover:opacity-90 transition-opacity"
-                      style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
-                    >
-                      Sign Up For Free
-                    </Link>
-                  </td>
-                  <td className="p-5 text-center">
-                    <Link
-                      to="/contact-sales"
-                      className="inline-block px-4 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 transition-opacity"
-                      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                    >
-                      Contact Sales
-                    </Link>
-                  </td>
-                </tr>
-
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. FREQUENTLY ASKED QUESTIONS ──────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 py-16 space-y-10">
+      {/* ── 4. COMPREHENSIVE FAQ SECTION ───────────────────────────────────── */}
+      <section className="max-w-4xl mx-auto space-y-8 pt-4">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold font-sans" style={{ color: 'var(--text-primary)' }}>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
             Frequently Asked Questions
           </h2>
-          <p className="text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Everything you need to know about LiteDaemon billing, BYOK failover, and rate limits.
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+            Everything you need to know about BYOK key routing, micro-fees, and security.
           </p>
         </div>
 
-        <div className="space-y-8">
-          {FAQS.map((categoryGroup, catIdx) => (
-            <div key={categoryGroup.category} className="space-y-3">
-              <h3 className="text-base font-bold font-sans tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                {categoryGroup.category}
-              </h3>
+        <div className="space-y-6">
+          {FAQS.map((cat, catIdx) => (
+            <div key={cat.category} className="space-y-3 font-mono text-xs">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block px-1">
+                {cat.category}
+              </span>
 
               <div className="space-y-2">
-                {categoryGroup.items.map((item, itemIdx) => {
+                {cat.items.map((item, itemIdx) => {
                   const key = `${catIdx}-${itemIdx}`;
                   const isOpen = openFaqIndex === key;
-
                   return (
                     <div
                       key={item.q}
-                      className="border rounded-2xl overflow-hidden transition-colors"
-                      style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+                      className="rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 overflow-hidden transition-all"
                     >
                       <button
+                        type="button"
                         onClick={() => toggleFaq(key)}
-                        className="w-full flex items-center justify-between p-4 text-left text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-                        style={{ color: 'var(--text-primary)' }}
+                        className="w-full p-4 text-left font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between gap-4 cursor-pointer"
                       >
                         <span>{item.q}</span>
-                        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-emerald-400' : ''}`} style={{ color: 'var(--text-muted)' }} />
+                        <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${isOpen ? 'rotate-180 text-lime-500' : ''}`} />
                       </button>
 
                       {isOpen && (
-                        <div className="px-4 pb-4 pt-1 text-xs leading-relaxed border-t" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                        <div className="px-4 pb-4 font-sans text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-zinc-100 dark:border-zinc-800/50 pt-3">
                           {item.a}
                         </div>
                       )}
@@ -484,44 +296,6 @@ export const Pricing: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── 4. READY TO GET STARTED BANNER ─────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 py-16">
-        <div 
-          className="p-10 rounded-3xl border text-center space-y-6 shadow-2xl relative overflow-hidden"
-          style={{ 
-            backgroundColor: 'var(--bg-card)', 
-            borderColor: 'rgba(204, 255, 0, 0.3)',
-            boxShadow: '0 0 40px rgba(204, 255, 0, 0.05)'
-          }}
-        >
-          <div className="space-y-2">
-            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-sans" style={{ color: 'var(--text-primary)' }}>
-              Ready To Get Started?
-            </h3>
-            <p className="text-xs sm:text-sm max-w-md mx-auto" style={{ color: 'var(--text-secondary)' }}>
-              Join thousands of developers building high-availability autonomous agents with LiteDaemon.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              to="/auth"
-              className="font-extrabold px-6 py-3 rounded-2xl text-sm transition-all shadow-md min-w-[160px]"
-              style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
-            >
-              Sign Up For Free
-            </Link>
-            <Link
-              to="/contact-sales"
-              className="border px-6 py-3 rounded-2xl text-sm font-semibold transition-all hover:opacity-80 min-w-[160px]"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-            >
-              Contact Sales
-            </Link>
-          </div>
         </div>
       </section>
 

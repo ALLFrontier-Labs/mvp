@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
   Settings as SettingsIcon, Key, Copy, Check, Eye, EyeOff,
   Shield, User, Wallet, Activity, DollarSign, LogOut,
@@ -32,9 +32,23 @@ function formatDate(iso: string) {
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Active Sub-Tab State
   const [activeSubTab, setActiveSubTab] = useState<SettingsSubTab>('general');
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')?.toLowerCase();
+    if (tabParam === 'profile' || tabParam === 'general') {
+      setActiveSubTab('general');
+    } else if (tabParam === 'billing' || tabParam === 'wallet') {
+      setActiveSubTab('billing');
+    } else if (tabParam === 'webhooks' || tabParam === 'guardrails' || tabParam === 'security' || tabParam === 'preferences') {
+      setActiveSubTab('webhooks');
+    } else if (tabParam === 'reference') {
+      setActiveSubTab('reference');
+    }
+  }, [searchParams]);
 
   // Key & Auth States
   const [currentKey, setCurrentKey] = useState<string | null>(getStoredApiKey());

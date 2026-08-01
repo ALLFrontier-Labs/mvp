@@ -5,6 +5,9 @@ import {
   HelpCircle, CreditCard, ArrowRight, CheckCircle2, Lock
 } from 'lucide-react';
 import { PricingCalculator } from '../components/PricingCalculator';
+import { PricingFeatureMatrix } from '../components/PricingFeatureMatrix';
+import { PricingFAQ } from '../components/PricingFAQ';
+import { EnterpriseQuoteModal } from '../components/EnterpriseQuoteModal';
 
 interface FAQItem {
   q: string;
@@ -45,7 +48,8 @@ const FAQS: { category: string; items: FAQItem[] }[] = [
 ];
 
 export const Pricing: React.FC = () => {
-  const [isAnnual, setIsAnnual]         = useState(true);
+  const [isAnnual, setIsAnnual]                 = useState(true);
+  const [isEnterpriseModalOpen, setIsEnterpriseModalOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<string | null>('0-0');
 
   const toggleFaq = (key: string) => {
@@ -234,12 +238,13 @@ export const Pricing: React.FC = () => {
             </div>
           </div>
 
-          <Link
-            to="/contact-sales"
+          <button
+            type="button"
+            onClick={() => setIsEnterpriseModalOpen(true)}
             className="w-full py-3 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 font-bold text-xs text-center transition-all hover:opacity-90 block cursor-pointer"
           >
             Contact Enterprise Sales
-          </Link>
+          </button>
         </div>
 
       </section>
@@ -249,55 +254,21 @@ export const Pricing: React.FC = () => {
         <PricingCalculator />
       </section>
 
-      {/* ── 4. COMPREHENSIVE FAQ SECTION ───────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto space-y-8 pt-4">
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
-            Everything you need to know about BYOK key routing, micro-fees, and security.
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          {FAQS.map((cat, catIdx) => (
-            <div key={cat.category} className="space-y-3 font-mono text-xs">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block px-1">
-                {cat.category}
-              </span>
-
-              <div className="space-y-2">
-                {cat.items.map((item, itemIdx) => {
-                  const key = `${catIdx}-${itemIdx}`;
-                  const isOpen = openFaqIndex === key;
-                  return (
-                    <div
-                      key={item.q}
-                      className="rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 overflow-hidden transition-all"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleFaq(key)}
-                        className="w-full p-4 text-left font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-between gap-4 cursor-pointer"
-                      >
-                        <span>{item.q}</span>
-                        <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${isOpen ? 'rotate-180 text-lime-500' : ''}`} />
-                      </button>
-
-                      {isOpen && (
-                        <div className="px-4 pb-4 font-sans text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-zinc-100 dark:border-zinc-800/50 pt-3">
-                          {item.a}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* ── 4. DETAILED FEATURE COMPARISON MATRIX ───────────────────────────── */}
+      <section className="pt-4">
+        <PricingFeatureMatrix />
       </section>
+
+      {/* ── 5. INTERACTIVE FAQ ACCORDION ────────────────────────────────────── */}
+      <section className="pt-4">
+        <PricingFAQ />
+      </section>
+
+      {/* ── 6. ENTERPRISE CUSTOM QUOTE MODAL ────────────────────────────────── */}
+      <EnterpriseQuoteModal
+        isOpen={isEnterpriseModalOpen}
+        onClose={() => setIsEnterpriseModalOpen(false)}
+      />
 
     </div>
   );

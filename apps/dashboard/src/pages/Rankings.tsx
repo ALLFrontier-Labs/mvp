@@ -5,6 +5,9 @@ import {
   Trophy, Medal, Crown, ArrowUpRight, ArrowDownRight, Minus, RefreshCw,
   Sliders, ShieldCheck, Layers, ExternalLink
 } from 'lucide-react';
+import { ProviderPerformanceDrawer } from '../components/ProviderPerformanceDrawer';
+import { KeyConfigModal } from '../components/KeyConfigModal';
+import { PROVIDER_META } from '../data/providers';
 
 interface ToolBenchmark {
   rank: number;
@@ -91,7 +94,17 @@ export const Rankings: React.FC = () => {
   const [category, setCategory] = useState<'All' | 'Search' | 'Scraping' | 'Code' | 'Browser' | 'Document'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTool, setSelectedTool] = useState<ToolBenchmark | null>(null);
+  const [vaultModalProvider, setVaultModalProvider] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleOpenVaultModal = (providerId: string) => {
+    const meta = PROVIDER_META[providerId] || {
+      id: providerId,
+      name: providerId,
+      endpoint: '/v1/search',
+    };
+    setVaultModalProvider(meta);
+  };
 
   const handleRunLiveBenchmark = () => {
     setIsRefreshing(true);
@@ -471,97 +484,20 @@ export const Rankings: React.FC = () => {
         </div>
       </div>
 
-      {/* ── BENCHMARK DETAIL DRILLDOWN MODAL ───────────────────────────────── */}
-      {selectedTool && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 font-sans"
-          onClick={() => setSelectedTool(null)}
-        >
-          <div
-            className="w-full max-w-lg rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-6 space-y-6 shadow-2xl relative"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedTool(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {/* ── INTERACTIVE PROVIDER PERFORMANCE DRILLDOWN DRAWER ──────────────── */}
+      <ProviderPerformanceDrawer
+        tool={selectedTool}
+        onClose={() => setSelectedTool(null)}
+        onOpenVaultModal={(providerId) => handleOpenVaultModal(providerId)}
+      />
 
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <ProviderBrandIcon providerId={selectedTool.providerId} name={selectedTool.name} />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100">{selectedTool.name}</h2>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${CATEGORY_BADGES[selectedTool.category]}`}>
-                      {selectedTool.category}
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono text-zinc-500">Target Endpoint: {selectedTool.endpoint}</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 pt-2 leading-relaxed font-sans">
-                {selectedTool.description}
-              </p>
-            </div>
-
-            {/* Score & SLA Cards */}
-            <div className="grid grid-cols-3 gap-3 font-mono text-xs">
-              <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <span className="text-[10px] uppercase font-bold text-zinc-400 block">Overall Score</span>
-                <span className="text-lg font-extrabold text-lime-600 dark:text-lime-400 mt-1 block">{selectedTool.score}</span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <span className="text-[10px] uppercase font-bold text-zinc-400 block">Uptime SLA</span>
-                <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 block">{selectedTool.uptime}</span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <span className="text-[10px] uppercase font-bold text-zinc-400 block">Unit Cost</span>
-                <span className="text-lg font-extrabold text-zinc-800 dark:text-zinc-200 mt-1 block">{selectedTool.cost}</span>
-              </div>
-            </div>
-
-            {/* Latency Percentiles */}
-            <div className="space-y-2 font-mono">
-              <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                <Activity className="w-4 h-4 text-cyan-500" /> Latency Percentile Distribution
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                <div>
-                  <span className="text-[10px] text-zinc-400 block">p50 Mean</span>
-                  <span className="font-bold text-zinc-800 dark:text-zinc-200 mt-0.5 block">{selectedTool.p50Latency}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-zinc-400 block">p90 Peak</span>
-                  <span className="font-bold text-teal-600 dark:text-teal-400 mt-0.5 block">{selectedTool.p90Latency}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-zinc-400 block">p99 Max</span>
-                  <span className="font-bold text-amber-600 dark:text-amber-400 mt-0.5 block">{selectedTool.p99Latency}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-between items-center pt-2 border-t border-zinc-200 dark:border-zinc-800 font-mono text-xs">
-              <button
-                onClick={() => { setSelectedTool(null); navigate('/providers'); }}
-                className="px-4 py-2 rounded-xl bg-lime-400 text-zinc-950 font-bold hover:bg-lime-300 flex items-center gap-1"
-              >
-                View Provider Catalog <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setSelectedTool(null)}
-                className="px-4 py-2 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold"
-              >
-                Close
-              </button>
-            </div>
-
-          </div>
-        </div>
+      {/* ── KEY CONFIGURATION VAULT MODAL ───────────────────────────────────── */}
+      {vaultModalProvider && (
+        <KeyConfigModal
+          isOpen={true}
+          provider={vaultModalProvider}
+          onClose={() => setVaultModalProvider(null)}
+        />
       )}
 
     </div>

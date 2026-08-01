@@ -5,7 +5,7 @@ import {
   Zap, Lock, ShieldCheck, Layers, Cpu, CreditCard,
   FileText, Lightbulb, AlertTriangle, BookOpen,
   Terminal, ExternalLink, ArrowRight, Search,
-  Rocket, Box, Code2, Book, ArrowDown, Server, Key
+  Rocket, Box, Code2, Book, ArrowDown, Server, Key, RefreshCw
 } from 'lucide-react';
 import { PROVIDER_META } from '../data/providers';
 
@@ -472,8 +472,277 @@ console.log(results);`,
             </div>
           )}
 
+          {/* SECTION 4: API KEYS & VAULT OVERVIEW */}
+          {activeSection === 'keys-vault' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">AUTHENTICATION &amp; KEYS / OVERVIEW</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">API Keys &amp; Vault Architecture</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Understanding Master Gateway Keys versus Provider BYOK Keys.
+                </p>
+              </div>
+
+              <Callout type="tip" title="Single Master Key Architecture">
+                You never need to expose upstream provider keys in your client applications or server code—only pass your single Master Gateway Key (<code className="font-mono">ld_live_...</code>).
+              </Callout>
+
+              {/* Visual Flow Diagram */}
+              <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 text-zinc-100 space-y-4 font-mono text-xs shadow-2xl">
+                <span className="text-lime-400 font-bold uppercase tracking-wider block text-[11px]">
+                  🔒 Key Separation &amp; Decryption Flow
+                </span>
+
+                <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-center pt-2">
+                  <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-1 w-full md:w-auto">
+                    <span className="text-zinc-400 text-[10px] block">CLIENT SERVER</span>
+                    <span className="font-bold text-white block">Bearer ld_live_...</span>
+                  </div>
+
+                  <ArrowRight className="w-4 h-4 text-lime-400 shrink-0 hidden md:block" />
+
+                  <div className="p-3.5 rounded-2xl bg-lime-500/10 border border-lime-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-lime-400 text-[10px] block">LITEDAEMON</span>
+                    <span className="font-bold text-lime-300 block">Unified Gateway</span>
+                  </div>
+
+                  <ArrowRight className="w-4 h-4 text-lime-400 shrink-0 hidden md:block" />
+
+                  <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-purple-400 text-[10px] block">AES-256 VAULT</span>
+                    <span className="font-bold text-purple-300 block">Ephemeral Decrypt</span>
+                  </div>
+
+                  <ArrowRight className="w-4 h-4 text-lime-400 shrink-0 hidden md:block" />
+
+                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1 w-full md:w-auto">
+                    <span className="text-emerald-400 text-[10px] block">UPSTREAM PROVIDER</span>
+                    <span className="font-bold text-emerald-300 block">BYOK Key Executed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Management Steps */}
+              <div className="space-y-4">
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-2">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <Key className="w-5 h-5 text-lime-500" /> Adding Keys to Vault (<Link to="/vault" className="text-lime-600 dark:text-lime-400 hover:underline">/vault</Link>)
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    Navigate to <Link to="/vault" className="text-lime-600 dark:text-lime-400 font-bold hover:underline">Key Vault</Link> to configure primary and secondary failover API keys for Tavily, Firecrawl, Exa, Steel, or E2B.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-2">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5 text-amber-500" /> Zero-Downtime Key Rotation
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    Rotate provider keys seamlessly without changing client code. Simply add the new provider key to your vault and promote it to primary.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-2">
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-rose-500" /> Instant Revocation
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                    Deleting a key from your vault immediately revokes gateway routing permissions for that key across all edge nodes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 5: CRYPTOGRAPHIC SECURITY MODEL */}
+          {activeSection === 'key-encryption' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">AUTHENTICATION &amp; KEYS / SECURITY</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Cryptographic Security Model</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  SHA-256 Master Key Hashing &amp; AES-256-GCM Client-Side Vault Encryption.
+                </p>
+              </div>
+
+              {/* 5-Step Ephemeral Request Lifecycle Diagram */}
+              <div className="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 text-zinc-100 space-y-4 font-mono text-xs shadow-2xl">
+                <span className="text-lime-400 font-bold uppercase tracking-wider block text-[11px]">
+                  🛡️ 5-Step Ephemeral Request Lifecycle
+                </span>
+
+                <div className="space-y-3 pt-1">
+                  <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-bold flex items-center justify-center shrink-0">1</span>
+                    <div>
+                      <span className="font-bold text-white block">Request Arrival</span>
+                      <span className="text-zinc-400 text-[11px]">Client sends Authorization: Bearer ld_live_... header.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-bold flex items-center justify-center shrink-0">2</span>
+                    <div>
+                      <span className="font-bold text-white block">SHA-256 Hash Lookup (&lt; 2ms)</span>
+                      <span className="text-zinc-400 text-[11px]">Gateway matches SHA-256 hash of Master Key against database.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-bold flex items-center justify-center shrink-0">3</span>
+                    <div>
+                      <span className="font-bold text-white block">AES-256 Vault Retrieval</span>
+                      <span className="text-zinc-400 text-[11px]">Vault retrieves hardware-encrypted provider key blob.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-bold flex items-center justify-center shrink-0">4</span>
+                    <div>
+                      <span className="font-bold text-white block">Ephemeral Memory Decryption</span>
+                      <span className="text-zinc-400 text-[11px]">Key decrypted strictly in isolated RAM worker thread.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-lime-400 text-zinc-950 font-bold flex items-center justify-center shrink-0">5</span>
+                    <div>
+                      <span className="font-bold text-white block">Proxy Execution &amp; Memory Purge</span>
+                      <span className="text-zinc-400 text-[11px]">Upstream call executed; plaintext key wiped from RAM immediately.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security Policy Checklist Table */}
+              <div className="space-y-3 font-mono text-xs">
+                <span className="font-bold uppercase tracking-wider text-zinc-400 block text-[11px]">
+                  Security Policy Standards Matrix:
+                </span>
+
+                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Data at Rest</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">AES-256-GCM Hardware Encrypted</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Data in Transit</td>
+                        <td className="p-3 text-cyan-600 dark:text-cyan-400 font-bold">TLS 1.3 Strict Enforced</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Key Logging Policy</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">Zero-Plaintext Logging Guarantee</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 font-bold text-zinc-900 dark:text-zinc-100">Master Key Authentication</td>
+                        <td className="p-3 text-lime-600 dark:text-lime-400 font-bold">SHA-256 One-Way Hash Lookup</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 6: MULTI-KEY FAILOVER ENGINE */}
+          {activeSection === 'failover' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div>
+                <span className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider">AUTHENTICATION &amp; KEYS / FAILOVER</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">Multi-Key Failover Routing</h2>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+                  Automatic provider rotation triggers and secondary fallback configuration.
+                </p>
+              </div>
+
+              {/* Failover Trigger Matrix Table */}
+              <div className="space-y-3 font-mono text-xs">
+                <span className="font-bold uppercase tracking-wider text-zinc-400 block text-[11px]">
+                  Failover Trigger Conditions Matrix:
+                </span>
+
+                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 font-bold text-[11px]">
+                        <th className="p-3">UPSTREAM HTTP STATUS</th>
+                        <th className="p-3">TRIGGER CAUSE</th>
+                        <th className="p-3">GATEWAY ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      <tr>
+                        <td className="p-3 text-amber-500 font-bold">HTTP 429</td>
+                        <td className="p-3 text-zinc-700 dark:text-zinc-300">Rate Limit / Concurrency Exceeded</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">⚡ Instant Secondary Key Rotation</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 text-amber-500 font-bold">HTTP 402</td>
+                        <td className="p-3 text-zinc-700 dark:text-zinc-300">Provider Quota Exhausted</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">⚡ Instant Secondary Key Rotation</td>
+                      </tr>
+                      <tr>
+                        <td className="p-3 text-rose-500 font-bold">HTTP 5xx</td>
+                        <td className="p-3 text-zinc-700 dark:text-zinc-300">Upstream Server Outage</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">⚡ Auto-Retry &amp; Fallback Adapter</td>
+                      </tr>
+                      <tr className="bg-zinc-50 dark:bg-zinc-900/60">
+                        <td className="p-3 text-rose-500 font-bold">HTTP 401</td>
+                        <td className="p-3 text-zinc-700 dark:text-zinc-300">Invalid / Revoked Provider Key</td>
+                        <td className="p-3 text-amber-600 dark:text-amber-400 font-bold">⚡ Alert Email &amp; Secondary Failover</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Code Snippet for Enforcing Failover */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 font-mono">
+                  Enforcing Auto-Failover via Request Payload:
+                </h3>
+                <CodeBlock
+                  filename="failover_config"
+                  code={{
+                    typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/search', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ld_live_your_master_key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    query: 'Latest AI benchmarks 2026',
+    provider: 'auto', // Enforces Primary -> Secondary Failover Chain
+  }),
+});`,
+                    python: `import httpx
+
+client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+response = client.post(
+    "/v1/search",
+    headers={"Authorization": "Bearer ld_live_your_master_key"},
+    json={"query": "Latest AI benchmarks 2026", "provider": "auto"}
+)
+print(response.json())`,
+                    curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+  -H "Authorization: Bearer ld_live_your_master_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "Latest AI benchmarks 2026", "provider": "auto"}'`
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* FALLBACK FOR OTHER SECTIONS */}
-          {activeSection !== 'quickstart' && activeSection !== 'architecture' && activeSection !== 'principles' && (
+          {activeSection !== 'quickstart' &&
+           activeSection !== 'architecture' &&
+           activeSection !== 'principles' &&
+           activeSection !== 'keys-vault' &&
+           activeSection !== 'key-encryption' &&
+           activeSection !== 'failover' && (
             <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-4 font-mono text-xs">
               <span className="text-lime-500 font-bold uppercase tracking-wider text-[11px] block">DOCUMENTATION GUIDE</span>
               <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 capitalize">

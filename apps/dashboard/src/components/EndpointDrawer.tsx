@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
   X, Terminal, Play, Copy, Check, Loader2, ShieldCheck, Key, Zap, ArrowRight, Code
@@ -136,18 +137,18 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
     navigate('/keys');
   };
 
-  return (
+  return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Overlay Backdrop */}
       <div 
-        className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm transition-opacity duration-300" 
+        className="fixed inset-0 z-[9998] bg-black/70 backdrop-blur-sm transition-opacity duration-300" 
         onClick={onClose}
       />
 
-      {/* Slide-Over Drawer Container */}
-      <div className="fixed inset-y-0 right-0 z-[100] h-screen w-full max-w-lg bg-zinc-950 border-l border-zinc-800 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out dark:bg-zinc-950 light:bg-white light:border-zinc-200 font-sans">
+      {/* Slide-Over Drawer Container (Mounted via Portal) */}
+      <div className="fixed top-0 right-0 z-[9999] h-screen w-full max-w-lg bg-zinc-950 border-l border-zinc-800 shadow-2xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 ease-out dark:bg-zinc-950 light:bg-white light:border-zinc-200 font-sans">
         
-        {/* Header */}
+        {/* Header directly at top-0 */}
         <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-start justify-between bg-zinc-50 dark:bg-zinc-900/50 shrink-0">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
@@ -305,6 +306,7 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
         </div>
 
       </div>
-    </>
+    </>,
+    document.body
   );
 };

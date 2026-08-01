@@ -356,7 +356,7 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-mono uppercase tracking-wider font-semibold">
               <span>Monthly Volume</span>
-              <span className="text-xs text-zinc-400 font-sans font-normal">Billed at provider raw rate plus standard 5% markup.</span>
+              <span className="text-xs text-zinc-400 font-sans font-normal">Transparent usage pricing • Raw provider rates + 5% routing fee</span>
             </div>
 
             {/* Side-by-Side Volume Breakdown */}
@@ -381,7 +381,7 @@ export const Dashboard: React.FC = () => {
                   {stats ? `$${stats.total_spent_usd.toFixed(2)}` : '$0.00'}
                 </span>
                 <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
-                  Transparent provider billing
+                  Pass-through billing after 100 free calls
                 </span>
               </div>
             </div>

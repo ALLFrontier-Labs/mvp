@@ -8,6 +8,10 @@ import {
   Bell, Lock, Sliders, ShieldCheck, ArrowUpRight
 } from 'lucide-react';
 import { api, getStoredApiKey, setStoredApiKey, clearStoredApiKey } from '../lib/api';
+import { DepositFundsDrawer } from '../components/DepositFundsDrawer';
+import { RegenerateKeyModal } from '../components/RegenerateKeyModal';
+import { SettingsWebhooks } from '../components/SettingsWebhooks';
+import { SettingsGuardrails } from '../components/SettingsGuardrails';
 
 interface Me {
   email: string;
@@ -46,6 +50,18 @@ export const Settings: React.FC = () => {
 
   // Quick Reference Endpoint Tab State
   const [selectedEndpoint, setSelectedEndpoint] = useState<EndpointTab>('scrape');
+
+  // Deposit Drawer & Toast State
+  const [isDepositDrawerOpen, setIsDepositDrawerOpen] = useState(false);
+  const [depositToast, setDepositToast]               = useState<string | null>(null);
+
+  const handleDepositSuccess = (addedAmount: number) => {
+    if (me) {
+      setMe({ ...me, balance_usd: me.balance_usd + addedAmount });
+    }
+    setDepositToast(`Added $${addedAmount.toFixed(2)} USD to Prepaid Gateway Balance!`);
+    setTimeout(() => setDepositToast(null), 4000);
+  };
 
   // Webhooks & Guardrails State
   const [webhookUrl, setWebhookUrl]   = useState('https://example.com/api/webhooks/litedaemon');
@@ -161,6 +177,16 @@ export const Settings: React.FC = () => {
           <span>Sign Out</span>
         </button>
       </div>
+
+      {/* Success Deposit Toast */}
+      {depositToast && (
+        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold flex items-center justify-between animate-in fade-in">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" /> {depositToast}
+          </span>
+          <span className="text-[10px] text-zinc-400">Updated Live</span>
+        </div>
+      )}
 
       {/* ── SETTINGS SUB-NAVIGATION TABS BAR ────────────────────────────────── */}
       <div className="border-b border-zinc-200 dark:border-zinc-800/80 flex space-x-6 overflow-x-auto font-mono text-xs">
@@ -330,8 +356,8 @@ export const Settings: React.FC = () => {
               <div className="flex items-center justify-between pt-1 border-t border-zinc-200 dark:border-zinc-800">
                 <span className="text-[10px] text-zinc-400">Micro-debited per call</span>
                 <button
-                  onClick={() => navigate('/billing')}
-                  className="px-3 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs shadow-sm transition-all"
+                  onClick={() => setIsDepositDrawerOpen(true)}
+                  className="px-3 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs shadow-sm transition-all cursor-pointer"
                 >
                   + Deposit Funds
                 </button>
@@ -372,66 +398,9 @@ export const Settings: React.FC = () => {
 
       {/* ── TAB 3: WEBHOOKS & BUDGET GUARDRAILS ───────────────────────────── */}
       {activeSubTab === 'webhooks' && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-5 font-sans">
-          <div className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800 pb-3 font-mono">
-            <Sliders className="w-4 h-4 text-lime-500" />
-            <span>Webhooks &amp; Budget Guardrails</span>
-          </div>
-
-          <form onSubmit={handleSaveGuardrails} className="space-y-4 font-mono text-xs">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Alert Webhook Endpoint URL</label>
-              <input
-                type="url"
-                value={webhookUrl}
-                onChange={e => setWebhookUrl(e.target.value)}
-                placeholder="https://example.com/webhooks"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Monthly Budget Cap ($)</label>
-                <input
-                  type="text"
-                  value={budgetCap}
-                  onChange={e => setBudgetCap(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 focus:border-lime-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Auto-Failover Alerts</label>
-                <button
-                  type="button"
-                  onClick={() => setEmailAlerts(!emailAlerts)}
-                  className={`w-full py-2.5 px-4 rounded-xl font-bold border text-center transition-all ${
-                    emailAlerts
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
-                  }`}
-                >
-                  {emailAlerts ? '✓ Enabled' : 'Disabled'}
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2 flex items-center gap-3">
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold shadow-md transition-all"
-              >
-                Save Settings
-              </button>
-
-              {guardrailSaved && (
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 animate-in fade-in">
-                  <CheckCircle2 className="w-4 h-4" /> Guardrails updated successfully!
-                </span>
-              )}
-            </div>
-          </form>
+        <div className="space-y-6">
+          <SettingsWebhooks />
+          <SettingsGuardrails />
         </div>
       )}
 
@@ -488,61 +457,20 @@ export const Settings: React.FC = () => {
         </div>
       )}
 
-      {/* ── KEY REGENERATION CONFIRMATION MODAL ──────────────────────────────── */}
-      {isRegenerateModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm font-mono text-xs">
-          <div className="w-full max-w-md bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-6 shadow-2xl relative">
-            
-            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">
-              <div className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-amber-500" />
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Regenerate Master Gateway Key</h3>
-              </div>
-              <button
-                onClick={() => setIsRegenerateModalOpen(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* ── WALLET DEPOSIT DRAWER ───────────────────────────────────────────── */}
+      <DepositFundsDrawer
+        isOpen={isDepositDrawerOpen}
+        currentBalance={me ? me.balance_usd : 9.95}
+        onClose={() => setIsDepositDrawerOpen(false)}
+        onDepositSuccess={handleDepositSuccess}
+      />
 
-            {regenerateSuccess ? (
-              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto animate-bounce" />
-                <p className="text-emerald-600 dark:text-emerald-400 font-bold">New Master Bearer Token Generated!</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 space-y-1">
-                  <p className="font-bold flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4" /> Warning
-                  </p>
-                  <p className="leading-relaxed font-sans text-xs">
-                    Regenerating your key will immediately invalidate your current Bearer token. Any active applications using the old key will be rejected. Continue?
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-end space-x-3 pt-2">
-                  <button
-                    onClick={() => setIsRegenerateModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleRegenerateKey}
-                    disabled={isRegenerating}
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold flex items-center gap-1.5 shadow-md"
-                  >
-                    {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Confirm &amp; Regenerate</span>}
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
+      {/* ── MASTER KEY REGENERATION SAFETY MODAL ────────────────────────────── */}
+      <RegenerateKeyModal
+        isOpen={isRegenerateModalOpen}
+        onClose={() => setIsRegenerateModalOpen(false)}
+        onKeyRegenerated={(newKey) => setCurrentKey(newKey)}
+      />
 
     </div>
   );

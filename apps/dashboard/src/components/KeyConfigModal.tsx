@@ -9,11 +9,11 @@ import { api } from '../lib/api';
 export interface ProviderMeta {
   id: string;
   name: string;
-  category: string;
   endpoint: string;
-  description: string;
-  website: string;
-  iconBg: string;
+  category?: string;
+  description?: string;
+  website?: string;
+  iconBg?: string;
 }
 
 export interface ByokKey {
@@ -31,7 +31,8 @@ export interface KeyConfigModalProps {
   existingPrimaryKeys?: ByokKey[];
   existingFallbackKeys?: ByokKey[];
   onClose: () => void;
-  onKeysUpdated: () => void;
+  onKeysUpdated?: () => void;
+  onSaveSuccess?: () => void;
 }
 
 export const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
@@ -41,6 +42,7 @@ export const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   existingFallbackKeys = [],
   onClose,
   onKeysUpdated,
+  onSaveSuccess,
 }) => {
   const [primaryKey, setPrimaryKey] = useState('');
   const [fallbackKey, setFallbackKey] = useState('');
@@ -150,7 +152,8 @@ export const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
       }
 
       setSaveSuccessMsg(`Vault updated for ${provider.name}`);
-      onKeysUpdated();
+      onKeysUpdated?.();
+      onSaveSuccess?.();
       setTimeout(() => {
         onClose();
       }, 1200);
@@ -170,7 +173,8 @@ export const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
       for (const k of allKeys) {
         await api.deleteKey(k.id);
       }
-      onKeysUpdated();
+      onKeysUpdated?.();
+      onSaveSuccess?.();
       onClose();
     } catch (err: any) {
       setTestError(err.message || 'Failed to revoke keys');

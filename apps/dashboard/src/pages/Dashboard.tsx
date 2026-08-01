@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Wallet, 
@@ -20,10 +20,13 @@ import {
   Cpu,
   Lock,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Sliders
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { UsageBanner } from '../components/UsageBanner';
+import { EndpointDrawer } from '../components/EndpointDrawer';
+import { TopUpModal } from '../components/TopUpModal';
 
 interface ByokKeyInfo {
   id: string;
@@ -48,6 +51,8 @@ const itemVariants = {
 };
 
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+
   const [stats, setStats] = useState<{
     total_calls: number;
     billed_calls: number;
@@ -58,6 +63,14 @@ export const Dashboard: React.FC = () => {
   const [byokKeys, setByokKeys] = useState<ByokKeyInfo[]>([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
+  const [lastUpdatedText, setLastUpdatedText] = useState<string | null>(null);
+
+  // Drawer and Modal States
+  const [drawerEndpoint, setDrawerEndpoint] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const [topUpAmount, setTopUpAmount] = useState<number>(10);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -69,9 +82,12 @@ export const Dashboard: React.FC = () => {
       ]);
       if (usageData) setStats(usageData);
       if (keysData?.keys) setByokKeys(keysData.keys as any);
+
+      const now = new Date();
+      setLastUpdatedText(`Updated just now (${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })})`);
     } catch (err: any) {
       setError(err.message || 'Failed to load account data');
-    } finally {
+    } fontally: {
       setLoading(false);
     }
   };
@@ -83,6 +99,18 @@ export const Dashboard: React.FC = () => {
   const totalCalls = stats?.total_calls ?? 0;
   const rescuedRateLimits = Math.floor(totalCalls * 0.14) + (byokKeys.length > 1 ? 3 : 0);
   const activeVaults = byokKeys.length;
+
+  // Drawer opener handler
+  const handleOpenDrawer = (ep: string) => {
+    setDrawerEndpoint(ep);
+    setIsDrawerOpen(true);
+  };
+
+  // Top-Up modal opener handler
+  const handleOpenTopUp = (amt: number = 10) => {
+    setTopUpAmount(amt);
+    setIsTopUpOpen(true);
+  };
 
   // Helper to dynamically get category key count & formatted provider string
   const getCategoryKeyInfo = (endpointSlug: string, defaultsText: string) => {
@@ -125,6 +153,17 @@ export const Dashboard: React.FC = () => {
   const browserInfo  = useMemo(() => getCategoryKeyInfo('browser',  'Browserbase & Steel Browser'),  [byokKeys]);
   const executeInfo  = useMemo(() => getCategoryKeyInfo('execute',  'E2B & Daytona Sandboxes'),  [byokKeys]);
 
+  const activeKeyForEndpoint = (ep: string) => {
+    switch(ep) {
+      case '/v1/scrape': return scrapeInfo.count;
+      case '/v1/document': return documentInfo.count;
+      case '/v1/search': return searchInfo.count;
+      case '/v1/browser': return browserInfo.count;
+      case '/v1/execute': return executeInfo.count;
+      default: return 0;
+    }
+  };
+
   return (
     <motion.div 
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 selection:bg-emerald-500 selection:text-slate-950 font-sans"
@@ -150,6 +189,11 @@ export const Dashboard: React.FC = () => {
                 </span>
                 <span className="font-semibold">Gateway Operational • 0ms Latency Overhead</span>
               </div>
+              {lastUpdatedText && (
+                <span className="text-[11px] font-mono text-zinc-400 hidden sm:inline-block">
+                  {lastUpdatedText}
+                </span>
+              )}
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
               <Cpu className="w-7 h-7 text-lime-600 dark:text-lime-400" />
@@ -166,7 +210,7 @@ export const Dashboard: React.FC = () => {
               disabled={loading}
               className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-mono font-medium flex items-center space-x-2 transition-all border border-zinc-200 dark:border-zinc-700/60"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-lime-500' : ''}`} />
               <span>Refresh</span>
             </button>
             <Link
@@ -220,10 +264,13 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Stat 3: Configured Keys */}
-        <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
+        <div 
+          onClick={() => navigate('/keys')}
+          className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between cursor-pointer group"
+        >
           <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
-              Configured Keys
+            <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block group-hover:text-cyan-500 transition-colors">
+              Configured Keys →
             </span>
             <span className="text-3xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 mt-2 block">
               {activeVaults} Vaulted
@@ -244,6 +291,7 @@ export const Dashboard: React.FC = () => {
         <UsageBanner
           monthlyCallCount={stats?.total_calls || 0}
           balanceUsd={stats?.balance_usd || 0}
+          onTopUpClick={() => handleOpenTopUp(10)}
         />
       </motion.div>
 
@@ -251,66 +299,6 @@ export const Dashboard: React.FC = () => {
         <motion.div variants={itemVariants} className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400 flex items-center space-x-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
-        </motion.div>
-      )}
-
-      {/* New User Onboarding Banner — shown when balance=$0 and no calls yet */}
-      {stats && stats.balance_usd === 0 && stats.total_calls === 0 && !loading && (
-        <motion.div variants={itemVariants} className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-zinc-900/40 to-emerald-500/10 p-6 sm:p-8 space-y-6">
-          <div>
-            <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-emerald-500" />
-              Welcome to LiteDaemon! Let's get you started.
-            </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
-              Add your BYOK API keys for Tavily, Firecrawl, E2B &amp; more to execute agent workflows.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                step: '1',
-                icon: ShieldCheck,
-                title: 'Add Your BYOK Keys',
-                desc: 'Add prioritized & fallback API keys for search, scraping, browser & sandbox tools.',
-                action: '/keys',
-                actionLabel: 'Manage BYOK Keys →',
-              },
-              {
-                step: '2',
-                icon: Layers,
-                title: 'Browse Tool Catalog',
-                desc: '36+ tool providers across 5 execution endpoints using your BYOK keys.',
-                action: '/providers',
-                actionLabel: 'Browse Tool Catalog →',
-              },
-              {
-                step: '3',
-                icon: Terminal,
-                title: 'Make Your First Call',
-                desc: 'POST /v1/scrape or /v1/search with provider: "auto" for automated failover.',
-                action: '/playground',
-                actionLabel: 'Open Playground →',
-              },
-            ].map(s => (
-              <Link
-                key={s.step}
-                to={s.action}
-                className="group p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 hover:border-lime-500/40 transition-all space-y-3 shadow-sm dark:shadow-none"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center">
-                    {s.step}
-                  </span>
-                  <s.icon className="w-4 h-4 text-emerald-500" />
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{s.title}</span>
-                </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed">{s.desc}</p>
-                <span className="text-emerald-600 dark:text-emerald-400 text-xs font-mono group-hover:underline">{s.actionLabel}</span>
-              </Link>
-            ))}
-          </div>
         </motion.div>
       )}
 
@@ -338,18 +326,26 @@ export const Dashboard: React.FC = () => {
 
             {/* Quick Top-Up Pills */}
             <div className="pt-2">
-              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 block mb-2 font-semibold">
-                Quick Top-Up Deposit:
-              </span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-semibold">
+                  Quick Deposit Options:
+                </span>
+                <button
+                  onClick={() => handleOpenTopUp(10)}
+                  className="text-xs font-mono font-bold text-lime-600 dark:text-lime-400 hover:underline"
+                >
+                  Custom Amount →
+                </button>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
-                {['10', '25', '50', '100'].map((amt) => (
-                  <Link
+                {[10, 25, 50, 100].map((amt) => (
+                  <button
                     key={amt}
-                    to="/billing"
-                    className="px-3 py-1.5 rounded-xl font-mono text-xs font-semibold transition-colors bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60"
+                    onClick={() => handleOpenTopUp(amt)}
+                    className="px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all bg-zinc-100 hover:bg-lime-400 hover:text-zinc-950 text-zinc-800 dark:bg-zinc-800 dark:hover:bg-lime-400 dark:hover:text-zinc-950 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 shadow-sm"
                   >
                     +${amt}
-                  </Link>
+                  </button>
                 ))}
               </div>
             </div>
@@ -361,7 +357,7 @@ export const Dashboard: React.FC = () => {
               Auto-recharge ready
             </span>
             <Link to="/billing" className="text-lime-600 dark:text-lime-400 font-bold hover:underline">
-              Billing Settings →
+              Billing Ledger →
             </Link>
           </div>
         </div>
@@ -386,7 +382,7 @@ export const Dashboard: React.FC = () => {
                   {stats?.billed_calls ?? 0} Calls
                 </span>
                 <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
-                  {stats && stats.total_calls <= 100 ? '100% Covered by Free Tier' : 'Billed at 5% Markup'}
+                  {stats && stats.total_calls <= 100 ? '100% Covered by Free Allowance' : 'Billed at 5% Markup'}
                 </span>
               </div>
 
@@ -410,7 +406,7 @@ export const Dashboard: React.FC = () => {
               Transparent Micro-Billing
             </span>
             <Link to="/docs/billing" className="text-lime-600 dark:text-lime-400 font-bold hover:underline">
-              Billing Docs Specs →
+              Billing Specs →
             </Link>
           </div>
         </div>
@@ -432,9 +428,9 @@ export const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
           
           {/* Card 1: Scrape */}
-          <Link
-            to="/keys"
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          <div
+            onClick={() => handleOpenDrawer('/v1/scrape')}
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -448,15 +444,15 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span>Clean Markdown &amp; HTML</span>
-              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
+              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
-          </Link>
+          </div>
 
           {/* Card 2: Document */}
-          <Link
-            to="/keys"
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          <div
+            onClick={() => handleOpenDrawer('/v1/document')}
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -470,15 +466,15 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span>Markdown &amp; JSON Schema</span>
-              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
+              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
-          </Link>
+          </div>
 
           {/* Card 3: Search */}
-          <Link
-            to="/keys"
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          <div
+            onClick={() => handleOpenDrawer('/v1/search')}
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -492,15 +488,15 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span>Title, URL &amp; Snippets</span>
-              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
+              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
-          </Link>
+          </div>
 
           {/* Card 4: Browser */}
-          <Link
-            to="/keys"
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          <div
+            onClick={() => handleOpenDrawer('/v1/browser')}
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -514,15 +510,15 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span>CDP Session &amp; Debug Stream</span>
-              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
+              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
-          </Link>
+          </div>
 
           {/* Card 5: Execute */}
-          <Link
-            to="/keys"
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group"
+          <div
+            onClick={() => handleOpenDrawer('/v1/execute')}
+            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -536,13 +532,29 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span>stdout, stderr &amp; artifacts</span>
-              <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-lime-500" />
+              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
-          </Link>
+          </div>
 
         </div>
       </motion.div>
+
+      {/* ── Slide-Over Endpoint Drawer ────────────────────────────────────────── */}
+      <EndpointDrawer
+        isOpen={isDrawerOpen}
+        endpoint={drawerEndpoint}
+        onClose={() => setIsDrawerOpen(false)}
+        activeKeyCount={drawerEndpoint ? activeKeyForEndpoint(drawerEndpoint) : 0}
+      />
+
+      {/* ── Live Prepaid Wallet Top-Up Modal ─────────────────────────────────── */}
+      <TopUpModal
+        isOpen={isTopUpOpen}
+        initialAmount={topUpAmount}
+        onClose={() => setIsTopUpOpen(false)}
+        onSuccess={() => loadData()}
+      />
 
     </motion.div>
   );

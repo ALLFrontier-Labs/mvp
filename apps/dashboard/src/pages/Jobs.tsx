@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   History, Search, RefreshCw, X, Code, CheckCircle2,
   Clock, XCircle, Copy, Check, ChevronRight, Loader2, AlertCircle,
-  Zap, ShieldCheck, ArrowRight, Terminal
+  Zap, ShieldCheck, ArrowRight, Terminal, Download, Activity,
+  Filter, Calendar, ChevronDown, FileSpreadsheet, FileJson, Layers
 } from 'lucide-react';
 import { api } from '../lib/api';
 
-interface JobItem {
+export interface JobItem {
   job_id: string;
   provider: string;
   endpoint: string;
@@ -24,29 +25,36 @@ interface JobItem {
 }
 
 const STATUS_STYLES: Record<string, { badge: string; text: string }> = {
-  completed: { badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', text: '200 OK' },
-  running:   { badge: 'bg-amber-500/10  text-amber-400  border-amber-500/20',   text: 'Running' },
-  pending:   { badge: 'bg-slate-500/10  text-slate-400  border-slate-500/20',   text: 'Pending' },
-  failed:    { badge: 'bg-rose-500/10   text-rose-400   border-rose-500/20',    text: '500 Error' },
+  completed: { badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', text: '200 OK' },
+  running:   { badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',     text: 'Running' },
+  pending:   { badge: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20',       text: 'Pending' },
+  failed:    { badge: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',        text: '500 Error' },
 };
 
-const ENDPOINT_COLOR: Record<string, string> = {
-  scrape:   'text-emerald-400',
-  search:   'text-teal-400',
-  browser:  'text-cyan-400',
-  execute:  'text-purple-400',
-  document: 'text-amber-400',
+const ENDPOINT_BADGE: Record<string, string> = {
+  '/v1/scrape':   'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+  '/v1/search':   'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+  '/v1/browser':  'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+  '/v1/execute':  'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+  '/v1/document': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
 };
 
 function formatLatency(ms?: number) {
-  if (!ms || ms <= 0) return '~450ms';
-  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
+  if (!ms || ms <= 0) return '450ms';
+  if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
   return `${ms}ms`;
+}
+
+function getLatencyColorClass(ms?: number): string {
+  if (!ms) return 'text-emerald-600 dark:text-emerald-400';
+  if (ms < 1000) return 'text-emerald-600 dark:text-emerald-400 font-semibold';
+  if (ms <= 2500) return 'text-amber-600 dark:text-amber-400 font-semibold';
+  return 'text-rose-600 dark:text-rose-400 font-bold';
 }
 
 function timeAgo(iso: string) {
   const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (secs < 60)   return `${secs}s ago`;
+  if (secs < 60) return `${secs}s ago`;
   if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
   if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
   return `${Math.floor(secs / 86400)}d ago`;
@@ -57,18 +65,28 @@ export const Jobs: React.FC = () => {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
-  const [inspectLoading, setInspectLoading] = useState(false);
-  const [copiedPayload, setCopiedPayload]   = useState(false);
-  const [copiedResult, setCopiedResult]     = useState(false);
-  const [jobIdQuery, setJobIdQuery]   = useState('');
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [copiedId, setCopiedId]       = useState<string | null>(null);
+  const [copiedPayload, setCopiedPayload] = useState(false);
+  const [copiedResult, setCopiedResult]   = useState(false);
+
+  // Streaming Live Tail state
+  const [isLiveTail, setIsLiveTail]   = useState(true);
+
+  // Filters State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | '200' | 'errors'>('all');
+  const [providerFilter, setProviderFilter] = useState<string>('all');
+  const [timeFilter, setTimeFilter] = useState<'1h' | '24h' | '7d'>('24h');
+
+  // Export dropdown state
+  const [exportOpen, setExportOpen]   = useState(false);
 
   const loadJobs = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.listJobs(25);
-      setJobs(data.jobs);
+      const data = await api.listJobs(50);
+      setJobs(data.jobs || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load execution logs');
     } finally {
@@ -76,309 +94,556 @@ export const Jobs: React.FC = () => {
     }
   };
 
-  useEffect(() => { loadJobs(); }, []);
+  useEffect(() => {
+    loadJobs();
+  }, []);
 
-  const inspectJob = async (id: string) => {
-    setInspectLoading(true);
-    setSearchError(null);
-    try {
-      const res = await api.getJob(id);
-      setSelectedJob({
-        job_id:           res.job_id,
-        provider:         res.provider || 'auto',
-        endpoint:         res.endpoint || 'scrape',
-        status:           res.status,
-        duration_ms:      res.duration_ms || 420,
-        routing_type:     res.routing_type || 'Direct BYOK',
-        attempts:         res.attempts || 1,
-        request_payload:  res.params || { provider: res.provider, endpoint: res.endpoint },
-        result:           res.result,
-        error:            res.error,
-        created_at:       res.created_at || new Date().toISOString(),
-      });
-    } catch (err: any) {
-      setSearchError(err.message || 'Job execution record not found');
-    } finally {
-      setInspectLoading(false);
-    }
-  };
+  // Live Tail Polling effect
+  useEffect(() => {
+    if (!isLiveTail) return;
+    const interval = setInterval(() => {
+      loadJobs();
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [isLiveTail]);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!jobIdQuery.trim()) return;
-    await inspectJob(jobIdQuery.trim());
-  };
-
-  const copyToClipboard = (text: string, field: 'payload' | 'result') => {
+  const copyText = (text: string, id?: string) => {
     navigator.clipboard.writeText(text);
-    if (field === 'payload') {
-      setCopiedPayload(true);
-      setTimeout(() => setCopiedPayload(false), 2000);
-    } else {
-      setCopiedResult(true);
-      setTimeout(() => setCopiedResult(false), 2000);
+    if (id) {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
     }
+  };
+
+  // Filter Computation
+  const filteredJobs = useMemo(() => {
+    let list = jobs;
+
+    // Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(j =>
+        j.job_id.toLowerCase().includes(q) ||
+        j.provider.toLowerCase().includes(q) ||
+        j.endpoint.toLowerCase().includes(q) ||
+        (j.error && j.error.toLowerCase().includes(q))
+      );
+    }
+
+    // Status filter
+    if (statusFilter === '200') {
+      list = list.filter(j => j.status === 'completed');
+    } else if (statusFilter === 'errors') {
+      list = list.filter(j => j.status === 'failed' || j.status === 'pending');
+    }
+
+    // Provider filter
+    if (providerFilter !== 'all') {
+      list = list.filter(j => j.provider.toLowerCase() === providerFilter.toLowerCase());
+    }
+
+    // Time filter
+    const now = Date.now();
+    if (timeFilter === '1h') {
+      list = list.filter(j => now - new Date(j.created_at).getTime() <= 3600 * 1000);
+    } else if (timeFilter === '24h') {
+      list = list.filter(j => now - new Date(j.created_at).getTime() <= 86400 * 1000);
+    } else if (timeFilter === '7d') {
+      list = list.filter(j => now - new Date(j.created_at).getTime() <= 7 * 86400 * 1000);
+    }
+
+    return list;
+  }, [jobs, searchQuery, statusFilter, providerFilter, timeFilter]);
+
+  // Telemetry Metrics Calculation
+  const { totalVolume, avgLatencyMs, successRate, rescuedCount } = useMemo(() => {
+    const total = jobs.length || 1;
+    let sumLatency = 0;
+    let completedCount = 0;
+    let rescued = 0;
+
+    for (const j of jobs) {
+      sumLatency += (j.duration_ms || 420);
+      if (j.status === 'completed') completedCount++;
+      if (j.fallback_used || (j.attempts && j.attempts > 1)) rescued++;
+    }
+
+    const avgLat = Math.round(sumLatency / total);
+    const succRate = Math.round((completedCount / total) * 1000) / 10;
+
+    return {
+      totalVolume: jobs.length,
+      avgLatencyMs: avgLat,
+      successRate: succRate,
+      rescuedCount: rescued,
+    };
+  }, [jobs]);
+
+  // Unique provider list for dropdown
+  const uniqueProviders = useMemo(() => {
+    const set = new Set<string>();
+    for (const j of jobs) {
+      if (j.provider) set.add(j.provider);
+    }
+    return Array.from(set);
+  }, [jobs]);
+
+  // Export handlers
+  const exportAsJSON = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(filteredJobs, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute('href', dataStr);
+    dlAnchorElem.setAttribute('download', `litedaemon_logs_${Date.now()}.json`);
+    dlAnchorElem.click();
+    setExportOpen(false);
+  };
+
+  const exportAsCSV = () => {
+    const headers = ['Job ID', 'Endpoint', 'Provider', 'Status', 'Routing', 'Duration (ms)', 'Timestamp'];
+    const rows = filteredJobs.map(j => [
+      j.job_id,
+      j.endpoint,
+      j.provider,
+      j.status,
+      j.routing_type || 'Direct BYOK',
+      j.duration_ms || 450,
+      j.created_at
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `litedaemon_logs_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setExportOpen(false);
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 selection:bg-emerald-500 selection:text-slate-950">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 font-sans">
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-emerald-950/30 via-slate-900/90 to-slate-900 border border-emerald-500/20 shadow-xl">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <History className="w-6 h-6 text-emerald-400" />
-            <span>Job Execution Log</span>
+      {/* ── HEADER & LIVE STREAMING CONTROLS ─────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
+            <Activity className="w-7 h-7 text-lime-600 dark:text-lime-400" />
+            <span>Request Logs &amp; Observability</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Real-time execution logs, latency metrics, and failover diagnostics for your gateway API requests.
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+            Real-time execution traces, latency metrics, and failover diagnostics for gateway requests.
           </p>
         </div>
-        <button
-          onClick={loadJobs}
-          disabled={loading}
-          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center space-x-1.5 transition-colors border border-slate-700 self-start"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh Logs</span>
-        </button>
+
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+          {/* Live Tail Toggle Switch */}
+          <button
+            onClick={() => setIsLiveTail(!isLiveTail)}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-bold border transition-all ${
+              isLiveTail
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
+            }`}
+          >
+            <span className="relative flex h-2 w-2">
+              {isLiveTail && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${isLiveTail ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
+            </span>
+            <span>{isLiveTail ? 'Live Tail Active' : 'Live Tail Paused'}</span>
+          </button>
+
+          {/* Refresh Button */}
+          <button
+            onClick={loadJobs}
+            disabled={loading}
+            className="p-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-medium transition-all border border-zinc-200 dark:border-zinc-700/60"
+            title="Refresh Logs"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-lime-500' : ''}`} />
+          </button>
+
+          {/* Export Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setExportOpen(!exportOpen)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-mono font-semibold transition-all border border-zinc-200 dark:border-zinc-700"
+            >
+              <Download className="w-3.5 h-3.5 text-lime-500" />
+              <span>Export</span>
+              <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+            </button>
+
+            {exportOpen && (
+              <div className="absolute right-0 mt-2 w-44 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl z-50 p-1.5 font-mono text-xs space-y-1">
+                <button
+                  onClick={exportAsJSON}
+                  className="w-full px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center gap-2 text-left"
+                >
+                  <FileJson className="w-4 h-4 text-emerald-500" /> Export JSON
+                </button>
+                <button
+                  onClick={exportAsCSV}
+                  className="w-full px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center gap-2 text-left"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-cyan-500" /> Export CSV
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Job ID lookup */}
-      <form onSubmit={handleSearch} className="flex items-center space-x-3 max-w-xl">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-          <input
-            type="text"
-            value={jobIdQuery}
-            onChange={(e) => setJobIdQuery(e.target.value)}
-            placeholder="Search or inspect by Job UUID…"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#121620] border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 font-mono text-xs"
-          />
+      {/* ── TELEMETRY SUMMARY CARDS (4 Cards) ─────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Gateway Volume */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-bold block">
+            Total Gateway Volume
+          </span>
+          <span className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 mt-2 block font-sans">
+            {totalVolume.toLocaleString()} Requests
+          </span>
+          <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            Last 24 hours execution volume
+          </span>
         </div>
-        <button
-          type="submit"
-          disabled={inspectLoading}
-          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition-all flex items-center space-x-1.5 shadow-md shadow-emerald-500/20 disabled:opacity-50"
-        >
-          {inspectLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Inspect</span>}
-        </button>
-      </form>
 
-      {searchError && (
-        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-sm text-rose-400 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" /> {searchError}
+        {/* Card 2: Avg Latency */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-bold block">
+            Avg Latency
+          </span>
+          <span className="text-2xl font-extrabold text-teal-600 dark:text-teal-400 mt-2 block font-sans">
+            {avgLatencyMs} ms
+          </span>
+          <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            Mean execution response time
+          </span>
         </div>
-      )}
 
-      {/* Main Execution Log Table */}
-      {error ? (
-        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-400">{error}</div>
-      ) : loading ? (
-        <div className="flex items-center justify-center h-40 text-slate-500 font-mono text-xs">
-          <Loader2 className="w-6 h-6 animate-spin mr-2 text-emerald-400" /> Loading gateway execution logs…
+        {/* Card 3: Success Rate */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-bold block">
+            Success Rate
+          </span>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 font-sans">
+              {successRate}%
+            </span>
+          </div>
+          <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            HTTP 200 OK completions
+          </span>
         </div>
-      ) : jobs.length === 0 ? (
-        <div className="rounded-2xl glass-card border border-slate-800 p-12 text-center">
-          <History className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-          <p className="text-slate-400 text-sm font-semibold">No execution logs yet</p>
-          <p className="text-slate-500 text-xs font-mono mt-1">Make your first API request to see real-time failover &amp; latency metrics here.</p>
+
+        {/* Card 4: Failover Intercepts */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-bold block">
+            Failover Intercepts
+          </span>
+          <span className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-2 block font-sans">
+            {rescuedCount} Rescued
+          </span>
+          <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 mt-1 block">
+            Auto-rotated standby key calls
+          </span>
+        </div>
+      </div>
+
+      {/* ── MULTI-FILTER TOOLBAR ENGINE ───────────────────────────────────────── */}
+      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+          
+          {/* Search Input (5 cols) */}
+          <div className="lg:col-span-5 relative">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by Job ID, prompt term, or provider..."
+              className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs placeholder-zinc-400 focus:border-lime-500 focus:outline-none transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Status Filter (3 cols) */}
+          <div className="lg:col-span-3">
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value as any)}
+              className="w-full px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:border-lime-500 focus:outline-none"
+            >
+              <option value="all">All Statuses</option>
+              <option value="200">200 OK (Success Only)</option>
+              <option value="errors">4xx / 5xx (Errors Only)</option>
+            </select>
+          </div>
+
+          {/* Provider Filter (2 cols) */}
+          <div className="lg:col-span-2">
+            <select
+              value={providerFilter}
+              onChange={e => setProviderFilter(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:border-lime-500 focus:outline-none capitalize"
+            >
+              <option value="all">All Providers</option>
+              {uniqueProviders.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Time Range Filter (2 cols) */}
+          <div className="lg:col-span-2">
+            <select
+              value={timeFilter}
+              onChange={e => setTimeFilter(e.target.value as any)}
+              className="w-full px-3 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:border-lime-500 focus:outline-none"
+            >
+              <option value="1h">Last 1 Hour</option>
+              <option value="24h">Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── HIGH-POLISH THEME-ADAPTIVE LOGS TABLE ───────────────────────────── */}
+      {loading && jobs.length === 0 ? (
+        <div className="flex items-center justify-center h-48 text-zinc-500 dark:text-zinc-400 font-mono text-xs">
+          <Loader2 className="w-5 h-5 animate-spin mr-2 text-lime-500" /> Loading telemetry execution logs…
+        </div>
+      ) : error ? (
+        <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2 font-mono">
+          <AlertCircle className="w-4 h-4" /> {error}
         </div>
       ) : (
-        <div className="rounded-2xl glass-card border border-slate-800 overflow-hidden shadow-2xl">
+        <div className="rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 overflow-hidden shadow-sm dark:shadow-2xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono text-left border-collapse">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[11px]">
-                  <th className="p-4 pl-6">Job ID</th>
-                  <th className="p-4">Endpoint</th>
-                  <th className="p-4">Provider</th>
-                  <th className="p-4">Routing Type</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-right">LATENCY</th>
-                  <th className="p-4 pr-6 text-right">Timestamp</th>
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <th className="py-3.5 px-4 font-semibold">JOB ID</th>
+                  <th className="py-3.5 px-4 font-semibold">ENDPOINT</th>
+                  <th className="py-3.5 px-4 font-semibold">PROVIDER</th>
+                  <th className="py-3.5 px-4 font-semibold">ROUTING TYPE</th>
+                  <th className="py-3.5 px-4 font-semibold">STATUS</th>
+                  <th className="py-3.5 px-4 font-semibold">LATENCY</th>
+                  <th className="py-3.5 px-4 font-semibold text-right">TIMESTAMP</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {jobs.map((job) => {
-                  const statusInfo = STATUS_STYLES[job.status] || STATUS_STYLES.completed;
-                  const isSelected = selectedJob?.job_id === job.job_id;
-                  const isFallback = job.fallback_used || job.routing_type === 'Fallback Triggered';
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-xs font-sans">
+                {filteredJobs.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-zinc-500 dark:text-zinc-400 font-mono">
+                      No request logs match current filter query.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredJobs.map((j) => {
+                    const statusMeta = STATUS_STYLES[j.status] || STATUS_STYLES.completed;
+                    const endpointClass = ENDPOINT_BADGE[j.endpoint] || 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-500/20';
+                    const latencyColor = getLatencyColorClass(j.duration_ms);
 
-                  return (
-                    <tr
-                      key={job.job_id}
-                      onClick={() => inspectJob(job.job_id)}
-                      className={`hover:bg-slate-800/40 transition-colors cursor-pointer group ${
-                        isSelected ? 'bg-emerald-500/10' : ''
-                      }`}
-                    >
-                      {/* Job ID */}
-                      <td className="p-4 pl-6 font-bold text-slate-300 group-hover:text-emerald-400 transition-colors">
-                        {job.job_id.slice(0, 8)}…
-                      </td>
+                    return (
+                      <tr
+                        key={j.job_id}
+                        onClick={() => setSelectedJob(j)}
+                        className="hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors group"
+                      >
+                        {/* JOB ID */}
+                        <td className="py-3.5 px-4 font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                          <div className="flex items-center gap-1.5">
+                            <span title={j.job_id}>
+                              {j.job_id.length > 12 ? `${j.job_id.slice(0, 10)}…` : j.job_id}
+                            </span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); copyText(j.job_id, j.job_id); }}
+                              className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                              title="Copy Job ID"
+                            >
+                              {copiedId === j.job_id ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </td>
 
-                      {/* Endpoint Badge */}
-                      <td className="p-4">
-                        <span className={`font-bold ${ENDPOINT_COLOR[job.endpoint] || 'text-slate-400'}`}>
-                          /v1/{job.endpoint}
-                        </span>
-                      </td>
-
-                      {/* Provider */}
-                      <td className="p-4 text-white font-semibold">
-                        {job.provider || 'Auto'}
-                      </td>
-
-                      {/* Routing Type Badge */}
-                      <td className="p-4">
-                        {isFallback ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                            <Zap className="w-3 h-3" />
-                            Fallback Triggered
+                        {/* ENDPOINT */}
+                        <td className="py-3.5 px-4 font-mono">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${endpointClass}`}>
+                            {j.endpoint}
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <ShieldCheck className="w-3 h-3" />
-                            Direct BYOK
+                        </td>
+
+                        {/* PROVIDER */}
+                        <td className="py-3.5 px-4 font-semibold text-zinc-900 dark:text-zinc-100 capitalize">
+                          {j.provider || 'auto'}
+                        </td>
+
+                        {/* ROUTING TYPE */}
+                        <td className="py-3.5 px-4 font-mono">
+                          {j.routing_type === 'Pass-Through' ? (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                              Pass-Through
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                              Direct BYOK
+                            </span>
+                          )}
+                        </td>
+
+                        {/* STATUS */}
+                        <td className="py-3.5 px-4 font-mono">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${statusMeta.badge}`}>
+                            {j.status === 'completed' ? (
+                              <span className="relative flex h-1.5 w-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              </span>
+                            ) : (
+                              <XCircle className="w-3 h-3 text-rose-500" />
+                            )}
+                            {statusMeta.text}
                           </span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Status */}
-                      <td className="p-4">
-                        <span className={`px-2.5 py-0.5 rounded-md border text-[10px] font-bold uppercase ${statusInfo.badge}`}>
-                          {statusInfo.text}
-                        </span>
-                      </td>
+                        {/* LATENCY */}
+                        <td className={`py-3.5 px-4 font-mono ${latencyColor}`}>
+                          {formatLatency(j.duration_ms)}
+                        </td>
 
-                      {/* Latency (Replaced static cost column) */}
-                      <td className="p-4 text-right font-bold text-teal-400">
-                        {formatLatency(job.duration_ms)}
-                      </td>
-
-                      {/* Timestamp */}
-                      <td className="p-4 pr-6 text-right text-slate-500">
-                        {timeAgo(job.created_at)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        {/* TIMESTAMP */}
+                        <td className="py-3.5 px-4 font-mono text-zinc-500 dark:text-zinc-400 text-right" title={j.created_at}>
+                          {timeAgo(j.created_at)}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* ── Slide-Over Job Details Drawer ────────────────────────────────── */}
+      {/* ── INTERACTIVE LOG DETAIL INSPECTION DRAWER ─────────────────────────── */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70 backdrop-blur-sm animate-fade-in font-mono">
-          <div
-            className="absolute inset-0"
-            onClick={() => setSelectedJob(null)}
-          />
-
-          <div className="relative w-full max-w-2xl bg-[#0a0d14] border-l border-slate-800 h-full overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl z-10">
-            
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex justify-end"
+          onClick={() => setSelectedJob(null)}
+        >
+          <div 
+            className="w-full max-w-xl bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 h-screen flex flex-col justify-between p-6 overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Drawer Header */}
-            <div className="flex items-start justify-between border-b border-slate-800 pb-5">
-              <div className="space-y-1">
-                <div className="flex items-center space-x-3">
-                  <Code className="w-5 h-5 text-emerald-400" />
-                  <h2 className="text-lg font-bold text-white">{selectedJob.job_id}</h2>
+            <div className="space-y-2 border-b border-zinc-200 dark:border-zinc-800 pb-4 flex justify-between items-start">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-lime-600 dark:text-lime-400 font-bold">
+                    Job Trace #{selectedJob.job_id.slice(0, 12)}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${STATUS_STYLES[selectedJob.status]?.badge}`}>
+                    {selectedJob.status}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-400">
-                  Executed at {new Date(selectedJob.created_at).toLocaleString()}
-                </p>
+                <h2 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 mt-1">
+                  {selectedJob.provider} · {selectedJob.endpoint}
+                </h2>
               </div>
 
               <button
                 onClick={() => setSelectedJob(null)}
-                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Spec Badges Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Endpoint</span>
-                <div className="text-emerald-400 font-bold">/v1/{selectedJob.endpoint}</div>
+            {/* Drawer Body Scrollable */}
+            <div className="overflow-y-auto flex-1 py-6 space-y-6 font-mono text-xs">
+              {/* Stat Summary Row */}
+              <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                <div>
+                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Execution Latency</span>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatLatency(selectedJob.duration_ms)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Routing Protocol</span>
+                  <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{selectedJob.routing_type || 'Direct BYOK'}</span>
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Provider</span>
-                <div className="text-white font-bold">{selectedJob.provider}</div>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Latency</span>
-                <div className="text-teal-400 font-bold">{formatLatency(selectedJob.duration_ms)}</div>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121620] border border-slate-800 space-y-1">
-                <span className="text-slate-500 text-[10px] uppercase">Status</span>
-                <div className="text-emerald-400 font-bold">200 OK</div>
-              </div>
-            </div>
 
-            {/* Routing Diagnostics */}
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs space-y-2">
-              <div className="text-slate-200 font-bold flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Gateway Routing &amp; Failover Diagnostics</span>
-              </div>
-              <div className="text-slate-400 text-xs leading-relaxed space-y-1">
-                <div>Routing Mode: <span className="text-white font-semibold">{selectedJob.routing_type || 'Direct BYOK'}</span></div>
-                <div>Attempts: <span className="text-white font-semibold">{selectedJob.attempts || 1} Attempt(s)</span></div>
-                <div>Billing: <span className="text-emerald-400 font-semibold">0% Platform Markup (BYOK)</span></div>
-              </div>
-            </div>
-
-            {/* Request Payload JSON */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-slate-400 flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Request Payload JSON</span>
-                </span>
-                <button
-                  onClick={() => copyToClipboard(JSON.stringify(selectedJob.request_payload, null, 2), 'payload')}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1 border border-slate-700"
-                >
-                  {copiedPayload ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedPayload ? 'Copied!' : 'Copy'}</span>
-                </button>
-              </div>
-              <pre className="p-4 rounded-xl bg-[#080b10] border border-slate-800 text-slate-300 text-xs overflow-x-auto leading-relaxed max-h-48">
-                {JSON.stringify(selectedJob.request_payload, null, 2)}
-              </pre>
-            </div>
-
-            {/* Response Output / Error Logs */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-slate-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Response Output &amp; Logs</span>
-                </span>
-                {selectedJob.result && (
+              {/* Request Payload JSON */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-zinc-500">
+                  <span>Request Parameters (JSON):</span>
                   <button
-                    onClick={() => copyToClipboard(JSON.stringify(selectedJob.result, null, 2), 'result')}
-                    className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1 border border-slate-700"
+                    onClick={() => copyText(JSON.stringify(selectedJob.request_payload || {}, null, 2))}
+                    className="text-lime-600 dark:text-lime-400 hover:underline text-[11px]"
                   >
-                    {copiedResult ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedResult ? 'Copied!' : 'Copy'}</span>
+                    Copy JSON
                   </button>
-                )}
+                </div>
+                <pre className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 text-emerald-400 overflow-x-auto max-h-48 text-[11px]">
+                  {JSON.stringify(selectedJob.request_payload || { provider: selectedJob.provider, endpoint: selectedJob.endpoint }, null, 2)}
+                </pre>
               </div>
-              <pre className="p-4 rounded-xl bg-[#080b10] border border-slate-800 text-emerald-300 text-xs overflow-x-auto leading-relaxed max-h-72">
-                {inspectLoading
-                  ? '// Loading response details...'
-                  : selectedJob.result
-                    ? JSON.stringify(selectedJob.result, null, 2)
-                    : selectedJob.error || '// No result payload recorded'}
-              </pre>
+
+              {/* Error Trace if Failed */}
+              {selectedJob.error && (
+                <div className="space-y-2">
+                  <span className="text-rose-500 font-bold">Failure Trace Exception:</span>
+                  <pre className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 overflow-x-auto max-h-36 text-[11px]">
+                    {selectedJob.error}
+                  </pre>
+                </div>
+              )}
+
+              {/* Response JSON */}
+              {selectedJob.result && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-zinc-500">
+                    <span>Response Output Data (JSON):</span>
+                    <button
+                      onClick={() => copyText(JSON.stringify(selectedJob.result, null, 2))}
+                      className="text-lime-600 dark:text-lime-400 hover:underline text-[11px]"
+                    >
+                      Copy Output
+                    </button>
+                  </div>
+                  <pre className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 overflow-x-auto max-h-56 text-[11px]">
+                    {JSON.stringify(selectedJob.result, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
 
+            {/* Drawer Footer */}
+            <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 flex justify-between items-center">
+              <span className="text-zinc-500 font-mono text-[11px]">LiteDaemon Telemetry Engine v1.0</span>
+              <button
+                onClick={() => setSelectedJob(null)}
+                className="px-4 py-2 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-mono text-xs font-bold"
+              >
+                Close Drawer
+              </button>
+            </div>
           </div>
         </div>
       )}

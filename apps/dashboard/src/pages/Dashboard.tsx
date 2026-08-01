@@ -62,8 +62,8 @@ export const Dashboard: React.FC = () => {
 
   const [byokKeys, setByokKeys] = useState<ByokKeyInfo[]>([]);
   const [loading, setLoading]   = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError]       = useState<string | null>(null);
-  const [lastUpdatedText, setLastUpdatedText] = useState<string | null>(null);
 
   // Drawer and Modal States
   const [drawerEndpoint, setDrawerEndpoint] = useState<string | null>(null);
@@ -82,14 +82,19 @@ export const Dashboard: React.FC = () => {
       ]);
       if (usageData) setStats(usageData);
       if (keysData?.keys) setByokKeys(keysData.keys as any);
-
-      const now = new Date();
-      setLastUpdatedText(`Updated just now (${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })})`);
     } catch (err: any) {
       setError(err.message || 'Failed to load account data');
-    } fontally: {
+    } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadData();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 600);
   };
 
   useEffect(() => {
@@ -122,28 +127,17 @@ export const Dashboard: React.FC = () => {
     if (count === 0) {
       return {
         count: 0,
-        badgeText: '0 Keys (Pass-through)',
-        badgeClass: 'bg-zinc-100 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700/50',
+        badgeText: 'Pass-through',
+        badgeClass: 'bg-zinc-800/60 text-zinc-400 border border-zinc-700/50',
         providersText: defaultsText,
       };
     }
 
-    const prioritized = endpointKeys.filter(k => k.key_type === 'prioritized');
-    const fallback    = endpointKeys.filter(k => k.key_type === 'fallback');
-
-    const names: string[] = [];
-    prioritized.forEach((k, idx) => {
-      names.push(idx === 0 ? `${k.provider_name} (Primary)` : `${k.provider_name} (Priority ${idx + 1})`);
-    });
-    fallback.forEach(k => {
-      names.push(`${k.provider_name} (Fallback)`);
-    });
-
     return {
       count,
-      badgeText: `${count} Key${count > 1 ? 's' : ''} Active`,
-      badgeClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-semibold',
-      providersText: names.join(', '),
+      badgeText: `${count} Active Key${count > 1 ? 's' : ''}`,
+      badgeClass: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold',
+      providersText: defaultsText,
     };
   };
 
@@ -189,11 +183,6 @@ export const Dashboard: React.FC = () => {
                 </span>
                 <span className="font-semibold">Gateway Operational • 0ms Latency Overhead</span>
               </div>
-              {lastUpdatedText && (
-                <span className="text-[11px] font-mono text-zinc-400 hidden sm:inline-block">
-                  {lastUpdatedText}
-                </span>
-              )}
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
               <Cpu className="w-7 h-7 text-lime-600 dark:text-lime-400" />
@@ -206,11 +195,11 @@ export const Dashboard: React.FC = () => {
 
           <div className="flex items-center space-x-3 shrink-0">
             <button
-              onClick={loadData}
-              disabled={loading}
+              onClick={handleRefresh}
+              disabled={isRefreshing || loading}
               className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-mono font-medium flex items-center space-x-2 transition-all border border-zinc-200 dark:border-zinc-700/60"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-lime-500' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-lime-500' : ''}`} />
               <span>Refresh</span>
             </button>
             <Link
@@ -317,10 +306,10 @@ export const Dashboard: React.FC = () => {
 
             <div>
               <div className="text-4xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 tracking-tight">
-                {stats ? `$${stats.balance_usd.toFixed(4)}` : '$0.0000'}
+                {stats ? `$${stats.balance_usd.toFixed(2)}` : '$0.00'}
               </div>
               <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
-                Used for BYOK gateway routing fees and provider execution post 100 free calls.
+                Used for gateway execution fees post 100 free monthly calls.
               </p>
             </div>
 
@@ -366,10 +355,8 @@ export const Dashboard: React.FC = () => {
         <div className="lg:col-span-7 rounded-3xl p-6 sm:p-7 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-mono uppercase tracking-wider font-semibold">
-              <span>Monthly Gateway Volume</span>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-lime-500/10 text-lime-600 dark:text-lime-400 border border-lime-500/30">
-                <Sparkles className="w-3 h-3" /> 5% Pass-Through Markup
-              </div>
+              <span>Monthly Volume</span>
+              <span className="text-xs text-zinc-400 font-sans font-normal">Billed at provider raw rate plus standard 5% markup.</span>
             </div>
 
             {/* Side-by-Side Volume Breakdown */}
@@ -382,7 +369,7 @@ export const Dashboard: React.FC = () => {
                   {stats?.billed_calls ?? 0} Calls
                 </span>
                 <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
-                  {stats && stats.total_calls <= 100 ? '100% Covered by Free Allowance' : 'Billed at 5% Markup'}
+                  {stats && stats.total_calls <= 100 ? 'Covered by Free Allowance' : 'Standard 5% markup'}
                 </span>
               </div>
 
@@ -391,10 +378,10 @@ export const Dashboard: React.FC = () => {
                   Calculated Pass-Through Cost
                 </span>
                 <span className="text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-1 block">
-                  {stats ? `$${stats.total_spent_usd.toFixed(4)}` : '$0.0000'}
+                  {stats ? `$${stats.total_spent_usd.toFixed(2)}` : '$0.00'}
                 </span>
                 <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 mt-1 block">
-                  Raw Provider Cost × 1.05
+                  Transparent provider billing
                 </span>
               </div>
             </div>
@@ -413,7 +400,7 @@ export const Dashboard: React.FC = () => {
 
       </motion.div>
 
-      {/* ── ROW 5: Bottom Section — Unified Tool Endpoints ──────────────────── */}
+      {/* ── ROW 5: Bottom Section — Unified Tool Endpoints Grid ─────────────── */}
       <motion.div variants={itemVariants} className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -425,17 +412,18 @@ export const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
+        {/* Clean 5-Column Grid with Non-Overflowing Badges */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 w-full">
           
           {/* Card 1: Scrape */}
           <div
             onClick={() => handleOpenDrawer('/v1/scrape')}
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
+            className="relative flex flex-col justify-between p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 transition-all overflow-hidden dark:bg-zinc-900/60 light:bg-white light:border-zinc-200 group cursor-pointer"
           >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">/v1/scrape</span>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${scrapeInfo.badgeClass}`}>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                <span className="font-medium text-xs text-lime-400 font-mono truncate">/v1/scrape</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap shrink-0 ${scrapeInfo.badgeClass}`}>
                   {scrapeInfo.badgeText}
                 </span>
               </div>
@@ -444,7 +432,7 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <span className="group-hover:text-lime-400 font-semibold transition-colors">Test Endpoint →</span>
               <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
           </div>
@@ -452,12 +440,12 @@ export const Dashboard: React.FC = () => {
           {/* Card 2: Document */}
           <div
             onClick={() => handleOpenDrawer('/v1/document')}
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
+            className="relative flex flex-col justify-between p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 transition-all overflow-hidden dark:bg-zinc-900/60 light:bg-white light:border-zinc-200 group cursor-pointer"
           >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">/v1/document</span>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${documentInfo.badgeClass}`}>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                <span className="font-medium text-xs text-lime-400 font-mono truncate">/v1/document</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap shrink-0 ${documentInfo.badgeClass}`}>
                   {documentInfo.badgeText}
                 </span>
               </div>
@@ -466,7 +454,7 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <span className="group-hover:text-lime-400 font-semibold transition-colors">Test Endpoint →</span>
               <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
           </div>
@@ -474,12 +462,12 @@ export const Dashboard: React.FC = () => {
           {/* Card 3: Search */}
           <div
             onClick={() => handleOpenDrawer('/v1/search')}
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
+            className="relative flex flex-col justify-between p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 transition-all overflow-hidden dark:bg-zinc-900/60 light:bg-white light:border-zinc-200 group cursor-pointer"
           >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-teal-600 dark:text-teal-400 whitespace-nowrap">/v1/search</span>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${searchInfo.badgeClass}`}>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                <span className="font-medium text-xs text-lime-400 font-mono truncate">/v1/search</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap shrink-0 ${searchInfo.badgeClass}`}>
                   {searchInfo.badgeText}
                 </span>
               </div>
@@ -488,7 +476,7 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <span className="group-hover:text-lime-400 font-semibold transition-colors">Test Endpoint →</span>
               <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
           </div>
@@ -496,12 +484,12 @@ export const Dashboard: React.FC = () => {
           {/* Card 4: Browser */}
           <div
             onClick={() => handleOpenDrawer('/v1/browser')}
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
+            className="relative flex flex-col justify-between p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 transition-all overflow-hidden dark:bg-zinc-900/60 light:bg-white light:border-zinc-200 group cursor-pointer"
           >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-cyan-600 dark:text-cyan-400 whitespace-nowrap">/v1/browser</span>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${browserInfo.badgeClass}`}>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                <span className="font-medium text-xs text-lime-400 font-mono truncate">/v1/browser</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap shrink-0 ${browserInfo.badgeClass}`}>
                   {browserInfo.badgeText}
                 </span>
               </div>
@@ -510,7 +498,7 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <span className="group-hover:text-lime-400 font-semibold transition-colors">Test Endpoint →</span>
               <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
           </div>
@@ -518,12 +506,12 @@ export const Dashboard: React.FC = () => {
           {/* Card 5: Execute */}
           <div
             onClick={() => handleOpenDrawer('/v1/execute')}
-            className="p-5 rounded-2xl transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex flex-col justify-between h-full group cursor-pointer"
+            className="relative flex flex-col justify-between p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 transition-all overflow-hidden dark:bg-zinc-900/60 light:bg-white light:border-zinc-200 group cursor-pointer"
           >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 whitespace-nowrap">/v1/execute</span>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${executeInfo.badgeClass}`}>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                <span className="font-medium text-xs text-lime-400 font-mono truncate">/v1/execute</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap shrink-0 ${executeInfo.badgeClass}`}>
                   {executeInfo.badgeText}
                 </span>
               </div>
@@ -532,7 +520,7 @@ export const Dashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono pt-3 border-t border-zinc-100 dark:border-zinc-800/60 mt-3 flex items-center justify-between">
-              <span className="group-hover:text-lime-500 font-semibold transition-colors">Test Endpoint →</span>
+              <span className="group-hover:text-lime-400 font-semibold transition-colors">Test Endpoint →</span>
               <Sliders className="w-3.5 h-3.5 text-lime-500 opacity-70 group-hover:opacity-100" />
             </div>
           </div>

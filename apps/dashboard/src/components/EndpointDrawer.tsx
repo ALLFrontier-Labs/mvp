@@ -33,7 +33,7 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
           defaultInput: 'https://example.com',
           inputLabel: 'Target URL to Scrape',
           apiMethod: (p: string, val: string) => api.scrape(p, { url: val }),
-          sampleSnippet: `curl -X POST https://gateway.litedaemon.com/v1/scrape \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"url":"https://example.com"}}'`,
+          sampleSnippet: `curl -X POST https://litedaemon.xyz/v1/scrape \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"url":"https://example.com"}}'`,
         };
       case '/v1/document':
         return {
@@ -44,7 +44,7 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
           defaultInput: 'https://arxiv.org/pdf/2401.00001.pdf',
           inputLabel: 'Document URL to Parse',
           apiMethod: (p: string, val: string) => api.document(p, { url: val }),
-          sampleSnippet: `curl -X POST https://gateway.litedaemon.com/v1/document \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"url":"https://example.com/doc.pdf"}}'`,
+          sampleSnippet: `curl -X POST https://litedaemon.xyz/v1/document \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"url":"https://example.com/doc.pdf"}}'`,
         };
       case '/v1/browser':
         return {
@@ -55,7 +55,7 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
           defaultInput: 'https://news.ycombinator.com',
           inputLabel: 'Initial Browser Session URL',
           apiMethod: (p: string, val: string) => api.browser(p, { url: val }),
-          sampleSnippet: `curl -X POST https://gateway.litedaemon.com/v1/browser \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"url":"https://news.ycombinator.com"}}'`,
+          sampleSnippet: `curl -X POST https://litedaemon.xyz/v1/browser \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"url":"https://news.ycombinator.com"}}'`,
         };
       case '/v1/execute':
         return {
@@ -66,7 +66,7 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
           defaultInput: "print('Hello from LiteDaemon E2B Sandbox!')",
           inputLabel: 'Python/JS Code Snippet to Execute',
           apiMethod: (p: string, val: string) => api.execute(p, { code: val }),
-          sampleSnippet: `curl -X POST https://gateway.litedaemon.com/v1/execute \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"e2b","params":{"code":"print(\\"Hello Sandbox!\\")"}}'`,
+          sampleSnippet: `curl -X POST https://litedaemon.xyz/v1/execute \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"e2b","params":{"code":"print(\\"Hello Sandbox!\\")"}}'`,
         };
       case '/v1/search':
       default:
@@ -78,7 +78,7 @@ export const EndpointDrawer: React.FC<EndpointDrawerProps> = ({
           defaultInput: 'Latest AI Agent Frameworks 2026',
           inputLabel: 'Search Query',
           apiMethod: (p: string, val: string) => api.search(p, { query: val }),
-          sampleSnippet: `curl -X POST https://gateway.litedaemon.com/v1/search \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"query":"Latest AI Agent news"}}'`,
+          sampleSnippet: `curl -X POST https://litedaemon.xyz/v1/search \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -d '{"provider":"auto","params":{"query":"Latest AI Agent news"}}'`,
         };
     }
   })();

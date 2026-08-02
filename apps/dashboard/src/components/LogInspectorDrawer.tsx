@@ -72,7 +72,7 @@ export const LogInspectorDrawer: React.FC<LogInspectorDrawerProps> = ({
       null,
       2
     );
-    return `curl -X POST https://gateway.litedaemon.com${endpoint} \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '${payloadJson}'`;
+    return `curl -X POST https://litedaemon.xyz${endpoint} \\\n  -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '${payloadJson}'`;
   })();
 
   const handleCopyCurl = () => {
@@ -215,7 +215,7 @@ export const LogInspectorDrawer: React.FC<LogInspectorDrawerProps> = ({
                 <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-500">Host:</span>
-                    <span className="text-zinc-800 dark:text-zinc-200 font-semibold">gateway.litedaemon.com</span>
+                    <span className="text-zinc-800 dark:text-zinc-200 font-semibold">litedaemon.xyz</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-500">Authorization:</span>

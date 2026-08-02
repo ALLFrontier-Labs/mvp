@@ -59,7 +59,7 @@ export const CodeSnippetDrawer: React.FC<CodeSnippetDrawerProps> = ({
 
   const apiKey = getStoredApiKey() || 'YOUR_LITEDAEMON_KEY';
   const meta = PROVIDER_META[provider.id] || {
-    website: 'https://litedaemon.com',
+    website: 'https://litedaemon.xyz',
     latency: '~450ms',
     sampleParams: { url: 'https://example.com' }
   };
@@ -74,7 +74,7 @@ export const CodeSnippetDrawer: React.FC<CodeSnippetDrawerProps> = ({
     };
 
     if (activeTab === 'curl') {
-      return `curl -X POST "https://api.litedaemon.com${endpointPath}" \\
+      return `curl -X POST "https://litedaemon.xyz/v1${endpointPath}" \\
   -H "Authorization: Bearer ${apiKey}" \\
   -H "X-Provider-Key: ${providerKeyPlaceholder}" \\
   -H "Content-Type: application/json" \\
@@ -105,7 +105,7 @@ console.log('Result:', response.data);`;
 import asyncio
 
 async function main():
-    url = "https://api.litedaemon.com${endpointPath}"
+    url = "https://litedaemon.xyz/v1${endpointPath}"
     headers = {
         "Authorization": "Bearer ${apiKey}",
         "X-Provider-Key": "${providerKeyPlaceholder}",

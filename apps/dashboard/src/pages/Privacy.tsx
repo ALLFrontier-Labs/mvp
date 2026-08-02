@@ -22,7 +22,7 @@ export const Privacy: React.FC = () => {
             Privacy Policy
           </h1>
           <p className="text-zinc-400 text-sm font-mono">
-            Last Updated: July 31, 2026 • Ephemeral Zero-Storage BYOK Gateway
+            Ephemeral Zero-Storage BYOK Gateway
           </p>
         </div>
 

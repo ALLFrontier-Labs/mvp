@@ -29,7 +29,7 @@ API requests beyond 100 calls require an active balance or attached payment meth
 
 ### 1. Execute Search via Gateway
 ```bash
-curl -X POST https://gateway.litedaemon.com/v1/search \
+curl -X POST https://litedaemon.xyz/v1/search \
   -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -41,7 +41,7 @@ curl -X POST https://gateway.litedaemon.com/v1/search \
 ### 2. Upstream BYOK Key Override
 You can pass your vault key directly or let LiteDaemon rotate your vaulted keys:
 ```bash
-curl -X POST https://gateway.litedaemon.com/v1/scrape \
+curl -X POST https://litedaemon.xyz/v1/scrape \
   -H "Authorization: Bearer LITEDAEMON_MASTER_KEY" \
   -H "X-Provider-Key: tvly-vaulted-key-here" \
   -H "Content-Type: application/json" \

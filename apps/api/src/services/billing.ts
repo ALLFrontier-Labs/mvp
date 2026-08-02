@@ -57,7 +57,7 @@ export async function getCheckoutUrl(userId: string, creditAmount: number): Prom
           },
         },
         product_options: {
-          redirect_url:          `${process.env.FRONTEND_URL || 'https://mvp-omega-livid.vercel.app'}/billing?success=1`,
+          redirect_url:          `${process.env.FRONTEND_URL || 'https://litedaemon.xyz'}/billing?success=1`,
           receipt_button_text:   'Go to Dashboard',
           receipt_thank_you_note: `$${creditAmount.toFixed(2)} has been credited to your LiteDaemon wallet.`,
         },

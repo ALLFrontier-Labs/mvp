@@ -22,7 +22,7 @@ export const Terms: React.FC = () => {
             Terms of Service
           </h1>
           <p className="text-zinc-400 text-sm font-mono">
-            Effective Date: July 31, 2026 • LiteDaemon BYOK Gateway
+            LiteDaemon BYOK Gateway
           </p>
         </div>
 

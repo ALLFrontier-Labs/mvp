@@ -188,7 +188,7 @@ export const TOOL_REGISTRY: Record<string, ToolDetail> = {
     faqs: [
       {
         question: 'Can I connect via Playwright directly?',
-        answer: 'Yes. Point your Playwright chromium.connectOverCDP() URL to gateway.litedaemon.com/v1/browser.',
+        answer: 'Yes. Point your Playwright chromium.connectOverCDP() URL to litedaemon.xyz/v1/browser.',
       },
     ],
     relatedToolsSlugs: ['browserbase/cdp-session', 'firecrawl/web-scraper'],

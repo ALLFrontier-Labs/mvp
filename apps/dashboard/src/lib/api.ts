@@ -1,6 +1,6 @@
-// src/lib/api.ts
+import { GATEWAY_URL } from './constants';
 
-const API_BASE = 'https://mvp-production-c1e8.up.railway.app/v1';
+const API_BASE = (import.meta as any).env?.VITE_GATEWAY_URL || GATEWAY_URL;
 
 export function getStoredApiKey(): string | null {
   return localStorage.getItem('litedaemon_api_key');

@@ -185,14 +185,14 @@ export const Providers: React.FC = () => {
     const payload = JSON.stringify({ provider: p.id, params: meta.sampleParams }, null, 2);
 
     if (lang === 'curl') {
-      return `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/${p.endpoint} \\
+      return `curl -X POST https://litedaemon.xyz/v1/${p.endpoint} \\
   -H "Authorization: Bearer ${apiKey}" \\
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify({ provider: p.id, params: meta.sampleParams })}'`;
     }
 
     if (lang === 'typescript') {
-      return `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/${p.endpoint}', {
+      return `const response = await fetch('https://litedaemon.xyz/v1/${p.endpoint}', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ${apiKey}',
@@ -208,7 +208,7 @@ console.log(data.result);`;
     if (lang === 'python') {
       return `import requests
 
-url = "https://mvp-production-c1e8.up.railway.app/v1/${p.endpoint}"
+url = "https://litedaemon.xyz/v1/${p.endpoint}"
 headers = {
     "Authorization": "Bearer ${apiKey}",
     "Content-Type": "application/json"
@@ -401,7 +401,7 @@ print(response.json())`;
           {filteredProviders.map(p => {
             const meta = PROVIDER_META[p.id] || {
               description: 'Standard AI Tool Provider Adapter.',
-              website: 'https://litedaemon.com',
+              website: 'https://litedaemon.xyz',
               latency: '~450ms',
               capabilities: ['REST Proxy', 'JSON Output'],
               iconBg: 'from-zinc-500/20 to-zinc-700/20 text-zinc-300 border-zinc-700'
@@ -519,7 +519,7 @@ print(response.json())`;
                 {filteredProviders.map(p => {
                   const meta = PROVIDER_META[p.id] || {
                     description: 'Standard Adapter',
-                    website: 'https://litedaemon.com',
+                    website: 'https://litedaemon.xyz',
                     latency: '~450ms',
                     capabilities: ['JSON'],
                   };

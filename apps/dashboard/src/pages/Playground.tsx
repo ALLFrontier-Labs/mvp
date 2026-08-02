@@ -161,7 +161,7 @@ export const Playground: React.FC = () => {
   // Generate Live cURL Command String
   const generatedCurl = useMemo(() => {
     const payloadJson = JSON.stringify(currentPayload, null, 2);
-    let curl = `curl -X POST https://mvp-production-c1e8.up.railway.app${activeEndpoint} \\\n  -H "Authorization: Bearer ${apiKey}" \\\n  -H "Content-Type: application/json"`;
+    let curl = `curl -X POST https://litedaemon.xyz${activeEndpoint} \\\n  -H "Authorization: Bearer ${apiKey}" \\\n  -H "Content-Type: application/json"`;
 
     if (customHeaderKey.trim() && customHeaderVal.trim()) {
       curl += ` \\\n  -H "${customHeaderKey.trim()}: ${customHeaderVal.trim()}"`;
@@ -205,7 +205,7 @@ export const Playground: React.FC = () => {
           provider: currentPayload.provider === 'auto' ? 'tavily' : currentPayload.provider,
           data: activeEndpoint === '/v1/search'
             ? [
-                { title: 'LiteDaemon Gateway Benchmark 2026', url: 'https://litedaemon.com/benchmarks', snippet: 'Unified LLM tool routing achieved 340ms mean roundtrip latency across 36 native adapters.' },
+                { title: 'LiteDaemon Gateway Benchmark 2026', url: 'https://litedaemon.xyz/benchmarks', snippet: 'Unified LLM tool routing achieved 340ms mean roundtrip latency across 36 native adapters.' },
                 { title: 'Tavily Search API Provider Integration', url: 'https://tavily.com', snippet: 'RAG-optimized search results returned with clean markdown citations.' }
               ]
             : activeEndpoint === '/v1/scrape'

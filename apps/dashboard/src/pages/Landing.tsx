@@ -9,7 +9,7 @@ const FRAMEWORK_SNIPPETS = {
 from langchain_community.tools import TavilySearchResults
 
 # 1. Route tool base URL through LiteDaemon Gateway
-os.environ["TAVILY_API_BASE"] = "https://gateway.litedaemon.com/v1"
+os.environ["TAVILY_API_BASE"] = "https://litedaemon.xyz/v1"
 os.environ["TAVILY_API_KEY"]  = "ld_live_your_master_key"
 
 # 2. Use tool as normal — multi-key failover & vault BYOK are fully automated
@@ -21,8 +21,8 @@ from crewai import Agent
 from crewai_tools import SerperDevTool
 
 # 1. Point tool requests to LiteDaemon Gateway
-os.environ["HTTP_PROXY"]  = "https://gateway.litedaemon.com/v1?key=ld_live_your_master_key"
-os.environ["HTTPS_PROXY"] = "https://gateway.litedaemon.com/v1?key=ld_live_your_master_key"
+os.environ["HTTP_PROXY"]  = "https://litedaemon.xyz/v1?key=ld_live_your_master_key"
+os.environ["HTTPS_PROXY"] = "https://litedaemon.xyz/v1?key=ld_live_your_master_key"
 
 # 2. Run CrewAI agent with zero underlying provider key code changes
 researcher = Agent(role="Senior Analyst", tools=[SerperDevTool()])`,
@@ -32,7 +32,7 @@ from autogen import AssistantAgent
 
 # 1. Configure AutoGen agent tools to route via LiteDaemon Master Key
 tool_config = {
-    "base_url": "https://gateway.litedaemon.com/v1",
+    "base_url": "https://litedaemon.xyz/v1",
     "api_key": "ld_live_your_master_key"
 }
 
@@ -41,7 +41,7 @@ assistant = AssistantAgent("researcher", llm_config=tool_config)`,
   n8n: `// In n8n HTTP Request Node Settings:
 {
   "method": "POST",
-  "url": "https://gateway.litedaemon.com/v1/scrape",
+  "url": "https://litedaemon.xyz/v1/scrape",
   "headers": {
     "Authorization": "Bearer ld_live_your_master_key",
     "Content-Type": "application/json"
@@ -55,7 +55,7 @@ assistant = AssistantAgent("researcher", llm_config=tool_config)`,
 
 # Single master key routes to Browserbase, Firecrawl, Tavily, E2B, etc.
 res = requests.post(
-    "https://gateway.litedaemon.com/v1/search",
+    "https://litedaemon.xyz/v1/search",
     headers={"Authorization": "Bearer ld_live_your_master_key"},
     json={"query": "Latest LLM benchmark results"}
 )
@@ -490,7 +490,6 @@ export const Landing: React.FC = () => {
               Tool executions run through the dedicated <code className="px-1.5 py-0.5 rounded font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent)' }}>/v1/scrape</code>, <code className="px-1.5 py-0.5 rounded font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent)' }}>/v1/search</code>, and <code className="px-1.5 py-0.5 rounded font-mono text-[11px]" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent)' }}>/v1/execute</code> endpoints with zero-overhead BYOK key failover.
             </p>
             <div className="flex items-center gap-3 pt-1 text-xs font-mono">
-              <span style={{ color: 'var(--text-muted)' }}>July 31, 2026</span>
               <span 
                 className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold"
                 style={{ backgroundColor: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)' }}

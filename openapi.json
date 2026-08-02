@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://gateway.litedaemon.com/v1",
+      "url": "https://litedaemon.xyz/v1",
       "description": "Production Gateway Server"
     }
   ],

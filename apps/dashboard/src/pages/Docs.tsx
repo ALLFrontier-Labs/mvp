@@ -8,6 +8,7 @@ import {
   Rocket, Box, Code2, Book, ArrowDown, Server, Key, RefreshCw
 } from 'lucide-react';
 import { PROVIDER_META } from '../data/providers';
+import { DocsFooter } from '../components/DocsFooter';
 
 type Lang = 'python' | 'typescript' | 'curl';
 type DocTab = 'docs' | 'api-reference' | 'sdks';
@@ -382,7 +383,7 @@ export const Docs: React.FC = () => {
                   code={{
                     python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/search",
     headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
@@ -397,7 +398,7 @@ const results = await daemon.search({
   limit: 5
 });
 console.log(results);`,
-                    curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+                    curl: `curl -X POST https://litedaemon.xyz/v1/search \\
   -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "latest LLM reasoning benchmarks 2026", "limit": 5}'`
@@ -772,7 +773,7 @@ console.log(results);`,
                 <CodeBlock
                   filename="failover_config"
                   code={{
-                    typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/search', {
+                    typescript: `const response = await fetch('https://litedaemon.xyz/v1/search', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ld_live_your_master_key',
@@ -785,14 +786,14 @@ console.log(results);`,
 });`,
                     python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/search",
     headers={"Authorization": "Bearer ld_live_your_master_key"},
     json={"query": "Latest AI benchmarks 2026", "provider": "auto"}
 )
 print(response.json())`,
-                    curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+                    curl: `curl -X POST https://litedaemon.xyz/v1/search \\
   -H "Authorization: Bearer ld_live_your_master_key" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "Latest AI benchmarks 2026", "provider": "auto"}'`
@@ -822,10 +823,10 @@ print(response.json())`,
                   <span className="px-2.5 py-0.5 rounded-md bg-lime-400/10 text-lime-400 border border-lime-400/20 text-[10px] font-bold">PRODUCTION EDGE ROUTER</span>
                 </div>
                 <div className="flex items-center gap-2 bg-zinc-900 p-3.5 rounded-xl border border-zinc-800">
-                  <code className="flex-1 text-xs text-lime-400 font-mono">https://mvp-production-c1e8.up.railway.app/v1</code>
+                  <code className="flex-1 text-xs text-lime-400 font-mono">https://litedaemon.xyz/v1</code>
                   <button
                     type="button"
-                    onClick={() => navigator.clipboard.writeText('https://mvp-production-c1e8.up.railway.app/v1')}
+                    onClick={() => navigator.clipboard.writeText('https://litedaemon.xyz/v1')}
                     className="px-3 py-1.5 rounded-lg bg-lime-400 text-zinc-950 font-bold text-[11px] hover:bg-lime-300 transition-colors flex items-center gap-1 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
@@ -1083,7 +1084,7 @@ print(response.json())`,
               <CodeBlock
                 filename="search_request"
                 code={{
-                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+                  curl: `curl -X POST https://litedaemon.xyz/v1/search \\
   -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "latest LLM reasoning benchmarks 2026", "max_results": 5, "search_depth": "advanced"}'`,
@@ -1098,7 +1099,7 @@ const response = await daemon.search({
 console.log(response.results);`,
                   python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/search",
     headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
@@ -1124,11 +1125,11 @@ print(response.json())`
               <CodeBlock
                 filename="scrape_request"
                 code={{
-                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
+                  curl: `curl -X POST https://litedaemon.xyz/v1/scrape \\
   -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"url": "https://news.ycombinator.com", "formats": ["markdown"], "only_main_content": true}'`,
-                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/scrape', {
+                  typescript: `const response = await fetch('https://litedaemon.xyz/v1/scrape', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
@@ -1143,7 +1144,7 @@ print(response.json())`
 const data = await response.json();`,
                   python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/scrape",
     headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
@@ -1169,11 +1170,11 @@ print(response.json())`
               <CodeBlock
                 filename="browser_request"
                 code={{
-                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/browser \\
+                  curl: `curl -X POST https://litedaemon.xyz/v1/browser \\
   -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"script": "await page.goto(\\"https://example.com\\");", "viewport": {"width": 1920, "height": 1080}}'`,
-                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/browser', {
+                  typescript: `const response = await fetch('https://litedaemon.xyz/v1/browser', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
@@ -1186,7 +1187,7 @@ print(response.json())`
 });`,
                   python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/browser",
     headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
@@ -1214,14 +1215,14 @@ print(response.json())`
                 code={{
                   python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/execute",
     headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
     json={"language": "python", "code": "print('Hello from LiteDaemon Sandbox 2026!')", "timeout_seconds": 30}
 )
 print(response.json())`,
-                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/execute', {
+                  typescript: `const response = await fetch('https://litedaemon.xyz/v1/execute', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
@@ -1233,7 +1234,7 @@ print(response.json())`,
     timeout_seconds: 30
   })
 });`,
-                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/execute \\
+                  curl: `curl -X POST https://litedaemon.xyz/v1/execute \\
   -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"language": "python", "code": "print(\\"Hello from Sandbox!\\")"}'`
@@ -1256,11 +1257,11 @@ print(response.json())`,
               <CodeBlock
                 filename="document_request"
                 code={{
-                  curl: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/document \\
+                  curl: `curl -X POST https://litedaemon.xyz/v1/document \\
   -H "Authorization: Bearer YOUR_LITEDAEMON_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"document_url": "https://example.com/doc.pdf", "parsing_instruction": "Extract tabular financial metrics"}'`,
-                  typescript: `const response = await fetch('https://mvp-production-c1e8.up.railway.app/v1/document', {
+                  typescript: `const response = await fetch('https://litedaemon.xyz/v1/document', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_LITEDAEMON_KEY',
@@ -1273,7 +1274,7 @@ print(response.json())`,
 });`,
                   python: `import httpx
 
-client = httpx.Client(base_url="https://mvp-production-c1e8.up.railway.app")
+client = httpx.Client(base_url="https://litedaemon.xyz")
 response = client.post(
     "/v1/document",
     headers={"Authorization": "Bearer YOUR_LITEDAEMON_KEY"},
@@ -1544,7 +1545,7 @@ const sandboxOutput = await daemon.execute({
 });`,
                   python: `# TypeScript SDK Usage (See Python tab for Python SDK)`,
                   curl: `# cURL Equivalent:
-curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+curl -X POST https://litedaemon.xyz/v1/search \\
   -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "latest LLM reasoning benchmarks 2026"}'`
@@ -1604,7 +1605,7 @@ async def main():
 `,
                   typescript: `// Python SDK Usage (See TypeScript tab for Node.js SDK)`,
                   curl: `# cURL Equivalent:
-curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+curl -X POST https://litedaemon.xyz/v1/search \\
   -H "Authorization: Bearer $LITEDAEMON_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "AI agent benchmarks 2026"}'`
@@ -1807,6 +1808,7 @@ user_proxy.initiate_chat(
             </div>
           )}
 
+          <DocsFooter />
         </main>
 
         {/* ── RIGHT TABLE OF CONTENTS (XL SCREENS ONLY) ───────────────────────── */}

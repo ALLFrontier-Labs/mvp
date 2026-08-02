@@ -135,23 +135,23 @@ export const Settings: React.FC = () => {
 
   // Dynamic cURL examples per endpoint
   const CURL_EXAMPLES: Record<EndpointTab, string> = {
-    scrape: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/scrape \\
+    scrape: `curl -X POST https://litedaemon.xyz/v1/scrape \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{"provider":"firecrawl","params":{"url":"https://example.com","format":"markdown"}}'`,
-    search: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/search \\
+    search: `curl -X POST https://litedaemon.xyz/v1/search \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{"provider":"tavily","params":{"query":"latest AI agent tools 2026","limit":5}}'`,
-    browser: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/browser \\
+    browser: `curl -X POST https://litedaemon.xyz/v1/browser \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{"provider":"steel","params":{"script":"await page.goto(\\"https://example.com\\");","viewport":{"width":1920,"height":1080}}}'`,
-    execute: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/execute \\
+    execute: `curl -X POST https://litedaemon.xyz/v1/execute \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{"provider":"e2b","params":{"code":"print(\\"Hello from LiteDaemon sandbox!\\")","timeout_sec":30}}'`,
-    document: `curl -X POST https://mvp-production-c1e8.up.railway.app/v1/document \\
+    document: `curl -X POST https://litedaemon.xyz/v1/document \\
   -H "Authorization: Bearer ${currentKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{"provider":"llamaparse","params":{"url":"https://example.com/doc.pdf","format":"markdown"}}'`,

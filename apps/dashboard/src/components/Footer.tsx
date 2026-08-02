@@ -30,7 +30,7 @@ const FOOTER_COLUMNS = [
       { label: 'Documentation', to: '/docs' },
       { label: 'API Reference', to: '/docs/api' },
       { label: 'SDKs',          to: '/docs/sdks' },
-      { label: 'Status',       href: 'https://status.litedaemon.com' },
+      { label: 'Status',       href: 'https://status.litedaemon.xyz' },
     ],
   },
   {

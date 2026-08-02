@@ -30,10 +30,16 @@ async function main() {
   await app.register(rawBody);
   await app.register(cors, {
     origin: (origin, cb) => {
-      if (!origin || origin.endsWith('.vercel.app')) {
+      if (
+        !origin ||
+        origin.includes('litedaemon.xyz') ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
         cb(null, true);
       } else {
-        cb(new Error('Not allowed by CORS'), false);
+        cb(null, true);
       }
     },
   });

@@ -1,6 +1,9 @@
 import { GATEWAY_URL } from './constants';
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL || (import.meta as any).env?.VITE_GATEWAY_URL || GATEWAY_URL;
+let API_BASE = (import.meta as any).env?.VITE_API_URL || (import.meta as any).env?.VITE_GATEWAY_URL || GATEWAY_URL;
+if (!API_BASE.endsWith('/v1') && !API_BASE.includes('litedaemon.xyz')) {
+  API_BASE = API_BASE.replace(/\/$/, '') + '/v1';
+}
 
 export function getStoredApiKey(): string | null {
   return localStorage.getItem('litedaemon_api_key');
@@ -30,7 +33,14 @@ async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}):
     headers,
   });
 
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (err) {
+    throw new Error(`API Parse Error (Status ${res.status}): Body="${text.substring(0, 100)}" - URL: ${API_BASE}${endpoint}`);
+  }
+
   if (!res.ok) {
     throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
   }

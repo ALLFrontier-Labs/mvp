@@ -1,2 +1,9 @@
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://litedaemon.xyz';
-export const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'https://litedaemon.xyz/v1';
+export const GOOGLE_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  process.env.VITE_GOOGLE_CLIENT_ID ||
+  '';
+
+export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.litedaemon.xyz';
+export const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'https://www.litedaemon.xyz/v1';

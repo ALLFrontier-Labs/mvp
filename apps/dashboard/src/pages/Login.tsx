@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { api, setStoredApiKey, getStoredApiKey } from '../lib/api';
 import { DaemonLogo } from '../components/DaemonLogo';
+import { GOOGLE_CLIENT_ID } from '../lib/constants';
 
 export type AuthMode = 'signup' | 'login' | 'apikey' | 'forgotpw';
 
@@ -140,18 +141,9 @@ export const Login: React.FC<LoginProps> = ({ initialMode }) => {
   };
 
   const handleGoogleSignIn = () => {
-    const clientId =
-      (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
-      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-      process.env.GOOGLE_CLIENT_ID ||
-      '';
-    if (!clientId) {
-      alert('Google OAuth Client ID is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID or VITE_GOOGLE_CLIENT_ID in your environment variables.');
-      return;
-    }
     const redirectUri = `${window.location.origin}/auth/callback`;
     const scope = encodeURIComponent('openid email profile');
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&access_type=offline&prompt=consent`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&access_type=offline&prompt=consent`;
     window.location.href = authUrl;
   };
 

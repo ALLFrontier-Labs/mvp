@@ -4,8 +4,7 @@ import React from 'react';
 
 const GOOGLE_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-  process.env.GOOGLE_CLIENT_ID ||
-  '';
+  '517019322844-addihuodkk9lenec5ifci1is16rirvlg.apps.googleusercontent.com';
 
 export default function SignupPage() {
   const handleGoogleSignIn = () => {

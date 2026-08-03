@@ -139,21 +139,16 @@ export const Login: React.FC<LoginProps> = ({ initialMode }) => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.socialAuth('google', email || undefined, firstName || undefined, lastName || undefined);
-      const key = res.api_key || (res as any).apiKey || `ld_live_google_${Math.random().toString(36).substring(2, 10)}`;
-      setStoredApiKey(key);
-      navigate('/overview');
-    } catch (err: any) {
-      const fallbackKey = `ld_live_google_${Math.random().toString(36).substring(2, 10)}`;
-      setStoredApiKey(fallbackKey);
-      navigate('/overview');
-    } finally {
-      setLoading(false);
-    }
+  const handleGoogleSignIn = () => {
+    const clientId =
+      (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID ||
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      process.env.GOOGLE_CLIENT_ID ||
+      '1047124949182-litedaemon-google-oauth.apps.googleusercontent.com';
+    const redirectUri = `${window.location.origin}/auth/callback`;
+    const scope = encodeURIComponent('openid email profile');
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&access_type=offline&prompt=consent`;
+    window.location.href = authUrl;
   };
 
   // ── Created Key Screen Modal ────────────────────────────────────────────────

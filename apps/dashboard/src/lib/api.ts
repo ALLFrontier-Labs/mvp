@@ -1,6 +1,9 @@
 import { GATEWAY_URL } from './constants';
 
 let API_BASE = (import.meta as any).env?.VITE_API_URL || (import.meta as any).env?.VITE_GATEWAY_URL || GATEWAY_URL;
+if (API_BASE && !API_BASE.startsWith('http')) {
+  API_BASE = 'https://' + API_BASE;
+}
 if (!API_BASE.endsWith('/v1') && !API_BASE.includes('litedaemon.xyz')) {
   API_BASE = API_BASE.replace(/\/$/, '') + '/v1';
 }

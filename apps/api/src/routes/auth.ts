@@ -61,12 +61,14 @@ export async function authRoute(app: FastifyInstance) {
 
     try {
       // 1. Exchange code for access token
-      const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
+      const tokenRes = await axios.post('https://oauth2.googleapis.com/token', new URLSearchParams({
         code,
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code'
+      }).toString(), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
 
       const { access_token } = tokenRes.data;

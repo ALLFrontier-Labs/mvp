@@ -1,6 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { pool } from '../db/client';
 import { createUser, loginWithPassword, socialLoginOrSignup } from '../services/auth';
+import axios from 'axios';
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const APP_URL = process.env.APP_URL || 'https://www.litedaemon.xyz';
 
 export async function authRoute(app: FastifyInstance) {
 
@@ -46,6 +51,45 @@ export async function authRoute(app: FastifyInstance) {
         return reply.code(401).send({ error: 'password_required', message: 'Password is required to sign in.' });
       }
       throw e;
+    }
+  });
+
+  // ── Google OAuth Token Exchange ──────────────────────────────────────────
+  app.post('/v1/auth/google/exchange', { config: { public: true } }, async (req, reply) => {
+    const { code, redirectUri } = req.body as any;
+    if (!code || !redirectUri) return reply.code(400).send({ error: 'missing_parameters', message: 'code and redirectUri are required.' });
+
+    try {
+      // 1. Exchange code for access token
+      const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      });
+
+      const { access_token } = tokenRes.data;
+
+      // 2. Fetch user profile from Google
+      const userRes = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+
+      const profile = userRes.data;
+      if (!profile.email) throw new Error('No email found in Google profile');
+
+      // 3. Login or signup user
+      const res = await socialLoginOrSignup(profile.email, 'google', profile.given_name, profile.family_name);
+      
+      return reply.send({
+        api_key: res.rawKey,
+        user: res.user,
+        message: 'Authenticated via Google successfully.',
+      });
+    } catch (e: any) {
+      console.error('Google OAuth Exchange Error:', e.response?.data || e.message);
+      return reply.code(500).send({ error: 'auth_failed', message: 'Failed to exchange Google token.' });
     }
   });
 

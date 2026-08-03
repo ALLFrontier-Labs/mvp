@@ -15,6 +15,7 @@ import { Playground }    from './pages/Playground';
 import { Docs }          from './pages/Docs';
 import { Privacy }       from './pages/Privacy';
 import { Terms }         from './pages/Terms';
+import { AuthCallback }  from './pages/AuthCallback';
 import { ToolDetailPage } from './pages/ToolDetailPage';
 import { ComparePage }   from './pages/ComparePage';
 import { Rankings }      from './pages/Rankings';
@@ -42,6 +43,7 @@ export const App: React.FC = () => {
               {/* ── Public ─────────────────────────────────────── */}
               <Route path="/"          element={<Landing />} />
               <Route path="/auth"      element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/signup"    element={<Login initialMode="signup" />} />
               <Route path="/login"     element={<Login initialMode="login" />} />
               <Route path="/providers" element={<Providers />} />

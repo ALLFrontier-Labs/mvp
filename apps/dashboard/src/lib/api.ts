@@ -235,4 +235,11 @@ export const api = {
       body: JSON.stringify({ provider, email, firstName, lastName }),
     });
   },
+
+  googleExchange: async (code: string, redirectUri: string) => {
+    return apiRequest<{ api_key: string; user: any; message: string }>('/auth/google/exchange', {
+      method: 'POST',
+      body: JSON.stringify({ code, redirectUri }),
+    });
+  },
 };

@@ -6,7 +6,7 @@ export const GATEWAY_URL = (import.meta as any).env?.VITE_API_URL || (import.met
 
 export const getRedirectUri = () => {
   if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    if (window.location.hostname.includes('litedaemon.xyz') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return `${window.location.protocol}//${window.location.host}/auth/callback`;
     }
   }

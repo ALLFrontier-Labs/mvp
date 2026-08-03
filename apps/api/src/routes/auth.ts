@@ -91,7 +91,10 @@ export async function authRoute(app: FastifyInstance) {
       });
     } catch (e: any) {
       console.error('Google OAuth Exchange Error:', e.response?.data || e.message);
-      return reply.code(500).send({ error: 'auth_failed', message: 'Failed to exchange Google token.' });
+      return reply.code(500).send({ 
+        error: 'auth_failed', 
+        message: 'Google Error: ' + JSON.stringify(e.response?.data || e.message) 
+      });
     }
   });
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api, setStoredApiKey } from '../lib/api';
+import { getRedirectUri } from '../lib/constants';
 import { Loader2 } from 'lucide-react';
 
 export const AuthCallback: React.FC = () => {
@@ -19,7 +20,7 @@ export const AuthCallback: React.FC = () => {
 
     const exchangeCode = async () => {
       try {
-        const redirectUri = `${window.location.origin}/auth/callback`;
+        const redirectUri = getRedirectUri();
         const res = await api.googleExchange(code, redirectUri);
         
         const key = res.api_key || (res as any).apiKey;

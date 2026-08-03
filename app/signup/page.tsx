@@ -7,7 +7,11 @@ export default function SignupPage() {
     const clientId =
       process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
       process.env.GOOGLE_CLIENT_ID ||
-      '1047124949182-litedaemon-google-oauth.apps.googleusercontent.com';
+      '';
+    if (!clientId) {
+      alert('Google OAuth Client ID is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your environment variables.');
+      return;
+    }
     const redirectUri = `${window.location.origin}/auth/callback`;
     const scope = encodeURIComponent('openid email profile');
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&access_type=offline&prompt=consent`;

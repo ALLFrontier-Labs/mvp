@@ -42,6 +42,8 @@ export const App: React.FC = () => {
               {/* ── Public ─────────────────────────────────────── */}
               <Route path="/"          element={<Landing />} />
               <Route path="/auth"      element={<Login />} />
+              <Route path="/signup"    element={<Login initialMode="signup" />} />
+              <Route path="/login"     element={<Login initialMode="login" />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/tools/*"   element={<ToolDetailPage />} />
               <Route path="/tool/*"    element={<ToolDetailPage />} />
@@ -56,12 +58,15 @@ export const App: React.FC = () => {
               <Route path="/terms"     element={<Terms />} />
 
               {/* ── Protected ───────────────────────────────────── */}
+              <Route path="/overview"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/jobs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
               <Route path="/logs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
               <Route path="/billing"    element={<ProtectedRoute><Billing /></ProtectedRoute>} />
               <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/keys"       element={<ProtectedRoute><Keys /></ProtectedRoute>} />
+              <Route path="/vault"      element={<ProtectedRoute><Keys /></ProtectedRoute>} />
+              <Route path="/workspaces" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -27,12 +27,15 @@ export const Header: React.FC = () => {
 
   const handleLogout = () => {
     clearStoredApiKey();
-    navigate('/auth');
+    // Also clear session cookies if set
+    document.cookie = 'litedaemon_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie = 'litedaemon_api_key=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    navigate('/login');
   };
 
   const navLinks = apiKey
     ? [
-        { label: 'Overview',     path: '/dashboard' },
+        { label: 'Overview',     path: '/overview' },
         { label: 'Keys & Vault', path: '/keys' },
         { label: 'Logs',         path: '/jobs' },
         { label: 'Tools',        path: '/providers' },

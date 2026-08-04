@@ -76,8 +76,6 @@ export interface LDUser {
   credit_balance?:          string;
   monthly_call_count?:      number;
   billing_period_start?:    string;
-  stripe_customer_id?:      string | null;
-  stripe_payment_method_id?: string | null;
   plan:                     string;
 }
 

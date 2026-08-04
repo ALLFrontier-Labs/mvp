@@ -34,8 +34,6 @@ export interface UserBillingState {
   billing_period_start: Date;
   balance_usd: number;
   credit_balance: number;
-  stripe_customer_id?: string | null;
-  stripe_payment_method_id?: string | null;
 }
 
 export interface ProcessCallResult extends CallCostResult {

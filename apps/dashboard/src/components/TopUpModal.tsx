@@ -40,7 +40,7 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      // Create LemonSqueezy checkout session or execute wallet topup hook
+      // Execute Dodo Payments checkout session or execute wallet topup hook
       const checkoutRes = await api.getCheckoutUrl(String(numAmount)).catch(() => null);
 
       if (checkoutRes?.checkout_url) {

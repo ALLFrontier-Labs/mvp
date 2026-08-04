@@ -336,7 +336,7 @@ export const Docs: React.FC = () => {
               </div>
 
               <Callout type="tip" title="Bring Your Own Keys (BYOK) Autonomy">
-                LiteDaemon routes requests directly using your configured provider keys with 0% gateway markup fees. Downstream provider keys are encrypted client-side using AES-256-GCM.
+                LiteDaemon routes requests directly using your configured provider keys with a transparent 5% routing fee after your first 100 free monthly calls. Downstream provider keys are encrypted client-side using AES-256-GCM.
               </Callout>
 
               {/* Step 1 */}
@@ -514,7 +514,7 @@ console.log(results);`,
                     <Key className="w-5 h-5 text-lime-500" /> 1. Bring Your Own Keys (BYOK) Autonomy
                   </h3>
                   <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
-                    Never get locked into proprietary provider pricing. LiteDaemon lets you plug in direct API keys for Tavily, Firecrawl, Exa, Steel, and E2B with 0% gateway markup.
+                    Never get locked into proprietary provider pricing. LiteDaemon lets you plug in direct API keys for Tavily, Firecrawl, Exa, Steel, and E2B. The first 100 gateway requests per month are free, after which a flat 5% micro-routing fee applies.
                   </p>
                 </div>
 

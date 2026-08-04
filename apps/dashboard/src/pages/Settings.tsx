@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 import { api, getStoredApiKey, setStoredApiKey, clearStoredApiKey } from '../lib/api';
 import { RegenerateKeyModal } from '../components/RegenerateKeyModal';
-import { SettingsWebhooks } from '../components/SettingsWebhooks';
-import { SettingsGuardrails } from '../components/SettingsGuardrails';
 
 interface Me {
   email: string;
@@ -22,7 +20,7 @@ interface Me {
   total_spent_usd: number;
 }
 
-type SettingsSubTab = 'general' | 'billing' | 'webhooks' | 'reference';
+type SettingsSubTab = 'general' | 'billing' | 'reference';
 type EndpointTab    = 'scrape' | 'search' | 'browser' | 'execute' | 'document';
 
 function formatDate(iso: string) {
@@ -42,8 +40,6 @@ export const Settings: React.FC = () => {
       setActiveSubTab('general');
     } else if (tabParam === 'billing' || tabParam === 'wallet') {
       setActiveSubTab('billing');
-    } else if (tabParam === 'webhooks' || tabParam === 'guardrails' || tabParam === 'security' || tabParam === 'preferences') {
-      setActiveSubTab('webhooks');
     } else if (tabParam === 'reference') {
       setActiveSubTab('reference');
     }
@@ -65,12 +61,6 @@ export const Settings: React.FC = () => {
   const [selectedEndpoint, setSelectedEndpoint] = useState<EndpointTab>('scrape');
 
   const [depositToast, setDepositToast]               = useState<string | null>(null);
-
-  // Webhooks & Guardrails State
-  const [webhookUrl, setWebhookUrl]   = useState('https://example.com/api/webhooks/litedaemon');
-  const [budgetCap, setBudgetCap]     = useState('100.00');
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [guardrailSaved, setGuardrailSaved] = useState(false);
 
   // Key Regeneration Modal State
   const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
@@ -114,12 +104,6 @@ export const Settings: React.FC = () => {
     } finally {
       setIsRegenerating(false);
     }
-  };
-
-  const handleSaveGuardrails = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGuardrailSaved(true);
-    setTimeout(() => setGuardrailSaved(false), 2500);
   };
 
   // Dynamic cURL examples per endpoint
@@ -196,7 +180,6 @@ export const Settings: React.FC = () => {
         {[
           { id: 'general',   label: 'General & Keys' },
           { id: 'billing',   label: 'Billing & Wallet' },
-          { id: 'webhooks',  label: 'Webhooks & Guardrails' },
           { id: 'reference', label: 'Quick Reference' },
         ].map((tab) => {
           const isActive = activeSubTab === tab.id;
@@ -399,15 +382,7 @@ export const Settings: React.FC = () => {
         </div>
       )}
 
-      {/* ── TAB 3: WEBHOOKS & BUDGET GUARDRAILS ───────────────────────────── */}
-      {activeSubTab === 'webhooks' && (
-        <div className="space-y-6">
-          <SettingsWebhooks />
-          <SettingsGuardrails />
-        </div>
-      )}
-
-      {/* ── TAB 4: QUICK CURL REFERENCE ENGINE ─────────────────────────────── */}
+      {/* ── TAB 3: QUICK CURL REFERENCE ENGINE ─────────────────────────────── */}
       {(activeSubTab === 'reference' || activeSubTab === 'general') && (
         <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-4 font-mono">
           <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3">

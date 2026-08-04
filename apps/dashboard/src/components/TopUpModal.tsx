@@ -40,21 +40,15 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      // Execute Dodo Payments checkout session or execute wallet topup hook
-      const checkoutRes = await api.getCheckoutUrl(String(numAmount)).catch(() => null);
+      // Execute Dodo Payments checkout session
+      const checkoutRes = await api.getCheckoutUrl(String(numAmount));
 
       if (checkoutRes?.checkout_url) {
         window.location.href = checkoutRes.checkout_url;
         return;
+      } else {
+        throw new Error('Dodo Payments did not return a valid checkout URL.');
       }
-
-      // If backend mock/direct deposit mode is active
-      setSuccessToast(`Successfully credited $${numAmount.toFixed(2)} to your LiteDaemon balance!`);
-      if (onSuccess) onSuccess(numAmount);
-      setTimeout(() => {
-        setSuccessToast(null);
-        onClose();
-      }, 2000);
     } catch (err: any) {
       setError(err.message || 'Deposit failed. Please try again.');
     } finally {

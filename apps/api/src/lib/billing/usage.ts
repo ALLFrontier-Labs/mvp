@@ -66,12 +66,7 @@ export function shouldResetBillingPeriod(billingPeriodStart: Date | string, now:
 
   if (diffMs >= thirtyDaysMs) return true;
 
-  // Calendar month boundary check
-  const isNewCalendarMonth =
-    now.getUTCFullYear() > startDate.getUTCFullYear() ||
-    (now.getUTCFullYear() === startDate.getUTCFullYear() && now.getUTCMonth() > startDate.getUTCMonth());
-
-  return isNewCalendarMonth;
+  return false;
 }
 
 /**

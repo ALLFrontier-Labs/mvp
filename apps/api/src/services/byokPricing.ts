@@ -14,7 +14,7 @@ export interface ByokAllowanceCheck {
     payload: {
       error: string;
       message: string;
-      byok_requests_this_month: number;
+      monthly_call_count: number;
       required_balance: number;
       current_balance: number;
     };
@@ -26,7 +26,7 @@ export async function preCheckAndEvaluateByok(
   providerId: string = 'tavily'
 ): Promise<ByokAllowanceCheck> {
   const userRes = await pool.query(
-    'SELECT balance_usd, monthly_call_count, byok_requests_this_month, billing_period_start, byok_last_reset_at FROM users WHERE id = $1',
+    'SELECT balance_usd, monthly_call_count, billing_period_start FROM users WHERE id = $1',
     [userId]
   );
 
@@ -36,8 +36,8 @@ export async function preCheckAndEvaluateByok(
 
   const row = userRes.rows[0];
   const currentBalance = parseFloat(row.balance_usd || '0');
-  let requestsThisMonth = parseInt(row.monthly_call_count || row.byok_requests_this_month || '0', 10);
-  const lastResetAt = row.billing_period_start || row.byok_last_reset_at ? new Date(row.billing_period_start || row.byok_last_reset_at) : new Date();
+  let requestsThisMonth = parseInt(row.monthly_call_count || '0', 10);
+  const lastResetAt = row.billing_period_start ? new Date(row.billing_period_start) : new Date();
 
   // 1. Month Reset Check (30-day or UTC Month/Year comparison)
   const now = new Date();
@@ -46,7 +46,7 @@ export async function preCheckAndEvaluateByok(
   if (isResetNeeded) {
     requestsThisMonth = 0;
     await pool.query(
-      'UPDATE users SET monthly_call_count = 0, byok_requests_this_month = 0, billing_period_start = NOW(), byok_last_reset_at = NOW() WHERE id = $1',
+      'UPDATE users SET monthly_call_count = 0, billing_period_start = NOW() WHERE id = $1',
       [userId]
     );
   }
@@ -57,7 +57,7 @@ export async function preCheckAndEvaluateByok(
   if (nextCount <= 100) {
     // Free Allowance (Calls 1..100)
     await pool.query(
-      'UPDATE users SET monthly_call_count = monthly_call_count + 1, byok_requests_this_month = byok_requests_this_month + 1 WHERE id = $1',
+      'UPDATE users SET monthly_call_count = monthly_call_count + 1 WHERE id = $1',
       [userId]
     );
     return {
@@ -84,7 +84,7 @@ export async function preCheckAndEvaluateByok(
         payload: {
           error: 'Insufficient Balance',
           message: 'Every LiteDaemon account receives 100 free API calls per billing month across all integrated tools. Requests beyond 100 calls require an active balance. Requests with insufficient funds return HTTP 402 prior to provider invocation.',
-          byok_requests_this_month: nextCount,
+          monthly_call_count: nextCount,
           required_balance: calculatedFee,
           current_balance: currentBalance,
         },
@@ -94,7 +94,7 @@ export async function preCheckAndEvaluateByok(
 
   // Balance is sufficient
   await pool.query(
-    'UPDATE users SET monthly_call_count = monthly_call_count + 1, byok_requests_this_month = byok_requests_this_month + 1 WHERE id = $1',
+    'UPDATE users SET monthly_call_count = monthly_call_count + 1 WHERE id = $1',
     [userId]
   );
 

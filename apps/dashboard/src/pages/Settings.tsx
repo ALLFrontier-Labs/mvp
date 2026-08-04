@@ -8,7 +8,6 @@ import {
   Bell, Lock, Sliders, ShieldCheck, ArrowUpRight
 } from 'lucide-react';
 import { api, getStoredApiKey, setStoredApiKey, clearStoredApiKey } from '../lib/api';
-import { DepositFundsDrawer } from '../components/DepositFundsDrawer';
 import { RegenerateKeyModal } from '../components/RegenerateKeyModal';
 import { SettingsWebhooks } from '../components/SettingsWebhooks';
 import { SettingsGuardrails } from '../components/SettingsGuardrails';
@@ -65,17 +64,7 @@ export const Settings: React.FC = () => {
   // Quick Reference Endpoint Tab State
   const [selectedEndpoint, setSelectedEndpoint] = useState<EndpointTab>('scrape');
 
-  // Deposit Drawer & Toast State
-  const [isDepositDrawerOpen, setIsDepositDrawerOpen] = useState(false);
   const [depositToast, setDepositToast]               = useState<string | null>(null);
-
-  const handleDepositSuccess = (addedAmount: number) => {
-    if (me) {
-      setMe({ ...me, balance_usd: me.balance_usd + addedAmount });
-    }
-    setDepositToast(`Added $${addedAmount.toFixed(2)} USD to Prepaid Gateway Balance!`);
-    setTimeout(() => setDepositToast(null), 4000);
-  };
 
   // Webhooks & Guardrails State
   const [webhookUrl, setWebhookUrl]   = useState('https://example.com/api/webhooks/litedaemon');
@@ -370,7 +359,7 @@ export const Settings: React.FC = () => {
               <div className="flex items-center justify-between pt-1 border-t border-zinc-200 dark:border-zinc-800">
                 <span className="text-[10px] text-zinc-400">Micro-debited per call</span>
                 <button
-                  onClick={() => setIsDepositDrawerOpen(true)}
+                  onClick={() => navigate('/billing')}
                   className="px-3 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs shadow-sm transition-all cursor-pointer"
                 >
                   + Deposit Funds
@@ -470,14 +459,6 @@ export const Settings: React.FC = () => {
           </pre>
         </div>
       )}
-
-      {/* ── WALLET DEPOSIT DRAWER ───────────────────────────────────────────── */}
-      <DepositFundsDrawer
-        isOpen={isDepositDrawerOpen}
-        currentBalance={me ? me.balance_usd : 9.95}
-        onClose={() => setIsDepositDrawerOpen(false)}
-        onDepositSuccess={handleDepositSuccess}
-      />
 
       {/* ── MASTER KEY REGENERATION SAFETY MODAL ────────────────────────────── */}
       <RegenerateKeyModal

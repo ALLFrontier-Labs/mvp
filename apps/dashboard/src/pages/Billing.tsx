@@ -49,9 +49,6 @@ export const Billing: React.FC = () => {
   const [ledgerRows, setLedgerRows] = useState<LedgerRow[]>([]);
   const [ledgerLoading, setLedgerLoading] = useState(true);
 
-  // Modal / Action triggers
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showInvoicesModal, setShowInvoicesModal] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
   // Auto-recharge state
@@ -155,14 +152,6 @@ export const Billing: React.FC = () => {
     }
   };
 
-  const handleAddPaymentMethod = () => {
-    setShowPaymentModal(true);
-  };
-
-  const handleViewInvoices = () => {
-    setShowInvoicesModal(true);
-  };
-
   const startDate = new Date(billingPeriodStart);
   const resetDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -205,22 +194,6 @@ export const Billing: React.FC = () => {
           <p className="text-slate-400 text-sm mt-1">
             Prepaid wallet balance, 30-day billing cycle dates, and transparent 5% markup transaction logs.
           </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={handleAddPaymentMethod}
-            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-semibold text-xs flex items-center gap-1.5 transition-all"
-          >
-            <CreditCard className="w-3.5 h-3.5 text-emerald-400" /> Add Payment Method
-          </button>
-          <button
-            onClick={handleViewInvoices}
-            className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white font-semibold text-xs flex items-center gap-1.5 transition-all"
-          >
-            <FileText className="w-3.5 h-3.5 text-teal-400" /> View Invoices
-          </button>
         </div>
       </div>
 
@@ -423,70 +396,6 @@ export const Billing: React.FC = () => {
           </table>
         </div>
       </div>
-
-      {/* Add Payment Method Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1117] border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-emerald-400" /> Add Payment Method
-              </h3>
-              <button onClick={() => setShowPaymentModal(false)} className="text-zinc-500 hover:text-white font-mono">✕</button>
-            </div>
-            <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-              LiteDaemon uses LemonSqueezy payment sessions for card authorization and prepaid wallet billing. Adding a credit card enables auto-recharge and pay-as-you-go call routing post 100 free monthly calls.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => {
-                  setShowPaymentModal(false);
-                  handleTopUp();
-                }}
-                className="w-full py-3.5 rounded-2xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-all flex items-center justify-center gap-2"
-              >
-                Proceed to Secure Checkout ($5 Deposit) →
-              </button>
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="w-full py-3 rounded-2xl bg-slate-900 text-zinc-400 font-semibold text-xs border border-slate-800 hover:text-white transition-all"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* View Invoices Modal */}
-      {showInvoicesModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1117] border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-teal-400" /> Invoices &amp; Receipts
-              </h3>
-              <button onClick={() => setShowInvoicesModal(false)} className="text-zinc-500 hover:text-white font-mono">✕</button>
-            </div>
-            <div className="space-y-3 font-mono text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex justify-between items-center">
-                <div>
-                  <p className="text-white font-bold">LemonSqueezy Wallet Top-Up</p>
-                  <p className="text-zinc-500 text-[10px]">{formatDate(new Date())}</p>
-                </div>
-                <span className="text-emerald-400 font-bold">$10.00 USD</span>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowInvoicesModal(false)}
-              className="w-full py-3 rounded-2xl bg-slate-900 text-zinc-400 font-semibold text-xs border border-slate-800 hover:text-white transition-all"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };

@@ -66,7 +66,9 @@ export async function keysRoute(app: FastifyInstance) {
     return reply.send({ message: 'BYOK key deleted successfully', key_id });
   });
 
-  // ── POST /v1/keys/verify — Test connection for a provider key ────────────
+  // ── POST /v1/keys/verify — Format validation for a provider key ────────────
+  // NOTE: This performs key format validation only. Live provider connectivity
+  // testing requires adapter-specific health check methods (future improvement).
   app.post('/v1/keys/verify', async (req, reply) => {
     const { provider_id, api_key } = req.body as any;
     if (!provider_id || !api_key) {
@@ -74,19 +76,34 @@ export async function keysRoute(app: FastifyInstance) {
     }
 
     const start = Date.now();
+
     if (typeof api_key !== 'string' || api_key.trim().length < 4) {
       return reply.code(400).send({ 
         error: 'invalid_key', 
-        message: 'Invalid API Key: Provider key format is too short or malformed',
-        valid: false 
+        message: 'Invalid API Key: Key is too short (minimum 4 characters).',
+        valid: false,
+        latency_ms: Date.now() - start,
       });
     }
 
-    const latency_ms = Math.max(25, Date.now() - start + Math.floor(Math.random() * 40));
+    // Verify provider exists
+    const pr = await pool.query(
+      `SELECT id, name FROM providers WHERE id = $1 AND is_active = true`,
+      [provider_id],
+    );
+    if (!pr.rows[0]) {
+      return reply.code(404).send({
+        valid: false,
+        message: `Unknown provider: ${provider_id}`,
+        latency_ms: Date.now() - start,
+      });
+    }
+
+    const latency_ms = Date.now() - start;
     return reply.send({
       valid: true,
-      message: `Valid Key — Connected to ${provider_id}`,
-      latency_ms
+      message: `Key format accepted for ${pr.rows[0].name}. Key will be tested on first use.`,
+      latency_ms,
     });
   });
 }

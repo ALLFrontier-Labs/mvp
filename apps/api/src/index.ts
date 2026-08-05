@@ -30,16 +30,19 @@ async function main() {
   await app.register(rawBody);
   await app.register(cors, {
     origin: (origin, cb) => {
-      if (
-        !origin ||
+      // Allow requests with no origin (server-to-server, curl, etc.)
+      if (!origin) return cb(null, true);
+
+      const allowed =
         origin.includes('litedaemon.xyz') ||
         origin.endsWith('.vercel.app') ||
         origin.includes('localhost') ||
-        origin.includes('127.0.0.1')
-      ) {
+        origin.includes('127.0.0.1');
+
+      if (allowed) {
         cb(null, true);
       } else {
-        cb(null, true);
+        cb(new Error(`CORS: Origin '${origin}' not allowed`), false);
       }
     },
   });

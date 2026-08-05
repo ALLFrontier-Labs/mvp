@@ -216,19 +216,23 @@ export const api = {
   },
 
   verifyKey: async (provider_id: string, api_key: string) => {
+    // Client-side pre-validation before hitting the server
+    if (!api_key || api_key.trim().length < 4) {
+      return { valid: false, message: 'Invalid API Key: Key is too short or empty.' };
+    }
+
     try {
       return await apiRequest<{ valid: boolean; message?: string; latency_ms?: number }>('/keys/verify', {
         method: 'POST',
         body: JSON.stringify({ provider_id, api_key }),
       });
     } catch (err: any) {
-      const start = Date.now();
-      await new Promise(r => setTimeout(r, 120));
-      const latency_ms = Date.now() - start;
-      if (!api_key || api_key.trim().length < 4) {
-        throw new Error('Invalid API Key: Provider key format is too short or malformed');
-      }
-      return { valid: true, message: `Valid Key — Connected to ${provider_id}`, latency_ms };
+      // Propagate actual server errors — do NOT fake success
+      return {
+        valid: false,
+        message: err.message || `Verification failed for ${provider_id}`,
+        latency_ms: undefined,
+      };
     }
   },
 

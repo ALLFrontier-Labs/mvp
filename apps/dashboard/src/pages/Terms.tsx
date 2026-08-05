@@ -69,7 +69,7 @@ export const Terms: React.FC = () => {
                 • <strong>Overage Micro-Routing Fee:</strong> Requests exceeding 100 calls per month incur a 5% micro-fee based on standard provider list prices.
               </p>
               <p className="text-zinc-800 dark:text-zinc-200">
-                • <strong>Prepaid Deposits:</strong> Wallet top-ups require a minimum deposit of $5.00 USD processed via Lemon Squeezy. Prepaid balances are non-refundable and do not expire.
+                • <strong>Prepaid Deposits:</strong> Wallet top-ups require a minimum deposit of $5.00 USD processed via Dodo Payments. Prepaid balances are non-refundable and do not expire.
               </p>
             </div>
           </section>

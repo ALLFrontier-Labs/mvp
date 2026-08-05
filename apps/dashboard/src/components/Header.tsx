@@ -18,9 +18,9 @@ export const Header: React.FC = () => {
     id: 'ws-personal',
     name: 'Personal Workspace',
     role: 'Owner',
-    calls: '10 Metered Calls',
-    balance: '$9.9500 Balance',
-    keysCount: 6,
+    calls: '',
+    balance: '',
+    keysCount: 0,
     billingType: 'Personal Prepaid',
   });
   const { resolvedTheme, toggleTheme } = useTheme();

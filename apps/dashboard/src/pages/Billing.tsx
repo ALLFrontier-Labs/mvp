@@ -51,11 +51,6 @@ export const Billing: React.FC = () => {
 
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
-  // Auto-recharge state
-  const [autoRecharge, setAutoRecharge]           = useState(false);
-  const [rechargeThreshold, setRechargeThreshold] = useState('5.00');
-  const [rechargeAmount, setRechargeAmount]       = useState('10.00');
-
   const creditNum  = parseFloat(credit) || 0;
   const fee        = creditNum >= MIN ? calcDepositFee(creditNum)     : 0;
   const payNum     = creditNum >= MIN ? calcCheckoutPrice(creditNum)  : 0;
@@ -103,29 +98,8 @@ export const Billing: React.FC = () => {
         });
         setLedgerRows(rows);
       } else {
-        // Mock fallback rows demonstrating 5% markup & free tier formatting
-        setLedgerRows([
-          {
-            id: 'tx_sample_1',
-            timestamp: new Date().toISOString(),
-            provider: 'Tavily Search',
-            rawCost: 0.0100,
-            markup: 0.0005,
-            totalBilled: 0.0105,
-            status: 'completed',
-            isFree: false,
-          },
-          {
-            id: 'tx_sample_2',
-            timestamp: new Date(Date.now() - 3600000).toISOString(),
-            provider: 'Exa AI Search',
-            rawCost: 0.0020,
-            markup: 0.0001,
-            totalBilled: 0.0000,
-            status: 'completed',
-            isFree: true,
-          },
-        ]);
+        // No transactions yet — show empty state (no mock/dummy data)
+        setLedgerRows([]);
       }
     } catch (e: any) {
       setError(e.message || 'Failed to load billing information');

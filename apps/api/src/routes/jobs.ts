@@ -9,14 +9,24 @@ export async function jobsRoute(app: FastifyInstance) {
     const { limit = '20', offset = '0', endpoint } = req.query as any;
     const lim  = Math.min(parseInt(limit)  || 20, 50);
     const off  = parseInt(offset) || 0;
+
+    // Build parameterized query — never interpolate user input into SQL
+    const params: any[] = [req.user.id];
+    let endpointFilter = '';
+    if (endpoint && typeof endpoint === 'string') {
+      params.push(endpoint);
+      endpointFilter = `AND endpoint = $${params.length}`;
+    }
+    params.push(lim, off);
+
     const r = await pool.query(
       `SELECT id, provider_id, endpoint, status, cost_usd, created_at, completed_at,
               EXTRACT(EPOCH FROM (completed_at - created_at)) * 1000 AS duration_ms
        FROM jobs
-       WHERE user_id = $1 ${endpoint ? `AND endpoint = '${endpoint}'` : ''}
+       WHERE user_id = $1 ${endpointFilter}
        ORDER BY created_at DESC
-       LIMIT $2 OFFSET $3`,
-      [req.user.id, lim, off]
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
     );
     return reply.send({
       jobs:  r.rows.map(j => ({

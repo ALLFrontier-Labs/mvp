@@ -31,7 +31,10 @@ export async function billingRoute(app: FastifyInstance) {
       const payload = req.rawBody as Buffer;
       const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
       
-      if (signature !== expectedSignature) {
+      // Use timing-safe comparison to prevent timing attacks
+      const sigBuffer = Buffer.from(signature, 'utf8');
+      const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+      if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
         return reply.code(401).send({ error: 'invalid_signature' });
       }
     }

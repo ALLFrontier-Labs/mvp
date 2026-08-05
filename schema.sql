@@ -13,6 +13,9 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE users (
   id                       UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
   email                    TEXT            NOT NULL UNIQUE,
+  password_hash            TEXT,
+  first_name               TEXT,
+  last_name                TEXT,
   balance_usd              NUMERIC(18, 8)  NOT NULL DEFAULT 0,
   credit_balance           NUMERIC(18, 8)  NOT NULL DEFAULT 0,
   monthly_call_count       INTEGER         NOT NULL DEFAULT 0,
@@ -107,12 +110,33 @@ CREATE TABLE jobs (
   status          TEXT            NOT NULL DEFAULT 'pending',
   result          JSONB,
   cost_usd        NUMERIC(18, 8)  NOT NULL,
+  is_byok         BOOLEAN         NOT NULL DEFAULT false,
   created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
   completed_at    TIMESTAMPTZ
 );
 CREATE INDEX idx_jobs_user    ON jobs(user_id);
 CREATE INDEX idx_jobs_status  ON jobs(status);
 CREATE INDEX idx_jobs_created ON jobs(created_at DESC);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- user_provider_keys: BYOK — encrypted provider API keys per user
+-- Supports multi-key prioritization and fallback chains
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE user_provider_keys (
+  id                UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           UUID            NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider_id       TEXT            NOT NULL REFERENCES providers(id),
+  api_key_encrypted TEXT            NOT NULL,
+  key_type          TEXT            NOT NULL DEFAULT 'prioritized',  -- 'prioritized' or 'fallback'
+  priority_order    INTEGER         NOT NULL DEFAULT 0,
+  label             TEXT,
+  is_active         BOOLEAN         NOT NULL DEFAULT true,
+  last_used_at      TIMESTAMPTZ,
+  created_at        TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_key_type CHECK (key_type IN ('prioritized', 'fallback'))
+);
+CREATE INDEX idx_upk_user_provider ON user_provider_keys(user_id, provider_id);
+CREATE INDEX idx_upk_active        ON user_provider_keys(is_active);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- view: used by GET /v1/usage

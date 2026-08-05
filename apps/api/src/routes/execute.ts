@@ -62,7 +62,7 @@ export async function executeRoute(app: FastifyInstance) {
         routed_via: routedVia,
       });
     } catch (err: any) {
-      const status = (err as any).statusCode || (err as any).code === 'BYOK_KEY_REQUIRED' ? 401 : 502;
+      const status = (err as any).statusCode || ((err as any).code === 'BYOK_KEY_REQUIRED' ? 401 : 502);
       return reply.code(status).send({
         error: (err as any).code || 'execute_failed',
         message: err.message,

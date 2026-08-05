@@ -64,7 +64,7 @@ export async function scrapeRoute(app: FastifyInstance) {
         routed_via: routedVia,
       });
     } catch (err: any) {
-      const status = (err as any).statusCode || (err as any).code === 'BYOK_KEY_REQUIRED' ? 401 : 502;
+      const status = (err as any).statusCode || ((err as any).code === 'BYOK_KEY_REQUIRED' ? 401 : 502);
       return reply.code(status).send({
         error: (err as any).code || 'scrape_failed',
         message: err.message,

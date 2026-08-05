@@ -55,13 +55,11 @@ export const Login: React.FC<LoginProps> = ({ initialMode }) => {
   const [fieldErrors, setFieldErrors]   = useState<Record<string, string>>({});
   const [createdApiKey, setCreatedApiKey] = useState<string | null>(null);
   const [copied, setCopied]             = useState(false);
-  const [forgotSent, setForgotSent]     = useState(false);
 
   const switchMode = (next: AuthMode) => {
     setMode(next);
     setError(null);
     setFieldErrors({});
-    setForgotSent(false);
   };
 
   const validate = (): boolean => {
@@ -99,7 +97,8 @@ export const Login: React.FC<LoginProps> = ({ initialMode }) => {
     if (!validate()) return;
 
     if (mode === 'forgotpw') {
-      setForgotSent(true);
+      // Password reset emails are not yet implemented
+      setError('Password reset is coming soon. For now, please use Google Sign-In or contact support at support@litedaemon.xyz.');
       return;
     }
 
@@ -257,11 +256,11 @@ export const Login: React.FC<LoginProps> = ({ initialMode }) => {
           </div>
         )}
 
-        {/* Password Reset Sent Notice */}
-        {forgotSent && (
-          <div className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs space-y-1">
-            <div className="font-bold">Check your inbox</div>
-            <div>If an account exists for {email}, password reset instructions have been sent.</div>
+        {/* Password Reset Notice */}
+        {mode === 'forgotpw' && error && (
+          <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-400 text-xs space-y-1">
+            <div className="font-bold">Password Reset</div>
+            <div>{error}</div>
           </div>
         )}
 

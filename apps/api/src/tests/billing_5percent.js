@@ -1,4 +1,4 @@
-// tests/billing_5percent.js — Test suite for 5% BYOK Fee Engine & Lemon Squeezy Webhooks
+// tests/billing_5percent.js — Test suite for 5% BYOK Fee Engine & Dodo Payments Webhooks
 const assert = require('assert');
 const crypto = require('crypto');
 const { calc5PercentFee, getProviderBasePrice } = require('../../dist/config/provider-prices');
@@ -26,8 +26,8 @@ for (const tc of testCases) {
   console.log(`  ✅ [PASS] ${tc.provider}: Base List Price = $${basePrice} -> 5% BYOK Fee = $${fee}`);
 }
 
-// ── Test 2: Lemon Squeezy HMAC SHA-256 Signature Verification ───────────────
-console.log('\n📌 Test Suite 2: Lemon Squeezy HMAC Signature Verification');
+// ── Test 2: Dodo Payments HMAC SHA-256 Signature Verification ───────────────
+console.log('\n📌 Test Suite 2: Dodo Payments HMAC Signature Verification');
 
 function verifyLSSignature(rawBody, signature, secret) {
   const buf = typeof rawBody === 'string' ? Buffer.from(rawBody) : rawBody;
@@ -45,22 +45,22 @@ const rawPayload = Buffer.from(JSON.stringify({
 
 const validSignature = crypto.createHmac('sha256', secret).update(rawPayload).digest('hex');
 const isValid = verifyLSSignature(rawPayload, validSignature, secret);
-assert.strictEqual(isValid, true, 'Valid Lemon Squeezy HMAC signature should be accepted');
+assert.strictEqual(isValid, true, 'Valid Dodo Payments HMAC signature should be accepted');
 console.log('  ✅ [PASS] Valid HMAC SHA-256 signature verified successfully');
 
 const invalidSignature = 'bad_signature_hash_000000000000000000000000000000000000000';
 const isInvalid = verifyLSSignature(rawPayload, invalidSignature, secret);
-assert.strictEqual(isInvalid, false, 'Invalid Lemon Squeezy signature should be rejected');
+assert.strictEqual(isInvalid, false, 'Invalid Dodo Payments signature should be rejected');
 console.log('  ✅ [PASS] Invalid signature rejected successfully');
 
-// ── Test 3: Lemon Squeezy Cents Conversion Math ──────────────────────────────
-console.log('\n📌 Test Suite 3: Lemon Squeezy Cents to Dollars Conversion');
+// ── Test 3: Dodo Payments Cents Conversion Math ──────────────────────────────
+console.log('\n📌 Test Suite 3: Dodo Payments Cents to Dollars Conversion');
 
 const samplePayload = { data: { attributes: { total_usd: 2500 } } }; // 2500 cents = $25.00
 const totalCents = samplePayload.data.attributes.total_usd;
 const dollars = totalCents / 100;
 assert.strictEqual(dollars, 25.0, '2500 cents should equal $25.00');
-console.log(`  ✅ [PASS] Lemon Squeezy payload ${totalCents} cents correctly converted to $${dollars.toFixed(2)} USD`);
+console.log(`  ✅ [PASS] Dodo Payments payload ${totalCents} cents correctly converted to $${dollars.toFixed(2)} USD`);
 
 console.log('\n=================================================');
 console.log('🏁 5% BYOK BILLING ENGINE UNIT TESTS PASSED!');

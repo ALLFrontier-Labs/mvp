@@ -3,11 +3,14 @@ import { pool } from '../db/client';
 import { createUser, loginWithPassword, socialLoginOrSignup } from '../services/auth';
 import axios from 'axios';
 
-const fallbackId = Buffer.from('NTE3MDE5MzIyODQ0LWFkZ' + 'GlodW9ka2s5bGVuZWM1aWZjaTFpczE2cmlydmxnLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t', 'base64').toString('utf-8');
-const fallbackSecret = Buffer.from('R09DU1BYLWty' + 'Qngzb2FnMDZTa3pFVXRiMTY0dTZyTmk1OFM=', 'base64').toString('utf-8');
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || fallbackId;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || fallbackSecret;
-const APP_URL = process.env.APP_URL || 'https://www.litedaemon.xyz';
+// Google OAuth — MUST be configured via environment variables. No hardcoded fallbacks.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const APP_URL = process.env.APP_URL || process.env.FRONTEND_URL || 'https://www.litedaemon.xyz';
+
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+  console.warn('[Auth] ⚠ GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set — Google OAuth will be disabled.');
+}
 
 export async function authRoute(app: FastifyInstance) {
 
@@ -58,6 +61,10 @@ export async function authRoute(app: FastifyInstance) {
 
   // ── Google OAuth Token Exchange ──────────────────────────────────────────
   app.post('/v1/auth/google/exchange', { config: { public: true } }, async (req, reply) => {
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      return reply.code(503).send({ error: 'oauth_not_configured', message: 'Google OAuth is not configured on this server.' });
+    }
+
     const { code, redirectUri } = req.body as any;
     if (!code || !redirectUri) return reply.code(400).send({ error: 'missing_parameters', message: 'code and redirectUri are required.' });
 
@@ -103,10 +110,17 @@ export async function authRoute(app: FastifyInstance) {
   // ── Social Login / Sign-up Endpoint (GitHub, Google, MetaMask) ───────────
   app.post('/v1/auth/social', { config: { public: true } }, async (req, reply) => {
     const { provider = 'github', email, firstName, lastName } = req.body as any;
-    const targetEmail = email || `dev_${provider}_${Math.random().toString(36).substring(2, 9)}@litedaemon.io`;
+
+    if (!email) {
+      return reply.code(422).send({
+        error: 'validation_error',
+        message: 'Email is required for social authentication.',
+        fields: ['email is required'],
+      });
+    }
 
     try {
-      const res = await socialLoginOrSignup(targetEmail, provider, firstName, lastName);
+      const res = await socialLoginOrSignup(email, provider, firstName, lastName);
       return reply.send({
         api_key: res.rawKey,
         user: res.user,

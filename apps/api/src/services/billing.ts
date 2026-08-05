@@ -42,9 +42,19 @@ export async function getCheckoutUrl(userId: string, creditAmountUSD: number): P
   const appUrl = process.env.FRONTEND_URL || 'https://litedaemon.xyz';
   
   const payment = await dodo.payments.create({
-    billing: { email: email },
+    billing: {
+      country: 'US',
+    },
+    customer: {
+      email: email,
+      name: 'LiteDaemon User',
+    },
     payment_link: true,
-    total_amount: Math.round(checkoutPrice * 100), // convert to cents
+    product_cart: [{
+      product_id: process.env.DODO_PRODUCT_ID || (() => { throw new Error('DODO_PRODUCT_ID environment variable is not configured. Cannot create checkout.'); })(),
+      amount: Math.round(checkoutPrice * 100), // convert to cents
+      quantity: 1,
+    }],
     currency: 'USD',
     return_url: `${appUrl}/billing?success=1`,
     metadata: {

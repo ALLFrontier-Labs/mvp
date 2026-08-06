@@ -211,6 +211,7 @@ litedaemon/                          # Monorepo root
 │           │   │                    # localStorage key management (getStoredApiKey, setStoredApiKey)
 │           │   ├── constants.ts     # GATEWAY_URL, GOOGLE_CLIENT_ID from VITE_ env vars
 │           │   └── services/        # Dashboard-side service utilities
+│           │       └── tool-service.ts # TOOL_REGISTRY (35+ tools), getToolBySlug with dynamic fallback engine
 │           │
 │           ├── types/               # Dashboard TypeScript type definitions
 │           └── data/                # Static data files (provider metadata, pricing tables)

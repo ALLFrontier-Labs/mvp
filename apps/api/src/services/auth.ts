@@ -169,40 +169,43 @@ export async function socialLoginOrSignup(
   let retries = 2; // Allow up to 2 retries for dropped connections
 
   while (retries > 0) {
+    let client;
     try {
-      const existing = await pool.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+      client = await pool.connect();
+      const existing = await client.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
 
       if (existing.rows[0]) {
         const user = existing.rows[0];
         await enforceKeyLimit(user.id);
 
         const { raw, hash } = generateApiKey();
-        await pool.query(
+        await client.query(
           `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
           [user.id, hash, `${provider} Login Key`]
         );
         logger.info('user_social_login', { userId: user.id, provider });
+        client.release(); // Success: return to pool
         return { rawKey: raw, user };
       } else {
         try {
+          // createUser internally uses pool.connect(), which is safe as it gets its own client.
           const result = await createUser(cleanedEmail, undefined, firstName, lastName);
           logger.info('user_social_signup', { userId: result.user.id, provider });
+          client.release(); // Success: return to pool
           return { rawKey: result.rawKey, user: result.user };
         } catch (createUserErr: any) {
-          // Error 23505 is PostgreSQL unique_violation
           if (createUserErr.code === '23505') {
-            // Race condition: another request created the user just before us.
-            // Fetch the newly created user and proceed as a login.
-            const existingAgain = await pool.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+            const existingAgain = await client.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
             if (existingAgain.rows[0]) {
               const user = existingAgain.rows[0];
               await enforceKeyLimit(user.id);
               const { raw, hash } = generateApiKey();
-              await pool.query(
+              await client.query(
                 `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
                 [user.id, hash, `${provider} Login Key`]
               );
               logger.info('user_social_login_after_race_condition', { userId: user.id, provider });
+              client.release(); // Success: return to pool
               return { rawKey: raw, user };
             }
           }
@@ -210,11 +213,16 @@ export async function socialLoginOrSignup(
         }
       }
     } catch (e: any) {
+      if (client) {
+        // CRITICAL FIX: If PgBouncer drops the session but keeps the TCP socket open,
+        // the connection is "poisoned" and will throw authentication errors if reused.
+        // Passing `true` DESTROYS the connection instead of returning it to the pool!
+        client.release(true); 
+      }
+      
       retries--;
-      // If it's a network/connection error (e.g. connection terminated unexpectedly), and we have retries left, loop again.
-      // Otherwise throw the error to be caught by the route handler.
       if (retries === 0 || e.code === '23505') throw e;
-      logger.warn(`socialLoginOrSignup_retry: Database connection dropped, retrying... (${retries} retries left)`);
+      logger.warn(`socialLoginOrSignup_retry: Poisoned connection destroyed. Retrying with fresh connection... (${retries} retries left)`);
     }
   }
   

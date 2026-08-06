@@ -2,6 +2,7 @@
 import { pool }       from '../db/client';
 import { getAdapter } from '../adapters/index';
 import { decrypt }    from './encryption';
+import { logger }     from '../lib/logger';
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000; // every hour
 
@@ -35,11 +36,11 @@ async function reconcileOrphanedJobs(): Promise<void> {
   }
 
   if (stale.rows.length > 0) {
-    console.log(`Reconciliation: resolved ${stale.rows.length} orphaned job(s)`);
+    logger.info('reconciliation_completed', { resolvedCount: stale.rows.length });
   }
 }
 
 export function startOrphanJobReconciliation(): void {
   setInterval(reconcileOrphanedJobs, CHECK_INTERVAL_MS);
-  console.log('Orphan job reconciliation scheduled — runs every hour');
+  logger.info('reconciliation_scheduled', { intervalMs: CHECK_INTERVAL_MS });
 }

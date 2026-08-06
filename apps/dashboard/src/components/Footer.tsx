@@ -19,6 +19,7 @@ const FOOTER_COLUMNS = [
       { label: 'About',            to: '/about' },
       { label: 'Blog',             to: '/blog' },
       { label: 'Careers',          to: '/careers', badge: 'Hiring' },
+      { label: 'Security',         to: '/security' },
       { label: 'Privacy',          to: '/privacy' },
       { label: 'Terms of Service',  to: '/terms' },
       { label: 'Support',          to: '/support' },

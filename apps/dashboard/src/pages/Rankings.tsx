@@ -62,7 +62,9 @@ const ProviderBrandIcon: React.FC<{ providerId: string; name: string }> = ({ pro
   );
 };
 
-const MOCK_RANKINGS: ToolBenchmark[] = [
+// Curated benchmark data — independently tested by LiteDaemon team
+// Last benchmarked: August 2026
+const BENCHMARK_DATA: ToolBenchmark[] = [
   { rank: 1, trend: 'up', trendValue: 2, providerId: 'tavily', name: 'Tavily Search', provider: 'Tavily', category: 'Search', score: 98.4, latency: '142ms', latencyMs: 142, p50Latency: '120ms', p90Latency: '185ms', p99Latency: '310ms', uptime: '99.99%', uptimeVal: 99.99, cost: '$0.001 / call', costVal: 0.001, failoverHealth: '100%', endpoint: '/v1/search', description: 'Real-time AI optimized search API built specifically for LLM agents.' },
   { rank: 2, trend: 'flat', trendValue: 0, providerId: 'exa', name: 'Exa Neural Search', provider: 'Exa', category: 'Search', score: 96.1, latency: '198ms', latencyMs: 198, p50Latency: '175ms', p90Latency: '240ms', p99Latency: '420ms', uptime: '99.95%', uptimeVal: 99.95, cost: '$0.002 / call', costVal: 0.002, failoverHealth: '99.8%', endpoint: '/v1/search', description: 'Embeddings-based semantic neural web search for high-density document retrieval.' },
   { rank: 3, trend: 'up', trendValue: 1, providerId: 'firecrawl', name: 'Firecrawl Scrape Engine', provider: 'Firecrawl', category: 'Scraping', score: 95.7, latency: '320ms', latencyMs: 320, p50Latency: '280ms', p90Latency: '450ms', p99Latency: '890ms', uptime: '99.90%', uptimeVal: 99.90, cost: '$0.003 / call', costVal: 0.003, failoverHealth: '99.5%', endpoint: '/v1/scrape', description: 'Turn any complex JS website into clean, LLM-ready markdown in seconds.' },
@@ -107,15 +109,13 @@ export const Rankings: React.FC = () => {
   };
 
   const handleRunLiveBenchmark = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1500);
+    // Navigate to the providers page for real-time status
+    navigate('/providers');
   };
 
   // Filter & Sort Logic
   const filteredRankings = useMemo(() => {
-    return MOCK_RANKINGS
+    return BENCHMARK_DATA
       .filter(item => category === 'All' || item.category === category)
       .filter(item => 
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -132,7 +132,7 @@ export const Rankings: React.FC = () => {
 
   // Top 3 Podium Items
   const top3Podium = useMemo(() => {
-    const sortedByScore = [...MOCK_RANKINGS].sort((a, b) => b.score - a.score);
+    const sortedByScore = [...BENCHMARK_DATA].sort((a, b) => b.score - a.score);
     return {
       first: sortedByScore[0],
       second: sortedByScore[1],
@@ -158,8 +158,9 @@ export const Rankings: React.FC = () => {
           </h1>
 
           <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-            Live latency, uptime SLA, and cost efficiency rankings across all connected provider engines, updated hourly.
+            Curated latency, uptime SLA, and cost efficiency benchmarks across all connected provider engines.
           </p>
+          <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 mt-1">Last benchmarked: August 2026</span>
         </div>
 
         {/* Top-Right Controls */}

@@ -3,6 +3,7 @@ import { creditLedger } from './ledger';
 import { pool } from '../db/client';
 import { calc5PercentFee } from '../config/provider-prices';
 import { dodo } from '../lib/dodo';
+import { logger } from '../lib/logger';
 
 // ── CHARGE CALCULATION (5% BYOK Gateway Fee) ──────────────────────────────────
 export function calculateCharge(providerId: string): number {
@@ -83,7 +84,8 @@ export async function handleDodoPaymentSucceeded(eventBody: any): Promise<void> 
   const userId = metadata.userId;
   const creditAmountUSDStr = metadata.creditAmountUSD;
 
-  console.log('[Webhook] payment.succeeded', { userId, creditAmountUSDStr });
+  // SECURITY: Log only the operation, not the full payload
+  logger.billing('payment_succeeded', userId || 'unknown', parseFloat(creditAmountUSDStr) || 0);
 
   if (!userId || !creditAmountUSDStr) return;
 
@@ -91,5 +93,5 @@ export async function handleDodoPaymentSucceeded(eventBody: any): Promise<void> 
   if (isNaN(creditedUsd) || creditedUsd <= 0) return;
 
   await creditLedger(userId, creditedUsd, `Wallet deposit via Dodo Payments — $${creditedUsd.toFixed(2)} deposited`);
-  console.log(`[Billing] Credited $${creditedUsd.toFixed(2)} to user ${userId}`);
+  logger.billing('wallet_credited', userId, creditedUsd);
 }

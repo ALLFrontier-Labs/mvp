@@ -88,23 +88,8 @@ export const Settings: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRegenerateKey = async () => {
-    setIsRegenerating(true);
-    try {
-      const newKey = `ld_live_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`;
-      setStoredApiKey(newKey);
-      setCurrentKey(newKey);
-      setRegenerateSuccess(true);
-      setTimeout(() => {
-        setRegenerateSuccess(false);
-        setIsRegenerateModalOpen(false);
-      }, 1500);
-    } catch {
-      /* ignore */
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
+  // Key regeneration is handled entirely by the RegenerateKeyModal
+  // which calls POST /v1/auth/regenerate server-side.
 
   // Dynamic cURL examples per endpoint
   const CURL_EXAMPLES: Record<EndpointTab, string> = {
@@ -336,7 +321,7 @@ export const Settings: React.FC = () => {
               </div>
 
               <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                ${me ? me.balance_usd.toFixed(4) : '9.9500'}
+                ${me ? me.balance_usd.toFixed(4) : '$\u2014'}
               </div>
 
               <div className="flex items-center justify-between pt-1 border-t border-zinc-200 dark:border-zinc-800">
@@ -372,7 +357,7 @@ export const Settings: React.FC = () => {
               </div>
 
               <div className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">
-                ${me ? (me.total_spent_usd || 0.05).toFixed(4) : '0.0500'}
+                ${me ? me.total_spent_usd.toFixed(4) : '$\u2014'}
               </div>
 
               <span className="text-[10px] text-zinc-400 block">Flat 5% BYOK optimization fee</span>

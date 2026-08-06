@@ -15,6 +15,7 @@ import { Playground }    from './pages/Playground';
 import { Docs }          from './pages/Docs';
 import { Privacy }       from './pages/Privacy';
 import { Terms }         from './pages/Terms';
+import { Security }      from './pages/Security';
 import { AuthCallback }  from './pages/AuthCallback';
 import { ToolDetailPage } from './pages/ToolDetailPage';
 import { ComparePage }   from './pages/ComparePage';
@@ -58,6 +59,7 @@ export const App: React.FC = () => {
               <Route path="/docs/*"    element={<Docs />} />
               <Route path="/privacy"   element={<Privacy />} />
               <Route path="/terms"     element={<Terms />} />
+              <Route path="/security"  element={<Security />} />
 
               {/* ── Protected ───────────────────────────────────── */}
               <Route path="/overview"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

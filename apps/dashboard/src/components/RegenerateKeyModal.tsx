@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { RefreshCw, X, AlertTriangle, CheckCircle2, Copy, Check, Lock, ShieldAlert } from 'lucide-react';
-import { setStoredApiKey } from '../lib/api';
+import { RefreshCw, X, AlertTriangle, CheckCircle2, Copy, Check, Lock, ShieldAlert, AlertCircle } from 'lucide-react';
+import { api, setStoredApiKey } from '../lib/api';
 
 interface RegenerateKeyModalProps {
   isOpen: boolean;
@@ -18,12 +18,14 @@ export const RegenerateKeyModal: React.FC<RegenerateKeyModalProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [newKeyGenerated, setNewKeyGenerated] = useState<string | null>(null);
   const [copiedNewKey, setCopiedNewKey]   = useState(false);
+  const [error, setError]                 = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setConfirmInput('');
       setNewKeyGenerated(null);
       setCopiedNewKey(false);
+      setError(null);
     }
   }, [isOpen]);
 
@@ -31,17 +33,25 @@ export const RegenerateKeyModal: React.FC<RegenerateKeyModalProps> = ({
 
   const isConfirmed = confirmInput.trim() === 'REGENERATE';
 
-  const handleExecuteRegenerate = () => {
+  const handleExecuteRegenerate = async () => {
     if (!isConfirmed) return;
     setIsGenerating(true);
+    setError(null);
 
-    setTimeout(() => {
-      const generated = `ld_live_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`;
-      setStoredApiKey(generated);
-      setNewKeyGenerated(generated);
-      onKeyRegenerated(generated);
+    try {
+      // Call the REAL backend endpoint — server generates the key,
+      // deactivates all old keys, and busts the Redis auth cache.
+      const result = await api.regenerateKey();
+
+      // Store the new server-generated key in localStorage
+      setStoredApiKey(result.api_key);
+      setNewKeyGenerated(result.api_key);
+      onKeyRegenerated(result.api_key);
+    } catch (err: any) {
+      setError(err.message || 'Failed to regenerate API key. Please try again.');
+    } finally {
       setIsGenerating(false);
-    }, 1000);
+    }
   };
 
   const handleCopyNewKey = () => {
@@ -78,7 +88,7 @@ export const RegenerateKeyModal: React.FC<RegenerateKeyModalProps> = ({
                 <span>Master API Key Regenerated!</span>
               </div>
               <p className="text-[11px] font-sans text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Make sure to copy your new key now. You won't be able to see it again!
+                Make sure to copy your new key now. You won't be able to see it again! All previous keys have been permanently deactivated.
               </p>
             </div>
 
@@ -116,6 +126,13 @@ export const RegenerateKeyModal: React.FC<RegenerateKeyModalProps> = ({
                 This action will immediately invalidate your current Master API Key. Any active integrations using your old key will stop working until updated.
               </p>
             </div>
+
+            {error && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">

@@ -2,8 +2,16 @@
 import crypto from 'crypto';
 import { pool }  from '../db/client';
 import { redis } from '../redis/client';
+import { logger } from '../lib/logger';
 
-const SALT = process.env.API_KEY_SALT || 'litedaemon_default_salt_2026';
+// ── CRITICAL: No default fallback — crash on startup if salt is missing ───────
+const SALT = process.env.API_KEY_SALT;
+if (!SALT) {
+  throw new Error('FATAL: API_KEY_SALT environment variable is required. Cannot start without it.');
+}
+
+// Maximum number of active API keys per user — prevents unbounded key accumulation
+const MAX_ACTIVE_KEYS_PER_USER = 10;
 
 export function generateApiKey(): { raw: string; hash: string } {
   const raw  = 'ld_' + crypto.randomBytes(48).toString('hex'); // 99-char key
@@ -22,6 +30,31 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   const [salt, hash] = storedHash.split(':');
   const verifyHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
   return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(verifyHash, 'hex'));
+}
+
+// ── Enforce API key limit per user — deactivate oldest keys if over limit ─────
+async function enforceKeyLimit(userId: string, client?: any): Promise<void> {
+  const db = client || pool;
+  const countRes = await db.query(
+    `SELECT COUNT(*) AS cnt FROM api_keys WHERE user_id = $1 AND is_active = true`,
+    [userId]
+  );
+  const count = parseInt(countRes.rows[0]?.cnt || '0');
+
+  if (count >= MAX_ACTIVE_KEYS_PER_USER) {
+    // Deactivate the oldest keys beyond the limit (keep the newest MAX - 1 to make room)
+    await db.query(
+      `UPDATE api_keys SET is_active = false
+       WHERE id IN (
+         SELECT id FROM api_keys
+         WHERE user_id = $1 AND is_active = true
+         ORDER BY created_at ASC
+         LIMIT $2
+       )`,
+      [userId, count - MAX_ACTIVE_KEYS_PER_USER + 1]
+    );
+    logger.info('api_keys_pruned', { userId, deactivated: count - MAX_ACTIVE_KEYS_PER_USER + 1 });
+  }
 }
 
 // ── Create user (Supports optional password & names) ──────────────────────────
@@ -52,6 +85,7 @@ export async function createUser(
     );
 
     await client.query('COMMIT');
+    logger.info('user_created', { userId: user.id });
 
     return {
       rawKey: raw,
@@ -96,12 +130,17 @@ export async function loginWithPassword(email: string, password?: string): Promi
     await pool.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [newHash, user.id]);
   }
 
+  // Enforce key limit before creating new session key
+  await enforceKeyLimit(user.id);
+
   // Generate a fresh session key so user never gets stuck!
   const { raw, hash } = generateApiKey();
   await pool.query(
     `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, 'Session Key')`,
     [user.id, hash]
   );
+
+  logger.info('user_login', { userId: user.id, method: 'password' });
 
   return {
     rawKey: raw,
@@ -117,6 +156,9 @@ export async function loginWithPassword(email: string, password?: string): Promi
 }
 
 // ── Social / One-Click Login ────────────────────────────────────────────────
+// SECURITY NOTE: This must ONLY be called from server-side verified OAuth flows
+// (e.g., after verifying a Google access_token server-side). It must NEVER be
+// exposed to unauthenticated public endpoints without prior token verification.
 export async function socialLoginOrSignup(
   email: string,
   provider: string,
@@ -128,15 +170,21 @@ export async function socialLoginOrSignup(
 
   if (existing.rows[0]) {
     const user = existing.rows[0];
+
+    // Enforce key limit before creating new key
+    await enforceKeyLimit(user.id);
+
     const { raw, hash } = generateApiKey();
     await pool.query(
       `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
       [user.id, hash, `${provider} Login Key`]
     );
+    logger.info('user_social_login', { userId: user.id, provider });
     return { rawKey: raw, user };
   } else {
     // Create new account
     const result = await createUser(cleanedEmail, undefined, firstName, lastName);
+    logger.info('user_social_signup', { userId: result.user.id, provider });
     return { rawKey: result.rawKey, user: result.user };
   }
 }

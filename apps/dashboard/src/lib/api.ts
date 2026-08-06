@@ -246,17 +246,17 @@ export const api = {
     });
   },
 
-  socialAuth: async (provider: 'github' | 'google' | 'metamask', email?: string, firstName?: string, lastName?: string) => {
-    return apiRequest<{ api_key: string; user: any; message: string }>('/auth/social', {
-      method: 'POST',
-      body: JSON.stringify({ provider, email, firstName, lastName }),
-    });
-  },
-
   googleExchange: async (code: string, redirectUri: string) => {
     return apiRequest<{ api_key: string; user: any; message: string }>('/auth/google/exchange', {
       method: 'POST',
       body: JSON.stringify({ code, redirectUri }),
+    });
+  },
+
+  /** Regenerate Master API Key — deactivates all existing keys server-side */
+  regenerateKey: async () => {
+    return apiRequest<{ api_key: string; message: string; deactivated_keys: number }>('/auth/regenerate', {
+      method: 'POST',
     });
   },
 };

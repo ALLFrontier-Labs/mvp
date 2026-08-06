@@ -1,15 +1,18 @@
 const { DodoPayments } = require('dodopayments');
 const dodo = new DodoPayments({
-  bearerToken: process.env.DODO_PAYMENTS_API_KEY || 'test_sk_abc123',
+  bearerToken: 'nUCHDWMGW4NXVmvX.cbGqYTXZOgYrSFp4KAAOoELWUuX4wuGQSbvW5y2FDc_8ZPBj',
   environment: 'test_mode',
 });
 
 async function run() {
   try {
     const payment = await dodo.payments.create({
-      billing: { email: 'test@example.com' },
       payment_link: true,
-      total_amount: 1000,
+      customer: {
+        email: 'test@example.com',
+        name: 'Test Customer'
+      },
+      product_cart: [{ product_id: 'prod_test', amount: 1000, quantity: 1 }],
       currency: 'USD',
       return_url: `http://localhost:5173/billing?success=1`,
     });

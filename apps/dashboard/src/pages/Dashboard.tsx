@@ -102,7 +102,7 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   const totalCalls = stats?.total_calls ?? 0;
-  const rescuedRateLimits = Math.floor(totalCalls * 0.14) + (byokKeys.length > 1 ? 3 : 0);
+  // Failover count is not tracked by the backend yet — display real data only
   const activeVaults = byokKeys.length;
 
   // Drawer opener handler
@@ -234,17 +234,17 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Stat 2: Failovers Handled */}
+        {/* Stat 2: BYOK Keys Active */}
         <div className="rounded-2xl p-6 border shadow-sm dark:shadow-none transition-all duration-300 hover:border-lime-500/40 hover:shadow-[0_0_20px_rgba(163,230,53,0.08)] bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">
           <div>
             <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
-              Failovers Handled
+              Total Routing Fees
             </span>
             <span className="text-3xl font-extrabold font-sans text-teal-600 dark:text-teal-400 mt-2 block">
-              {rescuedRateLimits.toLocaleString()}
+              ${stats ? stats.total_spent_usd.toFixed(4) : '0.0000'}
             </span>
             <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">
-              Auto-rotated keys &amp; limits
+              5% gateway pass-through
             </span>
           </div>
           <div className="p-3 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 shrink-0">

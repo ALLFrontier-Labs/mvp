@@ -47,7 +47,7 @@ export async function searchRoute(app: FastifyInstance) {
 
       if (finalCharge > 0) {
         try {
-          await debitLedger(user.id, finalCharge, provider.id, jobId, `${provider.name} search gateway fee — ${params.query}`);
+          await debitLedger(user.id, finalCharge, provider.id, jobId, `${provider.name} search gateway fee`);
         } catch (err: any) {
           if (err instanceof InsufficientFundsError) {
             return reply.code(402).send({ error: 'insufficient_balance', message: err.message, required_usd: finalCharge });

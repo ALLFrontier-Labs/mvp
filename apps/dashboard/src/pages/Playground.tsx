@@ -195,24 +195,8 @@ export const Playground: React.FC = () => {
     const startTime = Date.now();
 
     try {
-      // Call backend API execute endpoint or mock execution response
-      const res = await api.executeEndpoint(activeEndpoint.slice(4), currentPayload.params).catch(() => ({
-        status: 'completed',
-        provider: currentPayload.provider === 'auto' ? 'tavily' : currentPayload.provider,
-        result: {
-          success: true,
-          endpoint: activeEndpoint,
-          provider: currentPayload.provider === 'auto' ? 'tavily' : currentPayload.provider,
-          data: activeEndpoint === '/v1/search'
-            ? [
-                { title: 'LiteDaemon Gateway Benchmark 2026', url: 'https://litedaemon.xyz/benchmarks', snippet: 'Unified LLM tool routing achieved 340ms mean roundtrip latency across 36 native adapters.' },
-                { title: 'Tavily Search API Provider Integration', url: 'https://tavily.com', snippet: 'RAG-optimized search results returned with clean markdown citations.' }
-              ]
-            : activeEndpoint === '/v1/scrape'
-              ? { markdown: '# Sample Scraped Output\n\nPage content converted cleanly into LLM-ready markdown format.' }
-              : { output: 'Execution completed successfully', exit_code: 0 }
-        }
-      }));
+      // Call backend API execute endpoint
+      const res = await api.executeEndpoint(activeEndpoint.slice(4), currentPayload.params);
 
       const elapsed = Date.now() - startTime;
       setResponseResult(res.result || res);

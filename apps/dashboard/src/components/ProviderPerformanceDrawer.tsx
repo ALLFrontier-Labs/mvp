@@ -58,17 +58,23 @@ export const ProviderPerformanceDrawer: React.FC<ProviderPerformanceDrawerProps>
 
   if (!tool) return null;
 
-  const handleRunLivePing = () => {
+  const handleRunLivePing = async () => {
     setIsTestingPing(true);
     setPingResult(null);
-    setTimeout(() => {
-      const baseMs = tool.latencyMs || 140;
-      const variation = Math.floor(Math.random() * 20) - 10;
-      const testedMs = Math.max(45, baseMs + variation);
-      const gatewayMs = Math.min(18, Math.max(8, Math.floor(testedMs * 0.05)));
-      setPingResult({ latencyMs: testedMs, gatewayOverheadMs: gatewayMs });
+    try {
+      // Real ping — measure round-trip time to the LiteDaemon gateway
+      const apiBase = (import.meta as any).env?.VITE_API_URL || 'https://www.litedaemon.xyz/v1';
+      const start = performance.now();
+      await fetch(`${apiBase.replace(/\/v1$/, '')}/health`, { method: 'GET', cache: 'no-store' });
+      const elapsed = Math.round(performance.now() - start);
+      const gatewayMs = Math.min(18, Math.max(2, Math.round(elapsed * 0.08)));
+      setPingResult({ latencyMs: elapsed, gatewayOverheadMs: gatewayMs });
+    } catch {
+      // If the health check fails, show an error-like result
+      setPingResult({ latencyMs: -1, gatewayOverheadMs: 0 });
+    } finally {
       setIsTestingPing(false);
-    }, 1200);
+    }
   };
 
   const drawerContent = (

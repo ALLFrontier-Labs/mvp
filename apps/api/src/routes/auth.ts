@@ -116,14 +116,16 @@ export async function authRoute(app: FastifyInstance) {
         redirect_uri: redirectUri,
         grant_type: 'authorization_code'
       }).toString(), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        timeout: 10000 // 10s network timeout
       });
 
       const { access_token } = tokenRes.data;
 
       // 2. Fetch user profile from Google
       const userRes = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: { Authorization: `Bearer ${access_token}` }
+        headers: { Authorization: `Bearer ${access_token}` },
+        timeout: 10000 // 10s network timeout
       });
 
       const profile = userRes.data;
@@ -159,9 +161,10 @@ export async function authRoute(app: FastifyInstance) {
         });
       }
 
+      // SURFACING EXACT ERROR TO UI for immediate debugging instead of masking it.
       return reply.code(500).send({ 
         error: 'auth_failed', 
-        message: 'Google authentication failed due to an internal error. Please try again.'
+        message: `Google authentication failed due to an internal error: ${e.message}`
       });
     }
   });

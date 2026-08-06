@@ -238,14 +238,12 @@ GROUP BY user_id;
 
 ---
 
-## 4. Authentication & Security
-
-### API Key Lifecycle
-
-Keys are 99-char strings: `ld_` + 96 hex chars = `ld_<randomBytes(48).hex()>`
-
-**Generation:** `raw = "ld_" + crypto.randomBytes(48).hex()` | `hash = SHA-256(SALT + raw)`
-Raw key returned once to developer. Only hash stored in DB.
+### Authentication & Security
+LiteDaemon utilizes a secure, stateless BYOK (Bring Your Own Key) model combined with managed API access keys.
+- **Social Login:** Google OAuth 2.0 flow. Frontend receives the code, backend exchanges it directly with Google.
+  - *Enterprise Resiliency:* The social login database transactions are heavily fault-tolerant, featuring automatic retries for dropped idle connections, and explicit catch blocks to gracefully handle `unique_violation` race conditions without crashing.
+- **API Keys:** Hash-based validation. Raw keys are 99-character hex strings prefixed with `ld_`.
+- **Storage:** Only the SHA-256 hash of the key is stored in the database (with a globally configured pepper/salt). The raw key is only shown to the user once.
 
 **Per-request validation (target ≤10ms):**
 1. Read `Authorization: Bearer <raw_key>`

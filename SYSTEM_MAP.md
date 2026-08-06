@@ -326,6 +326,7 @@ Server-side Google OAuth code exchange.
 **Errors:** 400 validation_error | 400 invalid_grant | 400 redirect_uri_mismatch | 500 auth_failed | 503 oauth_not_configured
 
 > **Edge Case Handling:** The frontend (`AuthCallback.tsx`) implements strict URL state hygiene by immediately stripping the single-use `code` from the URL to prevent stale code replays via page refresh/bookmarks. If a stale code is submitted, the backend parses Google's error and gracefully returns a `400 invalid_grant` instead of a 500.
+> **Enterprise Resiliency:** The `/v1/auth/google/exchange` endpoint implements automatic retry logic for dropped idle database connections, catches `unique_violation` race conditions gracefully, enforces strict 10s timeouts for Google APIs, and surfaces exact internal error strings to the client for immediate transparency if a crash occurs.
 
 ---
 

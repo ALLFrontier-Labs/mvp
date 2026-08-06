@@ -166,27 +166,59 @@ export async function socialLoginOrSignup(
   lastName?: string
 ): Promise<{ rawKey: string; user: any }> {
   const cleanedEmail = email.toLowerCase().trim();
-  const existing = await pool.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+  let retries = 2; // Allow up to 2 retries for dropped connections
 
-  if (existing.rows[0]) {
-    const user = existing.rows[0];
+  while (retries > 0) {
+    try {
+      const existing = await pool.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
 
-    // Enforce key limit before creating new key
-    await enforceKeyLimit(user.id);
+      if (existing.rows[0]) {
+        const user = existing.rows[0];
+        await enforceKeyLimit(user.id);
 
-    const { raw, hash } = generateApiKey();
-    await pool.query(
-      `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
-      [user.id, hash, `${provider} Login Key`]
-    );
-    logger.info('user_social_login', { userId: user.id, provider });
-    return { rawKey: raw, user };
-  } else {
-    // Create new account
-    const result = await createUser(cleanedEmail, undefined, firstName, lastName);
-    logger.info('user_social_signup', { userId: result.user.id, provider });
-    return { rawKey: result.rawKey, user: result.user };
+        const { raw, hash } = generateApiKey();
+        await pool.query(
+          `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
+          [user.id, hash, `${provider} Login Key`]
+        );
+        logger.info('user_social_login', { userId: user.id, provider });
+        return { rawKey: raw, user };
+      } else {
+        try {
+          const result = await createUser(cleanedEmail, undefined, firstName, lastName);
+          logger.info('user_social_signup', { userId: result.user.id, provider });
+          return { rawKey: result.rawKey, user: result.user };
+        } catch (createUserErr: any) {
+          // Error 23505 is PostgreSQL unique_violation
+          if (createUserErr.code === '23505') {
+            // Race condition: another request created the user just before us.
+            // Fetch the newly created user and proceed as a login.
+            const existingAgain = await pool.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+            if (existingAgain.rows[0]) {
+              const user = existingAgain.rows[0];
+              await enforceKeyLimit(user.id);
+              const { raw, hash } = generateApiKey();
+              await pool.query(
+                `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
+                [user.id, hash, `${provider} Login Key`]
+              );
+              logger.info('user_social_login_after_race_condition', { userId: user.id, provider });
+              return { rawKey: raw, user };
+            }
+          }
+          throw createUserErr;
+        }
+      }
+    } catch (e: any) {
+      retries--;
+      // If it's a network/connection error (e.g. connection terminated unexpectedly), and we have retries left, loop again.
+      // Otherwise throw the error to be caught by the route handler.
+      if (retries === 0 || e.code === '23505') throw e;
+      logger.warn(`socialLoginOrSignup_retry: Database connection dropped, retrying... (${retries} retries left)`);
+    }
   }
+  
+  throw new Error('socialLoginOrSignup failed after maximum retries');
 }
 
 // Called on every request — must resolve in under 10ms

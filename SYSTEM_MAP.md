@@ -172,7 +172,7 @@ litedaemon/                          # Monorepo root
 │           │   ├── Pricing.tsx      # Pricing page
 │           │   ├── Rankings.tsx     # Provider performance rankings
 │           │   ├── ComparePage.tsx  # Provider comparison
-│           │   ├── ToolDetailPage.tsx # Individual tool detail page
+│           │   ├── ToolDetailPage.tsx # Individual tool detail page (Full Light/Dark Theme support)
 │           │   ├── ContactSales.tsx # Enterprise contact form
 │           │   ├── Privacy.tsx      # Privacy policy
 │           │   ├── Terms.tsx        # Terms of service
@@ -201,7 +201,7 @@ litedaemon/                          # Monorepo root
 │           │   ├── WorkspaceModal.tsx      # Workspace/team management modal
 │           │   ├── DocsFooter.tsx          # Documentation page footer
 │           │   ├── compare/                # Provider comparison components
-│           │   └── tools/                  # Tool-specific component variants
+│           │   └── tools/                  # Tool-specific components (ToolHeroHeader, ToolProvidersTable, ToolMetricsSections, ToolAuxSections, ToolDetailLayout — 100% Light/Dark Theme adapted)
 │           │
 │           ├── context/
 │           │   └── ThemeContext.tsx        # Light/dark theme provider

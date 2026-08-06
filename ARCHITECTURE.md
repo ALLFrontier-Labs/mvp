@@ -99,7 +99,7 @@ POST-EXECUTION (back in route handler)
 ## 3. Database & Schema
 
 **Platform:** Supabase (PostgreSQL 15)
-**Connection:** Transaction pooler port 6543 via pg Pool (max=20, idle=30s, statement_timeout=30s)
+**Connection:** Transaction pooler port 6543 via pg Pool (max=2 production / 10 dev, idle=10s, statement_timeout=10s)
 **Schema:** schema.sql — apply once in Supabase SQL Editor
 **Migrations:** supabase/migrations/ — incremental changes post-initial-deploy
 

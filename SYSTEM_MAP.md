@@ -106,7 +106,7 @@ litedaemon/                          # Monorepo root
 │   │       │   ├── execute.ts       # POST /v1/execute
 │   │       │   ├── document.ts      # POST /v1/document (JSON + multipart/form-data)
 │   │       │   ├── jobs.ts          # GET  /v1/jobs, GET /v1/jobs/:id
-│   │       │   ├── usage.ts         # GET  /v1/usage
+│   │       │   ├── usage.ts         # GET  /v1/usage (returns total_calls, billed_calls=max(0, count-100), total_spent_usd, balance_usd)
 │   │       │   ├── billing.ts       # GET  /v1/billing/checkout, POST /v1/webhooks/dodo
 │   │       │   ├── providers.ts     # GET  /v1/providers (public, no auth)
 │   │       │   └── keys.ts          # GET/POST /v1/keys, PUT /v1/keys/reorder,

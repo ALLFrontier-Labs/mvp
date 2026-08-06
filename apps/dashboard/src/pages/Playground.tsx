@@ -207,9 +207,9 @@ export const Playground: React.FC = () => {
     } catch (err: any) {
       const elapsed = Date.now() - startTime;
       setResponseError(err.message || 'Gateway connection timeout or upstream error');
-      setResponseStatus(500);
+      setResponseStatus(err.status || 500);
       setResponseLatency(elapsed || 450);
-      setInspectorTab('response');
+      setInspectorTab('output');
     } finally {
       setExecuting(false);
     }

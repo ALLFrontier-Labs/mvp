@@ -45,7 +45,11 @@ async function apiRequest<T = any>(endpoint: string, options: RequestInit = {}):
   }
 
   if (!res.ok) {
-    throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
+    const error = new Error(data.message || data.error || `Request failed with status ${res.status}`);
+    (error as any).status = res.status;
+    (error as any).code = data.error;
+    (error as any).data = data;
+    throw error;
   }
 
   return data;

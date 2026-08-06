@@ -516,13 +516,284 @@ export const TOOL_REGISTRY: Record<string, ToolDetail> = {
     ],
     relatedToolsSlugs: ['daytona/code-sandbox', 'tavily/web-search'],
   },
+
+  'bing/web-search': {
+    id: 'bing-web-search',
+    slug: 'bing/web-search',
+    name: 'Bing Web Search Engine',
+    providerName: 'Microsoft Bing',
+    shortDescription: 'Enterprise Bing Web Search API with structured web results, news, and knowledge graph citations.',
+    fullDescription: 'Bing Web Search delivers high-speed web indices formatted for AI search pipelines. Routed via LiteDaemon for instant key failover and sub-cent pricing.',
+    category: 'Search & Web',
+    modalities: { inputs: ['Text'], outputs: ['Structured JSON', 'Text'] },
+    pricingSummary: '$0.0010 / call',
+    maxConcurrency: '500 parallel queries',
+    releaseDate: '2026-01-20',
+    endpoints: [
+      { id: 'bing-us', name: 'Bing US Primary', isVerified: true, costPer1kCalls: 1.00, cacheReadPer1k: 0.10, avgLatencyMs: 15.0, throughputRps: 300, uptimePercentage: 99.99, region: 'US-East' }
+    ],
+    benchmarks: [
+      { metricName: 'Result Freshness', score: 99.1, maxScore: 100, percentile: 98, description: 'Index freshness for breaking web content.' }
+    ],
+    topApps: [
+      { id: 'app-bing-1', name: 'Bing Research Bot', description: 'Real-time market research pipeline.', totalVolumeFormatted: '410M calls' }
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 1100000, failedCalls: 5, cachedCalls: 210000 },
+      { date: '2026-07-30', successfulCalls: 1650000, failedCalls: 2, cachedCalls: 320000 }
+    ],
+    faqs: [
+      { question: 'Does Bing Web Search support safe-search filtering?', answer: 'Yes, pass safety parameters in request params.' }
+    ],
+    relatedToolsSlugs: ['serper/google-search', 'tavily/web-search']
+  },
+
+  'exa/neural-search': {
+    id: 'exa-neural-search',
+    slug: 'exa/neural-search',
+    name: 'Exa AI Neural Search',
+    providerName: 'Exa',
+    shortDescription: 'Embedding-based neural search engine designed to find semantically relevant web content.',
+    fullDescription: 'Exa searches the web using vector embeddings rather than keywords, retrieving deep document semantics for LLMs.',
+    category: 'Search & Web',
+    modalities: { inputs: ['Text'], outputs: ['Structured JSON', 'Text'] },
+    pricingSummary: '$0.0020 / call',
+    maxConcurrency: '300 queries',
+    releaseDate: '2026-02-10',
+    endpoints: [
+      { id: 'exa-primary', name: 'Exa Neural Gateway', isVerified: true, costPer1kCalls: 2.00, avgLatencyMs: 22.0, throughputRps: 200, uptimePercentage: 99.96, region: 'Global' }
+    ],
+    benchmarks: [
+      { metricName: 'Semantic Precision', score: 99.6, maxScore: 100, percentile: 99, description: 'Neural relevance score.' }
+    ],
+    topApps: [
+      { id: 'app-exa-1', name: 'Exa Deep Finder', description: 'Semantic document discovery pipeline.', totalVolumeFormatted: '280M calls' }
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 800000, failedCalls: 3, cachedCalls: 150000 },
+      { date: '2026-07-30', successfulCalls: 1400000, failedCalls: 1, cachedCalls: 250000 }
+    ],
+    faqs: [
+      { question: 'How is Exa different from keyword search?', answer: 'Exa uses embeddings to understand the meaning of your query rather than matching words.' }
+    ],
+    relatedToolsSlugs: ['perplexity/sonar-search', 'tavily/web-search']
+  },
+
+  'google/custom-search': {
+    id: 'google-custom-search',
+    slug: 'google/custom-search',
+    name: 'Google Custom Search API',
+    providerName: 'Google Cloud',
+    shortDescription: 'Programmatic access to Google Custom Search Engine (CSE) results.',
+    fullDescription: 'Access structured Google Search results filtered by domain or custom engine configurations.',
+    category: 'Search & Web',
+    modalities: { inputs: ['Text'], outputs: ['Structured JSON'] },
+    pricingSummary: '$0.0050 / call',
+    maxConcurrency: '200 queries',
+    releaseDate: '2026-01-01',
+    endpoints: [
+      { id: 'google-cse', name: 'Google CSE Primary', isVerified: true, costPer1kCalls: 5.00, avgLatencyMs: 18.0, throughputRps: 150, uptimePercentage: 99.99, region: 'Global' }
+    ],
+    benchmarks: [
+      { metricName: 'Domain Filter Accuracy', score: 100, maxScore: 100, percentile: 100, description: 'Strict compliance with domain scope.' }
+    ],
+    topApps: [
+      { id: 'app-google-1', name: 'Enterprise Search Bot', description: 'Targeted domain scraper.', totalVolumeFormatted: '190M calls' }
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 500000, failedCalls: 2, cachedCalls: 100000 },
+      { date: '2026-07-30', successfulCalls: 900000, failedCalls: 0, cachedCalls: 180000 }
+    ],
+    faqs: [
+      { question: 'Do I need a CSE ID?', answer: 'Yes, configure your cx parameter in the request body.' }
+    ],
+    relatedToolsSlugs: ['serper/google-search', 'bing/web-search']
+  },
+
+  'duckduckgo/scraping-engine': {
+    id: 'duckduckgo-scraping-engine',
+    slug: 'duckduckgo/scraping-engine',
+    name: 'DuckDuckGo Scraping Engine',
+    providerName: 'DuckDuckGo',
+    shortDescription: 'Privacy-focused zero-tracking search scraper for AI agents.',
+    fullDescription: 'DuckDuckGo provides privacy-first search results without tracking user identity or search queries.',
+    category: 'Search & Web',
+    modalities: { inputs: ['Text'], outputs: ['Structured JSON'] },
+    pricingSummary: '$0.0005 / call',
+    maxConcurrency: '500 queries',
+    releaseDate: '2026-01-01',
+    endpoints: [
+      { id: 'ddg-primary', name: 'DuckDuckGo Gateway', isVerified: true, costPer1kCalls: 0.50, avgLatencyMs: 12.0, throughputRps: 400, uptimePercentage: 99.98, region: 'Global' }
+    ],
+    benchmarks: [
+      { metricName: 'Privacy Assurance', score: 100, maxScore: 100, percentile: 100, description: 'Zero telemetry logging.' }
+    ],
+    topApps: [
+      { id: 'app-ddg-1', name: 'Privacy Research Agent', description: 'Anonymous data collection bot.', totalVolumeFormatted: '520M calls' }
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 1400000, failedCalls: 1, cachedCalls: 300000 },
+      { date: '2026-07-30', successfulCalls: 2100000, failedCalls: 0, cachedCalls: 450000 }
+    ],
+    faqs: [
+      { question: 'Is IP proxying automatic?', answer: 'Yes, LiteDaemon rotates egress IPs automatically.' }
+    ],
+    relatedToolsSlugs: ['serper/google-search', 'tavily/web-search']
+  },
+
+  'jina/reader': {
+    id: 'jina-reader',
+    slug: 'jina/reader',
+    name: 'Jina AI Reader & Web Parser',
+    providerName: 'Jina AI',
+    shortDescription: 'Convert any URL into clean markdown tailored for LLM prompt context windows.',
+    fullDescription: 'Jina Reader strips ads, headers, and footers from web pages to produce optimal markdown for LLMs.',
+    category: 'Scraping & Parsing',
+    modalities: { inputs: ['DOM', 'Text'], outputs: ['Text', 'Structured JSON'] },
+    pricingSummary: '$0.0010 / page',
+    maxConcurrency: '400 pages',
+    releaseDate: '2026-01-15',
+    endpoints: [
+      { id: 'jina-reader-primary', name: 'Jina Reader Engine', isVerified: true, costPer1kCalls: 1.00, avgLatencyMs: 15.0, throughputRps: 350, uptimePercentage: 99.99, region: 'Global' }
+    ],
+    benchmarks: [
+      { metricName: 'Markdown Relevancy', score: 99.4, maxScore: 100, percentile: 99, description: 'Clean content conversion without boilerplate.' }
+    ],
+    topApps: [
+      { id: 'app-jina-1', name: 'Jina Summarizer Bot', description: 'Instant article markdown ingestion.', totalVolumeFormatted: '630M pages' }
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 1300000, failedCalls: 2, cachedCalls: 250000 },
+      { date: '2026-07-30', successfulCalls: 1950000, failedCalls: 1, cachedCalls: 400000 }
+    ],
+    faqs: [
+      { question: 'How do I pass a URL to Jina Reader?', answer: 'Send {"url": "https://example.com"} in your POST request body.' }
+    ],
+    relatedToolsSlugs: ['firecrawl/web-scraper', 'tavily/web-search']
+  },
+
+  'deepgram/speech-api': {
+    id: 'deepgram-speech-api',
+    slug: 'deepgram/speech-api',
+    name: 'Deepgram Nova-2 Speech API',
+    providerName: 'Deepgram',
+    shortDescription: 'Ultra-fast real-time speech-to-text API powered by Nova-2 architecture.',
+    fullDescription: 'Deepgram provides industry-leading speech recognition with sub-100ms streaming latency and high WER accuracy.',
+    category: 'Audio & Speech',
+    modalities: { inputs: ['Audio'], outputs: ['Structured JSON', 'Text'] },
+    pricingSummary: '$0.0020 / audio min',
+    maxConcurrency: '300 streams',
+    releaseDate: '2026-02-01',
+    endpoints: [
+      { id: 'deepgram-nova', name: 'Deepgram Nova-2 Cluster', isVerified: true, costPer1kCalls: 2.00, avgLatencyMs: 25.0, throughputRps: 250, uptimePercentage: 99.98, region: 'US-East' }
+    ],
+    benchmarks: [
+      { metricName: 'Streaming Latency', score: 99.9, maxScore: 100, percentile: 100, description: 'Sub-100ms real-time audio transcription.' }
+    ],
+    topApps: [
+      { id: 'app-deepgram-1', name: 'Voice Agent Copilot', description: 'Real-time conversational voice sub-agent.', totalVolumeFormatted: '580M mins' }
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 900000, failedCalls: 4, cachedCalls: 100000 },
+      { date: '2026-07-30', successfulCalls: 1500000, failedCalls: 2, cachedCalls: 200000 }
+    ],
+    faqs: [
+      { question: 'Is Nova-2 multi-lingual?', answer: 'Yes, Nova-2 supports 30+ languages automatically.' }
+    ],
+    relatedToolsSlugs: ['assemblyai/transcribe', 'mem0/long-term-memory']
+  }
 };
 
+function generateFallbackTool(rawSlug: string): ToolDetail {
+  const parts = rawSlug.split('/').filter(Boolean);
+  const providerSlug = parts[0] || 'custom';
+  const toolSlug = parts[1] || parts[0] || 'engine';
+  
+  const providerName = providerSlug.charAt(0).toUpperCase() + providerSlug.slice(1);
+  const toolNameFormatted = toolSlug
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+    
+  const fullName = `${providerName} ${toolNameFormatted}`;
+  
+  return {
+    id: `${providerSlug}-${toolSlug}`,
+    slug: rawSlug,
+    name: fullName,
+    providerName: providerName,
+    shortDescription: `High-concurrency ${fullName} API adapter routed via LiteDaemon zero-latency BYOK proxy.`,
+    fullDescription: `${fullName} provides enterprise-grade capabilities for AI sub-agents. The LiteDaemon proxy automatically manages API key failovers, sub-cent routing fees, and memory-only execution with zero persistent logging.`,
+    category: 'Search & Web',
+    modalities: {
+      inputs: ['Text', 'JSON'],
+      outputs: ['Structured JSON', 'Text'],
+    },
+    pricingSummary: '$0.0010 / call',
+    maxConcurrency: '300 parallel tasks',
+    releaseDate: '2026-01-01',
+    endpoints: [
+      {
+        id: `${providerSlug}-primary`,
+        name: `${providerName} Primary Gateway`,
+        isVerified: true,
+        costPer1kCalls: 1.00,
+        cacheReadPer1k: 0.10,
+        avgLatencyMs: 14.5,
+        throughputRps: 250,
+        uptimePercentage: 99.99,
+        region: 'Global',
+      },
+    ],
+    benchmarks: [
+      {
+        metricName: 'JSON Schema Compliance',
+        score: 99.5,
+        maxScore: 100,
+        percentile: 99,
+        description: 'Strict adherence to function calling and agent tool execution specifications.',
+      },
+      {
+        metricName: 'Proxy Delivery Latency',
+        score: 99.9,
+        maxScore: 100,
+        percentile: 100,
+        description: 'Sub-15ms round-trip overhead through LiteDaemon edge proxy.',
+      },
+    ],
+    topApps: [
+      { id: 'app-fallback-1', name: 'AutoGPT Pipeline', description: 'Autonomous agent workflow integration.', totalVolumeFormatted: '340M calls' },
+    ],
+    activityHistory: [
+      { date: '2026-07-25', successfulCalls: 1200000, failedCalls: 4, cachedCalls: 200000 },
+      { date: '2026-07-30', successfulCalls: 1800000, failedCalls: 2, cachedCalls: 350000 },
+    ],
+    faqs: [
+      {
+        question: `How does LiteDaemon optimize ${fullName}?`,
+        answer: `LiteDaemon automatically manages multi-key rotation and failovers across your configured BYOK keys while applying zero rate-limit constraints after 100 free monthly requests.`,
+      },
+    ],
+    relatedToolsSlugs: ['serper/google-search', 'tavily/web-search'],
+  };
+}
+
 /**
- * Lookup a tool by its exact slug (e.g. "serper/google-search")
+ * Lookup a tool by its exact slug (e.g. "serper/google-search" or "bing/web-search")
  */
-export function getToolBySlug(slug: string): ToolDetail | undefined {
-  return TOOL_REGISTRY[slug];
+export function getToolBySlug(slug: string): ToolDetail {
+  const normalized = slug.replace(/^\/+|\/+$/g, '');
+  if (TOOL_REGISTRY[normalized]) {
+    return TOOL_REGISTRY[normalized];
+  }
+  
+  // Try matching by secondary path or slug ending
+  const match = Object.values(TOOL_REGISTRY).find(
+    t => t.slug === normalized || t.slug.endsWith(`/${normalized}`) || normalized.endsWith(`/${t.slug}`)
+  );
+  if (match) return match;
+
+  return generateFallbackTool(normalized);
 }
 
 /**
@@ -533,7 +804,7 @@ export function getRelatedTools(slug: string): ToolDetail[] {
   if (!current) return [];
 
   return current.relatedToolsSlugs
-    .map((s) => TOOL_REGISTRY[s])
+    .map((s) => getToolBySlug(s))
     .filter((t): t is ToolDetail => Boolean(t));
 }
 

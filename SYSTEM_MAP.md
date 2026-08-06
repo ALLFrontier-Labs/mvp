@@ -179,6 +179,7 @@ litedaemon/                          # Monorepo root
 │           │
 │           ├── components/          # Reusable UI components
 │           │   ├── Header.tsx / Footer.tsx / Navbar.tsx / Logo.tsx / DaemonLogo.tsx
+│           │   ├── BackgroundCanvas.tsx    # Ambient WebGL/SVG mesh grid & interactive cursor glow canvas
 │           │   ├── CodeSnippetDrawer.tsx   # Code snippet display for API calls
 │           │   ├── CommandPalette.tsx      # Global keyboard-driven command palette
 │           │   ├── EndpointDrawer.tsx      # Provider endpoint detail drawer

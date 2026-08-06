@@ -8,8 +8,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction || process.env.DATABASE_URL.includes('supabase') || process.env.DATABASE_URL.includes('.com')
-    ? { rejectUnauthorized: isProduction } // Enforce cert validation in production
+  ssl: process.env.DATABASE_URL.includes('supabase') || process.env.DATABASE_URL.includes('.com')
+    ? { rejectUnauthorized: false } // Required for Supabase connection pooler
     : false,
   max: 20,
   idleTimeoutMillis: 30000,

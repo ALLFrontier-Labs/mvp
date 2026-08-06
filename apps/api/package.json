@@ -4,7 +4,7 @@
   "description": "LiteDaemon API — OpenRouter for AI Agents and Tools",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node -r dotenv/config src/index.ts",
     "typecheck": "tsc --noEmit"

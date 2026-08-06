@@ -190,11 +190,15 @@ export async function authRoute(app: FastifyInstance) {
   app.get('/v1/me', async (req, reply) => {
     const u = req.user;
     const [user, usage] = await Promise.all([
-      pool.query(`SELECT email, first_name, last_name, plan, created_at, balance_usd FROM users WHERE id = $1`, [u.id]),
-      pool.query(`SELECT total_calls, billed_calls, total_spent_usd FROM user_usage WHERE user_id = $1`, [u.id]),
+      pool.query(`SELECT email, first_name, last_name, plan, created_at, balance_usd, monthly_call_count FROM users WHERE id = $1`, [u.id]),
+      pool.query(`SELECT total_spent_usd FROM user_usage WHERE user_id = $1`, [u.id]),
     ]);
     const row  = user.rows[0];
-    const stat = usage.rows[0] || { total_calls: 0, billed_calls: 0, total_spent_usd: 0 };
+    const stat = usage.rows[0] || { total_spent_usd: 0 };
+    
+    const totalCalls = parseInt(row.monthly_call_count) || 0;
+    const billedCalls = Math.max(0, totalCalls - 100);
+
     return reply.send({
       email:           row.email,
       first_name:      row.first_name,
@@ -202,8 +206,8 @@ export async function authRoute(app: FastifyInstance) {
       plan:            row.plan,
       created_at:      row.created_at,
       balance_usd:     parseFloat(row.balance_usd),
-      total_calls:     parseInt(stat.total_calls),
-      billed_calls:    parseInt(stat.billed_calls),
+      total_calls:     totalCalls,
+      billed_calls:    billedCalls,
       total_spent_usd: parseFloat(stat.total_spent_usd),
     });
   });

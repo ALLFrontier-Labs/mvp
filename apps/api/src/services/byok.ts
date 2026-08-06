@@ -1,6 +1,7 @@
 // services/byok.ts — Bring Your Own Keys service (Multi-Key Prioritization & Fallbacks)
 import { pool }             from '../db/client';
 import { encrypt, decrypt } from './encryption';
+import { logger }           from '../lib/logger';
 
 export type KeyType = 'prioritized' | 'fallback';
 
@@ -54,7 +55,7 @@ export function markKeyUsed(keyId: string): void {
   pool.query(
     `UPDATE user_provider_keys SET last_used_at = NOW() WHERE id = $1`,
     [keyId],
-  ).catch(() => {});
+  ).catch((err) => logger.warn('byok_key_last_used_update_failed', { error: err.message, keyId }));
 }
 
 // ── Add a BYOK key for a provider ─────────────────────────────────────────────

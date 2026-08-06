@@ -30,7 +30,8 @@ async function reconcileOrphanedJobs(): Promise<void> {
       } else {
         await pool.query(`UPDATE jobs SET status='failed', completed_at=NOW() WHERE id=$1`, [job.id]);
       }
-    } catch {
+    } catch (err: any) {
+      logger.error('reconciliation_job_check_failed', { jobId: job.id, providerJobId: job.provider_job_id, error: err.message });
       await pool.query(`UPDATE jobs SET status='failed', completed_at=NOW() WHERE id=$1`, [job.id]);
     }
   }

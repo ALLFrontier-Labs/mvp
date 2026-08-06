@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { pool }        from '../db/client';
 import { getAdapter }  from '../adapters/index';
 import { decrypt }     from '../services/encryption';
+import { logger }      from '../lib/logger';
 
 export async function jobsRoute(app: FastifyInstance) {
   // List recent jobs
@@ -91,6 +92,7 @@ export async function jobsRoute(app: FastifyInstance) {
       return reply.send({ job_id: id, status: 'running', provider: job.provider_id });
     } catch (err: any) {
       // Provider status check failed — job still running
+      logger.error('provider_status_check_failed', { jobId: id, provider: job.provider_id, error: err.message });
       return reply.send({ job_id: id, status: 'running', note: 'status check error: ' + err.message });
     }
   });

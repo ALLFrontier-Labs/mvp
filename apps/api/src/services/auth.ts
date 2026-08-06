@@ -233,7 +233,8 @@ export async function validateApiKey(raw: string) {
   if (!r.rows[0]) return null;
 
   // Update last_used_at async — don't block the request
-  pool.query(`UPDATE api_keys SET last_used_at = NOW() WHERE key_hash = $1`, [hash]).catch(() => {});
+  pool.query(`UPDATE api_keys SET last_used_at = NOW() WHERE key_hash = $1`, [hash])
+    .catch((err) => logger.warn('api_key_last_used_update_failed', { error: err.message, hash }));
 
   await redis.set(cache, JSON.stringify(r.rows[0]), 'EX', 300);
   return r.rows[0];

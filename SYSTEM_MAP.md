@@ -142,6 +142,7 @@ litedaemon/                          # Monorepo root
 │   │           ├── billing_5percent.js # 5% fee calculation tests
 │   │           ├── byok_billing.test.js # BYOK billing flow tests
 │   │           ├── byok_billing.test.ts # TypeScript BYOK billing tests
+│   │           ├── provider_failover.test.ts # Provider failover & error handling unit tests
 │   │           └── test_byok_allowance.js # Monthly allowance reset tests
 │   │
 │   └── dashboard/                   # React SPA (Vite + TypeScript + TailwindCSS)

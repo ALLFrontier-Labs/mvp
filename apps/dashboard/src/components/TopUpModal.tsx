@@ -142,19 +142,23 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
           {/* Deposit Breakdown */}
           <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs font-mono">
             <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
-              <span>Deposit Amount</span>
-              <span className="font-bold text-zinc-900 dark:text-zinc-100">${numAmount.toFixed(2)} USD</span>
+              <span>Wallet Credit</span>
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">${numAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-zinc-500">
               <span className="flex items-center gap-1">
                 <Info className="w-3.5 h-3.5 text-zinc-400" />
-                Gateway Pass-Through Balance Added
+                Platform & Deposit Fee (5.5%, $0.80 min)
               </span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">+${numAmount.toFixed(2)}</span>
+              <span className="text-amber-600 dark:text-amber-400 font-bold">
+                +${isValid ? Math.max(0.80, Math.round(numAmount * 0.055 * 100) / 100).toFixed(2) : '—'}
+              </span>
             </div>
             <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2 flex justify-between font-bold text-sm">
-              <span className="text-zinc-900 dark:text-zinc-100">Total Billed</span>
-              <span className="text-lime-600 dark:text-lime-400">${numAmount.toFixed(2)} USD</span>
+              <span className="text-zinc-900 dark:text-zinc-100">Total Checkout</span>
+              <span className="text-lime-600 dark:text-lime-400">
+                ${isValid ? (Math.round((numAmount + Math.max(0.80, Math.round(numAmount * 0.055 * 100) / 100)) * 100) / 100).toFixed(2) : '—'} USD
+              </span>
             </div>
           </div>
 

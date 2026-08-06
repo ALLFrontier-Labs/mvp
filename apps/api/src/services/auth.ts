@@ -87,6 +87,7 @@ export async function createUser(
     await client.query('COMMIT');
     logger.info('user_created', { userId: user.id });
 
+    client.release(); // CRITICAL: Release on success
     return {
       rawKey: raw,
       user: {
@@ -97,10 +98,9 @@ export async function createUser(
       },
     };
   } catch (e) {
-    await client.query('ROLLBACK');
+    try { await client.query('ROLLBACK'); } catch (_) {} // Ignore rollback errors on broken sockets
+    client.release(true); // CRITICAL: Destroy the socket instead of returning it poisoned
     throw e;
-  } finally {
-    client.release();
   }
 }
 
@@ -166,7 +166,9 @@ export async function socialLoginOrSignup(
   lastName?: string
 ): Promise<{ rawKey: string; user: any }> {
   const cleanedEmail = email.toLowerCase().trim();
-  let retries = 2; // Allow up to 2 retries for dropped connections
+  let retries = 3; // Allow up to 3 retries for dropped connections
+
+  const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
   while (retries > 0) {
     let client;
@@ -222,7 +224,8 @@ export async function socialLoginOrSignup(
       
       retries--;
       if (retries === 0 || e.code === '23505') throw e;
-      logger.warn(`socialLoginOrSignup_retry: Poisoned connection destroyed. Retrying with fresh connection... (${retries} retries left)`);
+      logger.warn(`socialLoginOrSignup_retry: Poisoned connection destroyed. Waiting 1s before retrying... (${retries} retries left)`);
+      await sleep(1000); // 1-second backoff delay to allow PgBouncer/Supabase to wake up or recover
     }
   }
   

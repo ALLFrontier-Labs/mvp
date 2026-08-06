@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { getCheckoutUrl, calcCheckoutPrice, handleDodoPaymentSucceeded } from '../services/billing';
 import crypto from 'crypto';
+import { dodo } from '../lib/dodo';
 
 export async function billingRoute(app: FastifyInstance) {
   app.get('/v1/billing/checkout', async (req, reply) => {

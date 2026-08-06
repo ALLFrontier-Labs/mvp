@@ -20,6 +20,7 @@ export async function billingRoute(app: FastifyInstance) {
 
   // Dodo Payments Webhook
   app.post('/v1/webhooks/dodo', { config: { public: true, rawBody: true } }, async (req, reply) => {
+    console.log('[Webhook] Received Dodo webhook attempt', req.headers);
     // Dodo Payments signature verification (if DODO_WEBHOOK_SECRET is provided)
     const secret = process.env.DODO_WEBHOOK_SECRET;
     if (secret) {
@@ -35,6 +36,7 @@ export async function billingRoute(app: FastifyInstance) {
       const sigBuffer = Buffer.from(signature, 'utf8');
       const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
       if (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+        console.error('[Webhook] Invalid signature. Expected:', expectedSignature, 'Got:', signature);
         return reply.code(401).send({ error: 'invalid_signature' });
       }
     }

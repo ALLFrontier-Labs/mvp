@@ -166,70 +166,51 @@ export async function socialLoginOrSignup(
   lastName?: string
 ): Promise<{ rawKey: string; user: any }> {
   const cleanedEmail = email.toLowerCase().trim();
-  let retries = 3; // Allow up to 3 retries for dropped connections
+  const client = await pool.connect();
 
-  const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+  try {
+    const existing = await client.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
 
-  while (retries > 0) {
-    let client;
-    try {
-      client = await pool.connect();
-      const existing = await client.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+    if (existing.rows[0]) {
+      const user = existing.rows[0];
+      await enforceKeyLimit(user.id);
 
-      if (existing.rows[0]) {
-        const user = existing.rows[0];
-        await enforceKeyLimit(user.id);
-
-        const { raw, hash } = generateApiKey();
-        await client.query(
-          `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
-          [user.id, hash, `${provider} Login Key`]
-        );
-        logger.info('user_social_login', { userId: user.id, provider });
-        client.release(); // Success: return to pool
-        return { rawKey: raw, user };
-      } else {
-        try {
-          // createUser internally uses pool.connect(), which is safe as it gets its own client.
-          const result = await createUser(cleanedEmail, undefined, firstName, lastName);
-          logger.info('user_social_signup', { userId: result.user.id, provider });
-          client.release(); // Success: return to pool
-          return { rawKey: result.rawKey, user: result.user };
-        } catch (createUserErr: any) {
-          if (createUserErr.code === '23505') {
-            const existingAgain = await client.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
-            if (existingAgain.rows[0]) {
-              const user = existingAgain.rows[0];
-              await enforceKeyLimit(user.id);
-              const { raw, hash } = generateApiKey();
-              await client.query(
-                `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
-                [user.id, hash, `${provider} Login Key`]
-              );
-              logger.info('user_social_login_after_race_condition', { userId: user.id, provider });
-              client.release(); // Success: return to pool
-              return { rawKey: raw, user };
-            }
+      const { raw, hash } = generateApiKey();
+      await client.query(
+        `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
+        [user.id, hash, `${provider} Login Key`]
+      );
+      logger.info('user_social_login', { userId: user.id, provider });
+      return { rawKey: raw, user };
+    } else {
+      try {
+        const result = await createUser(cleanedEmail, undefined, firstName, lastName);
+        logger.info('user_social_signup', { userId: result.user.id, provider });
+        return { rawKey: result.rawKey, user: result.user };
+      } catch (createUserErr: any) {
+        if (createUserErr.code === '23505') {
+          const existingAgain = await client.query(`SELECT id, email FROM users WHERE email = $1`, [cleanedEmail]);
+          if (existingAgain.rows[0]) {
+            const user = existingAgain.rows[0];
+            await enforceKeyLimit(user.id);
+            const { raw, hash } = generateApiKey();
+            await client.query(
+              `INSERT INTO api_keys (user_id, key_hash, name) VALUES ($1, $2, $3)`,
+              [user.id, hash, `${provider} Login Key`]
+            );
+            logger.info('user_social_login_after_race_condition', { userId: user.id, provider });
+            return { rawKey: raw, user };
           }
-          throw createUserErr;
         }
+        throw createUserErr;
       }
-    } catch (e: any) {
-      if (client) {
-        // CRITICAL FIX: If PgBouncer drops the session but keeps the TCP socket open,
-        // the connection is "poisoned" and will throw authentication errors if reused.
-        // Passing `true` DESTROYS the connection instead of returning it to the pool!
-        client.release(true); 
-      }
-      
-      retries--;
-      if (retries === 0 || e.code === '23505') throw e;
-      logger.warn(`socialLoginOrSignup_retry: Poisoned connection destroyed. Waiting 1s before retrying... (${retries} retries left)`);
-      await sleep(1000); // 1-second backoff delay to allow PgBouncer/Supabase to wake up or recover
     }
+  } catch (e: any) {
+    logger.error('socialLoginOrSignup_failed', e);
+    throw e;
+  } finally {
+    client.release();
   }
-  
-  throw new Error('socialLoginOrSignup failed after maximum retries');
 }
 
 // Called on every request — must resolve in under 10ms

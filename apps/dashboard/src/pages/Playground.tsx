@@ -196,7 +196,7 @@ export const Playground: React.FC = () => {
 
     try {
       // Call backend API execute endpoint
-      const res = await api.executeEndpoint(activeEndpoint.slice(4), currentPayload.params);
+      const res = await api.executeEndpoint(activeEndpoint.slice(4), currentPayload);
 
       const elapsed = Date.now() - startTime;
       setResponseResult(res.result || res);

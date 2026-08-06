@@ -209,7 +209,7 @@ export const Playground: React.FC = () => {
       setResponseError(err.message || 'Gateway connection timeout or upstream error');
       setResponseStatus(err.status || 500);
       setResponseLatency(elapsed || 450);
-      setInspectorTab('output');
+      setInspectorTab('response');
     } finally {
       setExecuting(false);
     }

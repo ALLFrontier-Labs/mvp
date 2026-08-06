@@ -60,6 +60,16 @@ export interface StatusResult {
   error?:   string;
 }
 
+export class ProviderError extends Error {
+  isQuotaOrAuth: boolean;
+  
+  constructor(message: string, isQuotaOrAuth: boolean = false) {
+    super(message);
+    this.name = 'ProviderError';
+    this.isQuotaOrAuth = isQuotaOrAuth;
+  }
+}
+
 // ── Adapter interface ─────────────────────────────────────────────────────────
 
 export interface ProviderAdapter {

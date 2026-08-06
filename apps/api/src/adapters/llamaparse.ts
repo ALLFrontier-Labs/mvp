@@ -1,11 +1,13 @@
 import axios from 'axios';
 import type { ProviderAdapter, DocumentResult } from '../types';
+import { ProviderError } from '../types';
 
 export const llamaparseAdapter: ProviderAdapter = {
   async run(params, apiKey) {
+    try {
     const targetUrl = params.file_url || params.url;
     if (!targetUrl && !params.file_b64) {
-      throw new Error('llamaparse requires params.file_url or params.file_b64');
+      throw new ProviderError('llamaparse requires params.file_url or params.file_b64', false);
     }
 
     const wantJson = params.format === 'json' || !!params.schema;
@@ -60,5 +62,11 @@ export const llamaparseAdapter: ProviderAdapter = {
     };
 
     return { type: 'sync', result };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 };

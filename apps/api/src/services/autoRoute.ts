@@ -11,6 +11,7 @@ import { pool }                   from '../db/client';
 import { getAdapter }             from '../adapters/index';
 import { getProviderKeysForUser, markKeyUsed } from './byok';
 import { calculateCharge }        from './billing';
+import { ProviderError }          from '../types';
 import type { LDProvider }        from '../types';
 
 export type RoutedVia = 'BYOK-Header-Override' | 'BYOK-Prioritized' | 'BYOK-Fallback';
@@ -24,17 +25,6 @@ export interface AutoRouteResult {
   routedVia:        RoutedVia;
   attemptsCount:    number;
   keyIdUsed?:       string;
-}
-
-const QUOTA_AUTH_STATUS_CODES = new Set([401, 402, 403, 429]);
-
-function isQuotaOrAuthError(err: any): boolean {
-  if (err.statusCode && QUOTA_AUTH_STATUS_CODES.has(Number(err.statusCode))) return true;
-  if (err.status && QUOTA_AUTH_STATUS_CODES.has(Number(err.status))) return true;
-  
-  const msg = String(err.message || '');
-  const match = msg.match(/\b(401|402|403|429)\b/);
-  return match !== null;
 }
 
 // ── Returns live tool providers for an endpoint ────────────────────────────
@@ -119,8 +109,15 @@ export async function autoRun(
           keyIdUsed: keyObj.id,
         };
       } catch (err: any) {
-        const isQuota = isQuotaOrAuthError(err);
-        routingErrors.push(`Key [${keyObj.key_type}:${keyObj.id.slice(0, 6)}] for ${provider.id} failed: ${err.message}`);
+        let isQuota = false;
+        
+        if (err instanceof ProviderError) {
+          isQuota = err.isQuotaOrAuth;
+          routingErrors.push(`Key [${keyObj.key_type}:${keyObj.id.slice(0, 6)}] for ${provider.id} failed: ${err.message} (Quota/Auth: ${isQuota})`);
+        } else {
+          // Unhandled adapter error (e.g., standard runtime error or missing ProviderError wrapping)
+          routingErrors.push(`Key [${keyObj.key_type}:${keyObj.id.slice(0, 6)}] for ${provider.id} threw unhandled error: ${err.message}`);
+        }
 
         if (isQuota) {
           // Quota / Rate-limit / Auth error -> failover to next key in list

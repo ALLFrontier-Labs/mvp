@@ -1,9 +1,11 @@
 import axios from 'axios';
 import type { ProviderAdapter, SearchResult } from '../types';
+import { ProviderError } from '../types';
 
 export const exaAdapter: ProviderAdapter = {
   async run(params, apiKey) {
-    if (!params.query) throw new Error('exa requires params.query');
+    try {
+    if (!params.query) throw new ProviderError('exa requires params.query', false);
     const r = await axios.post(
       'https://api.exa.ai/search',
       {
@@ -23,5 +25,11 @@ export const exaAdapter: ProviderAdapter = {
       })),
     };
     return { type: 'sync', result };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 };

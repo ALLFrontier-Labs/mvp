@@ -1,9 +1,11 @@
 import axios from 'axios';
 import type { ProviderAdapter, ExecuteResult } from '../types';
+import { ProviderError } from '../types';
 
 export const e2bAdapter: ProviderAdapter = {
   async run(params, apiKey) {
-    if (!params.code) throw new Error('e2b requires params.code');
+    try {
+    if (!params.code) throw new ProviderError('e2b requires params.code', false);
 
     // Step 1: Create sandbox
     const create = await axios.post(
@@ -37,6 +39,12 @@ export const e2bAdapter: ProviderAdapter = {
           timeout: 10000,
         });
       } catch { /* log but do not propagate */ }
+    }
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
     }
   },
 };

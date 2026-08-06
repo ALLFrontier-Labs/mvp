@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { ProviderAdapter, BrowserResult } from '../types';
+import { ProviderError } from '../types';
 
 // ── Auto-discover default project ID from Browserbase API ────────────────────
 // Cached in memory after first fetch — no DB lookup needed.
@@ -19,6 +20,7 @@ async function getDefaultProjectId(apiKey: string): Promise<string> {
 
 export const browserbaseAdapter: ProviderAdapter = {
   async run(params, apiKey) {
+    try {
     // Use provided project_id, or auto-discover from Browserbase account
     const projectId = params.project_id || await getDefaultProjectId(apiKey);
 
@@ -40,5 +42,11 @@ export const browserbaseAdapter: ProviderAdapter = {
       debug_url:   r.data.debuggerUrl || undefined,
     };
     return { type: 'sync', result };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 };

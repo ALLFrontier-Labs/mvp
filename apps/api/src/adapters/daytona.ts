@@ -1,9 +1,11 @@
 import axios from 'axios';
 import type { ProviderAdapter, ExecuteResult } from '../types';
+import { ProviderError } from '../types';
 
 export const daytonaAdapter: ProviderAdapter = {
   async run(params, apiKey) {
-    if (!params.code) throw new Error('daytona requires params.code');
+    try {
+    if (!params.code) throw new ProviderError('daytona requires params.code', false);
 
     const language = params.language || 'python';
     const isPlaceholder = !apiKey || apiKey === 'PLACEHOLDER' || apiKey.startsWith('sk-test');
@@ -63,7 +65,7 @@ export const daytonaAdapter: ProviderAdapter = {
       } catch (err: any) {
         // Fallback cleanly if remote connection requires specific runner
         if (err.response?.status === 401) {
-          throw new Error('Daytona API key invalid or unauthorized');
+          throw new ProviderError('Daytona API key invalid or unauthorized', false);
         }
       }
     }
@@ -76,5 +78,11 @@ export const daytonaAdapter: ProviderAdapter = {
     };
 
     return { type: 'sync', result };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 };

@@ -1,9 +1,11 @@
 import axios from 'axios';
 import type { ProviderAdapter, SearchResult } from '../types';
+import { ProviderError } from '../types';
 
 export const tavilyAdapter: ProviderAdapter = {
   async run(params, apiKey) {
-    if (!params.query) throw new Error('tavily requires params.query');
+    try {
+    if (!params.query) throw new ProviderError('tavily requires params.query', false);
     const r = await axios.post(
       'https://api.tavily.com/search',
       {
@@ -24,5 +26,11 @@ export const tavilyAdapter: ProviderAdapter = {
       answer: r.data.answer || undefined,
     };
     return { type: 'sync', result };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 };

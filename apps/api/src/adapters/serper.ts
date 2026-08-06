@@ -1,9 +1,11 @@
 import axios from 'axios';
 import type { ProviderAdapter, SearchResult } from '../types';
+import { ProviderError } from '../types';
 
 export const serperAdapter: ProviderAdapter = {
   async run(params, apiKey) {
-    if (!params.query) throw new Error('serper requires params.query');
+    try {
+    if (!params.query) throw new ProviderError('serper requires params.query', false);
     const r = await axios.post(
       'https://google.serper.dev/search',
       { q: params.query, num: params.max_results || 10 },
@@ -19,5 +21,11 @@ export const serperAdapter: ProviderAdapter = {
       answer: r.data.answerBox?.answer || r.data.answerBox?.snippet || undefined,
     };
     return { type: 'sync', result };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 };

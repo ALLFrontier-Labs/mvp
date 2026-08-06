@@ -1,9 +1,11 @@
 import axios from 'axios';
 import type { ProviderAdapter, ScrapeResult } from '../types';
+import { ProviderError } from '../types';
 
 export const apifyAdapter: ProviderAdapter = {
   // run() returns Apify run_id immediately in < 300ms
   async run(params, apiKey) {
+    try {
     // Default to website-content-crawler — no extra permissions needed
     const actorId = params.actor_id || 'apify/website-content-crawler';
     const runInput = params.run_input || {
@@ -17,6 +19,12 @@ export const apifyAdapter: ProviderAdapter = {
       { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 15000 }
     );
     return { type: 'async', provider_job_id: r.data.data.id };
+  } catch (err: any) {
+      if (err instanceof ProviderError) throw err;
+      const status = err.response?.status;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      throw new ProviderError(`API Error: ${err.message}`, isQuota);
+    }
   },
 
   // status() called by GET /v1/jobs/:id on each developer poll

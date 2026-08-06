@@ -138,11 +138,30 @@ export async function authRoute(app: FastifyInstance) {
         message: 'Authenticated via Google successfully.',
       });
     } catch (e: any) {
-      // SECURITY: Never leak raw Google error details or tokens to the client
-      logger.error('google_oauth_exchange_failed', e);
+      // Parse upstream error to distinguish between bad request vs internal failure
+      const googleError = e.response?.data;
+      logger.error('google_oauth_exchange_failed', { 
+        message: e.message, 
+        googleError: googleError || 'Unknown Error' 
+      });
+
+      if (googleError?.error === 'invalid_grant') {
+        return reply.code(400).send({
+          error: 'invalid_grant',
+          message: 'The login link has expired or was already used. Please try signing in again.'
+        });
+      }
+
+      if (googleError?.error === 'redirect_uri_mismatch') {
+        return reply.code(400).send({
+          error: 'redirect_uri_mismatch',
+          message: 'Server configuration error: Redirect URI mismatch. Contact support.'
+        });
+      }
+
       return reply.code(500).send({ 
         error: 'auth_failed', 
-        message: 'Google authentication failed. Please try again.'
+        message: 'Google authentication failed due to an internal error. Please try again.'
       });
     }
   });

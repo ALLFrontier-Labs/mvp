@@ -21,6 +21,11 @@ export const AuthCallback: React.FC = () => {
       return;
     }
 
+    // STATE HYGIENE: Immediately strip the single-use code from the URL so that 
+    // page refreshes, back-button navigations, or bookmarks do NOT attempt to 
+    // replay the stale code (which triggers a 400 invalid_grant upstream).
+    window.history.replaceState({}, document.title, window.location.pathname);
+
     const exchangeCode = async () => {
       hasExchanged.current = true;
       try {

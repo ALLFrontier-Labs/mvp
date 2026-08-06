@@ -65,14 +65,14 @@ INSERT INTO providers (id, name, endpoint, adapter_type, response_type, cost_per
 VALUES
   ('firecrawl',   'Firecrawl',      'scrape',  'firecrawl',   'sync',  0.00300000, 'PLACEHOLDER'),
   ('jina',        'Jina AI Reader', 'scrape',  'jina',        'sync',  0.00100000, 'PLACEHOLDER'),
-  ('apify',       'Apify Actors',   'scrape',  'apify',       'async', 0.01000000, 'PLACEHOLDER'),
+  ('apify',       'Apify Actors',   'scrape',  'apify',       'async', 0.00500000, 'PLACEHOLDER'),
   ('spider',      'Spider Cloud',   'scrape',  'spider',      'sync',  0.00200000, 'PLACEHOLDER'),
   ('tavily',      'Tavily Search',  'search',  'tavily',      'sync',  0.00100000, 'PLACEHOLDER'),
   ('exa',         'Exa AI',         'search',  'exa',         'sync',  0.00200000, 'PLACEHOLDER'),
   ('serper',      'Serper.dev',     'search',  'serper',      'sync',  0.00100000, 'PLACEHOLDER'),
   ('browserbase', 'Browserbase',    'browser', 'browserbase', 'sync',  0.01500000, 'PLACEHOLDER'),
   ('steel',       'Steel Browser',  'browser', 'steel',       'sync',  0.01500000, 'PLACEHOLDER'),
-  ('e2b',         'E2B Sandbox',    'execute', 'e2b',         'sync',  0.00300000, 'PLACEHOLDER');
+  ('e2b',         'E2B Sandbox',    'execute', 'e2b',         'sync',  0.00800000, 'PLACEHOLDER');
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- ledger_entries: immutable audit log — every credit and debit

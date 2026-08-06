@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/v1/(.*)", "destination": "https://mvp-production-c1e8.up.railway.app/v1/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

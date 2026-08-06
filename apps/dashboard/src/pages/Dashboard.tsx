@@ -222,7 +222,7 @@ export const Dashboard: React.FC = () => {
             <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
               Total Tool Requests
             </span>
-            <span className="text-3xl font-extrabold font-sans text-zinc-900 dark:text-zinc-100 mt-2 block">
+            <span className="text-3xl font-extrabold font-mono text-zinc-900 dark:text-zinc-100 mt-2 block">
               {totalCalls.toLocaleString()}
             </span>
             <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">
@@ -240,7 +240,7 @@ export const Dashboard: React.FC = () => {
             <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block">
               Total Routing Fees
             </span>
-            <span className="text-3xl font-extrabold font-sans text-teal-600 dark:text-teal-400 mt-2 block">
+            <span className="text-3xl font-extrabold font-mono text-teal-600 dark:text-teal-400 mt-2 block">
               ${stats ? stats.total_spent_usd.toFixed(4) : '0.0000'}
             </span>
             <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">
@@ -261,7 +261,7 @@ export const Dashboard: React.FC = () => {
             <span className="text-xs font-sans uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold block group-hover:text-cyan-500 transition-colors">
               Configured Keys →
             </span>
-            <span className="text-3xl font-extrabold font-sans text-cyan-600 dark:text-cyan-400 mt-2 block">
+            <span className="text-3xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 mt-2 block">
               {activeVaults} Vaulted
             </span>
             <span className="text-[11px] font-sans text-zinc-400 dark:text-zinc-500 mt-1 block">

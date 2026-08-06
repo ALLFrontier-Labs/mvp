@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, Sun, Moon } from 'lucide-react';
+import { Search, Sun, Moon, Activity, Command } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Logo } from './Logo';
 import { CommandPalette } from './CommandPalette';
 import { ProfileDropdown } from './ProfileDropdown';
@@ -27,7 +28,6 @@ export const Header: React.FC = () => {
 
   const handleLogout = () => {
     clearStoredApiKey();
-    // Also clear session cookies if set
     document.cookie = 'litedaemon_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     document.cookie = 'litedaemon_api_key=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     navigate('/login');
@@ -55,45 +55,53 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full border-b px-4 h-14 flex items-center justify-between font-sans backdrop-blur-md transition-colors duration-200"
+        className="sticky top-0 z-40 w-full border-b px-4 h-14 flex items-center justify-between font-sans backdrop-blur-xl transition-colors duration-200"
         style={{
           backgroundColor: 'var(--bg-overlay)',
           borderColor: 'var(--border)',
         }}
       >
-        {/* LEFT: Logo + Search */}
+        {/* LEFT: Logo + Operational Status + Search */}
         <div className="flex items-center gap-4">
           <Logo />
 
-          {/* Search trigger */}
+          {/* Operational Status Pill */}
+          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-[11px] font-mono text-emerald-500">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot" />
+            <span className="font-medium">Operational</span>
+            <span className="text-zinc-500 dark:text-zinc-600">|</span>
+            <span className="text-emerald-400/90 font-semibold">12ms</span>
+          </div>
+
+          {/* Quick Command Palette Launcher */}
           <button
             onClick={() => setIsCmdOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3 h-8 rounded-lg border text-xs transition-colors cursor-pointer"
+            className="hidden sm:flex items-center gap-2 px-3 h-8 rounded-lg border text-xs transition-all hover:border-[var(--border-active)] cursor-pointer group"
             style={{
               backgroundColor: 'var(--bg-secondary)',
               borderColor: 'var(--border)',
               color: 'var(--text-muted)',
-              width: '220px',
+              width: '210px',
             }}
           >
-            <Search className="w-3.5 h-3.5 shrink-0" />
-            <span className="flex-1 text-left">Search tools...</span>
+            <Search className="w-3.5 h-3.5 shrink-0 group-hover:text-[var(--text-primary)] transition-colors" />
+            <span className="flex-1 text-left group-hover:text-[var(--text-primary)] transition-colors">Search tools & docs...</span>
             <kbd
-              className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
+              className="text-[10px] font-mono px-1.5 py-0.5 rounded border flex items-center gap-0.5"
               style={{
                 backgroundColor: 'var(--bg-card)',
                 borderColor: 'var(--border)',
                 color: 'var(--text-secondary)',
               }}
             >
-              ⌘K
+              <Command className="w-2.5 h-2.5" />K
             </kbd>
           </button>
         </div>
 
-        {/* RIGHT: Nav + Actions */}
-        <div className="flex items-center gap-6">
-          <nav className="hidden md:flex items-center gap-5 text-sm">
+        {/* RIGHT: Nav Links + Theme Switcher + Profile */}
+        <div className="flex items-center gap-5">
+          <nav className="hidden md:flex items-center gap-1 text-sm relative">
             {navLinks.map((link) => {
               const isActive =
                 link.path === '/'
@@ -104,18 +112,18 @@ export const Header: React.FC = () => {
                 <Link
                   key={link.label}
                   to={link.path}
-                  className="relative transition-colors text-sm font-medium hover:text-[var(--text-primary)]"
+                  className="relative px-3 py-1.5 rounded-md transition-colors text-xs font-medium"
                   style={{
                     color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    fontWeight: isActive ? '600' : '400',
                   }}
                 >
                   {link.label}
-                  {/* Active underline indicator */}
                   {isActive && (
-                    <span
-                      className="absolute -bottom-[18px] left-0 w-full h-[2px] rounded-full transition-all"
+                    <motion.div
+                      layoutId="activeTabUnderline"
+                      className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full"
                       style={{ backgroundColor: 'var(--accent)' }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
                 </Link>
@@ -123,12 +131,29 @@ export const Header: React.FC = () => {
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Dark / Light Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="p-2 rounded-lg border transition-all hover:bg-[var(--bg-card-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--border)',
+              }}
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400 transition-transform duration-300 hover:rotate-45" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-500 transition-transform duration-300 hover:-rotate-12" />
+              )}
+            </button>
+
             {!apiKey ? (
               <Link
                 to="/auth"
                 className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 shadow-sm"
-                style={{ backgroundColor: 'var(--accent)', color: '#09090b' }}
+                style={{ backgroundColor: 'var(--accent)', color: '#08090a' }}
               >
                 Sign Up
               </Link>

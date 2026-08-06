@@ -1,7 +1,9 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { BackgroundCanvas } from './components/BackgroundCanvas';
 import { ThemeProvider } from './context/ThemeContext';
 import { Login }         from './pages/Login';
 import { Dashboard }     from './pages/Dashboard';
@@ -30,51 +32,73 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const AnimatedRoutes: React.FC = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full flex-1 flex flex-col"
+      >
+        <Routes location={location}>
+          {/* ── Public Routes ─────────────────────────────────────── */}
+          <Route path="/"          element={<Landing />} />
+          <Route path="/auth"      element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/signup"    element={<Login initialMode="signup" />} />
+          <Route path="/login"     element={<Login initialMode="login" />} />
+          <Route path="/providers" element={<Providers />} />
+          <Route path="/tools/*"   element={<ToolDetailPage />} />
+          <Route path="/tool/*"    element={<ToolDetailPage />} />
+          <Route path="/compare/*" element={<ComparePage />} />
+          <Route path="/rankings"  element={<Rankings />} />
+          <Route path="/pricing"   element={<Pricing />} />
+          <Route path="/contact-sales" element={<ContactSales />} />
+          <Route path="/contact"   element={<ContactSales />} />
+          <Route path="/docs"      element={<Docs />} />
+          <Route path="/docs/*"    element={<Docs />} />
+          <Route path="/privacy"   element={<Privacy />} />
+          <Route path="/terms"     element={<Terms />} />
+          <Route path="/security"  element={<Security />} />
+
+          {/* ── Protected Routes ───────────────────────────────────── */}
+          <Route path="/overview"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/jobs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+          <Route path="/logs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+          <Route path="/billing"    element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+          <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/keys"       element={<ProtectedRoute><Keys /></ProtectedRoute>} />
+          <Route path="/vault"      element={<ProtectedRoute><Keys /></ProtectedRoute>} />
+          <Route path="/workspaces" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 export const App: React.FC = () => {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <div
-          className="min-h-screen flex flex-col transition-colors duration-200"
+          className="relative min-h-screen flex flex-col transition-colors duration-200"
           style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}
         >
+          {/* Ambient WebGL/SVG Mesh Grid Canvas */}
+          <BackgroundCanvas />
+
           <Navbar />
-          <main className="flex-1 page-enter">
-            <Routes>
-              {/* ── Public ─────────────────────────────────────── */}
-              <Route path="/"          element={<Landing />} />
-              <Route path="/auth"      element={<Login />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/signup"    element={<Login initialMode="signup" />} />
-              <Route path="/login"     element={<Login initialMode="login" />} />
-              <Route path="/providers" element={<Providers />} />
-              <Route path="/tools/*"   element={<ToolDetailPage />} />
-              <Route path="/tool/*"    element={<ToolDetailPage />} />
-              <Route path="/compare/*" element={<ComparePage />} />
-              <Route path="/rankings"  element={<Rankings />} />
-              <Route path="/pricing"   element={<Pricing />} />
-              <Route path="/contact-sales" element={<ContactSales />} />
-              <Route path="/contact"   element={<ContactSales />} />
-              <Route path="/docs"      element={<Docs />} />
-              <Route path="/docs/*"    element={<Docs />} />
-              <Route path="/privacy"   element={<Privacy />} />
-              <Route path="/terms"     element={<Terms />} />
-              <Route path="/security"  element={<Security />} />
-
-              {/* ── Protected ───────────────────────────────────── */}
-              <Route path="/overview"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/jobs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-              <Route path="/logs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-              <Route path="/billing"    element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-              <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/keys"       element={<ProtectedRoute><Keys /></ProtectedRoute>} />
-              <Route path="/vault"      element={<ProtectedRoute><Keys /></ProtectedRoute>} />
-              <Route path="/workspaces" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/playground" element={<ProtectedRoute><Playground /></ProtectedRoute>} />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+          <main className="relative z-10 flex-1 flex flex-col">
+            <AnimatedRoutes />
           </main>
           <Footer />
         </div>

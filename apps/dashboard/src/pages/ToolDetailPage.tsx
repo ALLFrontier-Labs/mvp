@@ -23,13 +23,13 @@ export const ToolDetailPage: React.FC = () => {
 
   if (!tool) {
     return (
-      <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans px-6 py-20 text-center space-y-4">
-        <div className="text-4xl font-extrabold text-white">Tool Not Found</div>
-        <p className="text-zinc-400 text-sm max-w-md mx-auto font-mono">
-          No tool engine found matching slug <code className="text-yellow-400 font-mono">{slug}</code>.
+      <div className="min-h-screen font-sans px-6 py-20 text-center space-y-4">
+        <div className="text-4xl font-extrabold">Tool Not Found</div>
+        <p className="text-slate-500 dark:text-zinc-400 text-sm max-w-md mx-auto font-mono">
+          No tool engine found matching slug <code className="text-lime-600 dark:text-yellow-400 font-mono">{slug}</code>.
         </p>
         <div>
-          <Link to="/providers" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 text-xs font-mono">
+          <Link to="/providers" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-200 dark:bg-zinc-800 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-zinc-700 text-xs font-mono">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Tool Providers
           </Link>
         </div>
@@ -38,7 +38,7 @@ export const ToolDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans selection:bg-[#ccff00] selection:text-black">
+    <div className="min-h-screen font-sans selection:bg-[#ccff00] selection:text-black">
       <ToolDetailLayout>
         {/* Hero Header */}
         <ToolHeroHeader

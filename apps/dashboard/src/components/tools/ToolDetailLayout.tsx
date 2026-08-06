@@ -72,11 +72,11 @@ export function ToolDetailLayout({ children }: { children: React.ReactNode }) {
                 onClick={() => scrollToSection(item.id)}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-r-md text-sm transition-all text-left cursor-pointer ${
                   isActive
-                    ? 'bg-lime-500/10 text-lime-400 font-semibold border-l-2 border-lime-400 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 border-l-2 border-transparent'
+                    ? 'bg-lime-500/10 text-lime-600 dark:text-lime-400 font-semibold border-l-2 border-lime-500 dark:border-lime-400 shadow-sm'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200/50 dark:hover:bg-zinc-800/40 border-l-2 border-transparent'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-lime-400' : 'text-zinc-500'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-lime-600 dark:text-lime-400' : 'text-slate-400 dark:text-zinc-500'}`} />
                 <span>{item.label}</span>
               </button>
             );

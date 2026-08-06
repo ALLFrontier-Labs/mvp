@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api, setStoredApiKey } from '../lib/api';
 import { getRedirectUri } from '../lib/constants';
@@ -8,8 +8,11 @@ export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
+  const hasExchanged = useRef(false);
 
   useEffect(() => {
+    if (hasExchanged.current) return;
+
     const params = new URLSearchParams(location.search);
     const code = params.get('code');
 
@@ -19,6 +22,7 @@ export const AuthCallback: React.FC = () => {
     }
 
     const exchangeCode = async () => {
+      hasExchanged.current = true;
       try {
         const redirectUri = getRedirectUri();
         const res = await api.googleExchange(code, redirectUri);

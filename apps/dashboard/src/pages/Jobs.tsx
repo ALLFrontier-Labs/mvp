@@ -41,10 +41,11 @@ const ENDPOINT_BADGE: Record<string, string> = {
   '/v1/document': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
 };
 
-function formatLatency(ms?: number) {
-  if (!ms || ms <= 0) return '450ms';
-  if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
-  return `${ms}ms`;
+function formatLatency(ms?: number | string) {
+  const num = typeof ms === 'number' ? ms : parseFloat(ms as any);
+  if (isNaN(num) || num <= 0) return '450ms';
+  if (num >= 1000) return `${(num / 1000).toFixed(2)}s`;
+  return `${num.toFixed(1)}ms`;
 }
 
 function getLatencyColorClass(ms?: number): string {
@@ -170,13 +171,20 @@ export const Jobs: React.FC = () => {
 
   // Telemetry Metrics Calculation
   const { totalVolume, avgLatencyMs, successRate, rescuedCount } = useMemo(() => {
-    const total = jobs.length || 1;
+    if (!jobs || jobs.length === 0) {
+      return { totalVolume: 0, avgLatencyMs: 0, successRate: 100, rescuedCount: 0 };
+    }
+
+    const total = jobs.length;
     let sumLatency = 0;
     let completedCount = 0;
     let rescued = 0;
 
     for (const j of jobs) {
-      sumLatency += (j.duration_ms || 420);
+      const dur = typeof j.duration_ms === 'number' 
+        ? j.duration_ms 
+        : parseFloat(j.duration_ms as any);
+      sumLatency += (isNaN(dur) || dur <= 0 ? 420 : dur);
       if (j.status === 'completed') completedCount++;
       if (j.fallback_used || (j.attempts && j.attempts > 1)) rescued++;
     }

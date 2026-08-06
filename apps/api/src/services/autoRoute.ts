@@ -45,10 +45,19 @@ export async function autoRun(
   params:      Record<string, any>,
   userId:      string,
   overrideKey?: string,
+  targetProviderId?: string,
 ): Promise<AutoRouteResult> {
 
-  const providers = await getLiveProviders(endpoint);
+  let providers = await getLiveProviders(endpoint);
+  
+  if (targetProviderId && targetProviderId !== 'auto') {
+    providers = providers.filter(p => p.id === targetProviderId);
+  }
+
   if (providers.length === 0) {
+    if (targetProviderId && targetProviderId !== 'auto') {
+      throw new Error(`Target provider '${targetProviderId}' is not active or does not support endpoint /v1/${endpoint}`);
+    }
     throw new Error(`No active tool providers configured for endpoint: /v1/${endpoint}`);
   }
 

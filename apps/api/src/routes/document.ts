@@ -59,7 +59,7 @@ export async function documentRoute(app: FastifyInstance) {
     }
 
     try {
-      const { result, provider, charge: baseCharge, duration_ms, routedVia, attemptsCount } = await autoRun('document', mergedParams, user.id, overrideKey);
+      const { result, provider, charge: baseCharge, duration_ms, routedVia, attemptsCount } = await autoRun('document', mergedParams, user.id, overrideKey, providerId);
       const finalCharge = byokEval.isFreeCall ? 0 : baseCharge;
 
       reply.header('X-LiteDaemon-Routed-Via',      routedVia);

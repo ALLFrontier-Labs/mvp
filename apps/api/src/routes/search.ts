@@ -31,7 +31,7 @@ export async function searchRoute(app: FastifyInstance) {
     }
 
     try {
-      const { result, provider, charge: baseCharge, duration_ms, routedVia, attemptsCount } = await autoRun('search', params, user.id, overrideKey);
+      const { result, provider, charge: baseCharge, duration_ms, routedVia, attemptsCount } = await autoRun('search', params, user.id, overrideKey, providerId);
       const finalCharge = byokEval.isFreeCall ? 0 : baseCharge;
 
       reply.header('X-LiteDaemon-Routed-Via',      routedVia);

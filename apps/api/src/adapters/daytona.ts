@@ -4,7 +4,6 @@ import { ProviderError } from '../types';
 
 export const daytonaAdapter: ProviderAdapter = {
   async run(params, apiKey) {
-    try {
     if (!params.code) throw new ProviderError('daytona requires params.code', false);
 
     const language = params.language || 'python';
@@ -12,13 +11,9 @@ export const daytonaAdapter: ProviderAdapter = {
 
     if (!isPlaceholder) {
       try {
-        // Step 1: Create Daytona workspace / sandbox session
         const createRes = await axios.post(
           'https://api.daytona.io/v1/workspace',
-          {
-            target: 'local',
-            language: language,
-          },
+          { target: 'local', language },
           {
             headers: {
               'Authorization': `Bearer ${apiKey}`,
@@ -32,7 +27,6 @@ export const daytonaAdapter: ProviderAdapter = {
 
         if (workspaceId) {
           try {
-            // Step 2: Execute command in Daytona workspace
             const cmd = language === 'python'
               ? `python3 -c ${JSON.stringify(params.code)}`
               : language === 'javascript' || language === 'node'
@@ -55,7 +49,6 @@ export const daytonaAdapter: ProviderAdapter = {
             };
             return { type: 'sync', result };
           } finally {
-            // Clean up workspace session
             axios.delete(`https://api.daytona.io/v1/workspace/${workspaceId}`, {
               headers: { 'Authorization': `Bearer ${apiKey}` },
               timeout: 10000,
@@ -63,26 +56,12 @@ export const daytonaAdapter: ProviderAdapter = {
           }
         }
       } catch (err: any) {
-        // Fallback cleanly if remote connection requires specific runner
         if (err.response?.status === 401) {
-          throw new ProviderError('Daytona API key invalid or unauthorized', false);
+          throw new ProviderError('Daytona API key invalid or unauthorized', true);
         }
       }
     }
 
-    // High performance fallback runner for sandbox execution
-    const result: ExecuteResult = {
-      stdout: `[Daytona Sandbox Execution Output]\nExecuting ${language} script...\nResult: Code executed successfully in isolated environment.\nCode snippet length: ${params.code.length} chars`,
-      stderr: '',
-      exit_code: 0,
-    };
-
-    return { type: 'sync', result };
-  } catch (err: any) {
-      if (err instanceof ProviderError) throw err;
-      const status = err.response?.status;
-      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
-      throw new ProviderError(`API Error: ${err.message}`, isQuota);
-    }
+    throw new ProviderError('Daytona API key is not configured or requires a valid BYOK key', true);
   },
 };

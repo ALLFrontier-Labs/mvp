@@ -1,24 +1,26 @@
 import axios from 'axios';
-import type { ProviderAdapter, DocumentResult } from '../types';
+import type { ProviderAdapter } from '../types';
 import { ProviderError } from '../types';
 
 export const unstructuredAdapter: ProviderAdapter = {
   async run(params, apiKey) {
+    if (!apiKey || apiKey === 'PLACEHOLDER' || apiKey.startsWith('sk-test')) {
+      throw new ProviderError('Unstructured API key is not configured on this gateway or requires a valid BYOK key', true);
+    }
+
     try {
-      // NOTE: Best-effort implementation placeholder. 
-      // Replace with actual Unstructured API payload mapping.
+      // Wire API call for Unstructured
       const r = await axios.post(
-        'https://api.unstructured.io/general/v0/general',
+        'https://api.unstructured.com/v1/execute',
         { ...params },
-        { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 45000 }
+        { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 15000 }
       );
 
-      const result: DocumentResult = { content: 'Mock parsed text', format: 'markdown', metadata: {} };
-      return { type: 'sync', result };
+      return { type: 'sync', result: r.data };
     } catch (err: any) {
       if (err instanceof ProviderError) throw err;
       const status = err.response?.status;
-      const isQuota = status === 401 || status === 402 || status === 403 || status === 429;
+      const isQuota = status === 401 || status === 402 || status === 403 || status === 429 || !status;
       throw new ProviderError(`Unstructured API Error: ${err.message}`, isQuota);
     }
   },

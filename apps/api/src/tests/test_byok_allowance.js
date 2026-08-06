@@ -35,7 +35,7 @@ async function runTest() {
     assert.strictEqual(eval2.isFreeCall, false, '101st call is not free');
     assert.strictEqual(eval2.errorResponse.statusCode, 402, 'HTTP Status code should be 402');
     assert.strictEqual(eval2.errorResponse.payload.error, 'Insufficient Balance');
-    assert.strictEqual(eval2.errorResponse.payload.byok_requests_this_month, 101);
+    assert.strictEqual(eval2.errorResponse.payload.monthly_call_count, 101);
     console.log('  ✅ [PASS] 101st call REJECTED with 402 Payment Required:');
     console.log('    ', JSON.stringify(eval2.errorResponse.payload));
 

@@ -9,7 +9,6 @@ import { Login }         from './pages/Login';
 import { Dashboard }     from './pages/Dashboard';
 import { Providers }     from './pages/Providers';
 import { Jobs }          from './pages/Jobs';
-import { Billing }       from './pages/Billing';
 import { Settings }      from './pages/Settings';
 import { Keys }          from './pages/Keys';
 import { Landing }       from './pages/Landing';
@@ -71,7 +70,6 @@ const AnimatedRoutes: React.FC = () => {
           <Route path="/dashboard"  element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/jobs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
           <Route path="/logs"       element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-          <Route path="/billing"    element={<ProtectedRoute><Billing /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/keys"       element={<ProtectedRoute><Keys /></ProtectedRoute>} />
           <Route path="/vault"      element={<ProtectedRoute><Keys /></ProtectedRoute>} />

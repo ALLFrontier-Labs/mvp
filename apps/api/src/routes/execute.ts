@@ -1,9 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { pool }             from '../db/client';
-import { debitLedger, InsufficientFundsError } from '../services/ledger';
 import { checkRateLimit }   from '../services/rateLimit';
 import { autoRun }          from '../services/autoRoute';
-import { preCheckAndEvaluateByok } from '../services/byokPricing';
 
 export async function executeRoute(app: FastifyInstance) {
   app.post('/v1/execute', async (req, reply) => {
@@ -19,37 +17,18 @@ export async function executeRoute(app: FastifyInstance) {
       return reply.code(429).send({ error: 'rate_limit_exceeded', retry_after: rl.resetAt - Math.floor(Date.now() / 1000) });
     }
 
-    // Pre-check BYOK monthly allowance & wallet balance
-    const targetProvider = providerId === 'auto' ? 'e2b' : providerId;
-    const byokEval = await preCheckAndEvaluateByok(user.id, targetProvider);
-    if (!byokEval.allowed && byokEval.errorResponse) {
-      return reply.code(byokEval.errorResponse.statusCode).send(byokEval.errorResponse.payload);
-    }
-
     try {
-      const { result, provider, charge: baseCharge, duration_ms, routedVia, attemptsCount } = await autoRun('execute', params, user.id, overrideKey, providerId);
-      const finalCharge = byokEval.isFreeCall ? 0 : baseCharge;
+      const { result, provider, duration_ms, routedVia, attemptsCount } = await autoRun('execute', params, user.id, overrideKey, providerId);
 
       reply.header('X-LiteDaemon-Routed-Via',      routedVia);
       reply.header('X-LiteDaemon-Key-Attempts',    attemptsCount);
-      reply.header('X-LiteDaemon-Wallet-Deducted', `$${finalCharge.toFixed(6)}`);
 
       const jr = await pool.query(
-        `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, cost_usd, is_byok)
-         VALUES ($1, $2, 'execute', $3, 'completed', $4, true) RETURNING id`,
-        [user.id, provider.id, JSON.stringify(params), finalCharge]
+        `INSERT INTO jobs (user_id, provider_id, endpoint, params, status, is_byok)
+         VALUES ($1, $2, 'execute', $3, 'completed', true) RETURNING id`,
+        [user.id, provider.id, JSON.stringify(params)]
       );
       const jobId = jr.rows[0].id;
-
-      if (finalCharge > 0) {
-        try {
-          await debitLedger(user.id, finalCharge, provider.id, jobId, `${provider.name} code execution gateway fee`);
-        } catch (err: any) {
-          if (err instanceof InsufficientFundsError) {
-            return reply.code(402).send({ error: 'insufficient_balance', message: err.message, required_usd: finalCharge });
-          }
-        }
-      }
 
       await pool.query(`UPDATE jobs SET result=$1, completed_at=NOW() WHERE id=$2`, [JSON.stringify(result), jobId]);
       return reply.send({
@@ -57,7 +36,6 @@ export async function executeRoute(app: FastifyInstance) {
         status: 'completed',
         provider: provider.id,
         result,
-        cost_usd: finalCharge,
         duration_ms,
         routed_via: routedVia,
       });

@@ -21,7 +21,7 @@ export async function jobsRoute(app: FastifyInstance) {
     params.push(lim, off);
 
     const r = await pool.query(
-      `SELECT id, provider_id, endpoint, status, cost_usd, created_at, completed_at,
+      `SELECT id, provider_id, endpoint, status, created_at, completed_at,
               EXTRACT(EPOCH FROM (completed_at - created_at)) * 1000 AS duration_ms
        FROM jobs
        WHERE user_id = $1 ${endpointFilter}
@@ -35,7 +35,6 @@ export async function jobsRoute(app: FastifyInstance) {
         provider:     j.provider_id,
         endpoint:     j.endpoint,
         status:       j.status,
-        cost_usd:     parseFloat(j.cost_usd),
         duration_ms:  j.duration_ms,
         created_at:   j.created_at,
         completed_at: j.completed_at,
@@ -64,7 +63,6 @@ export async function jobsRoute(app: FastifyInstance) {
         status:   job.status,
         provider: job.provider_id,
         result:   job.result,
-        cost_usd: parseFloat(job.cost_usd),
       });
 
     // Proxy status check to provider
@@ -80,13 +78,13 @@ export async function jobsRoute(app: FastifyInstance) {
           `UPDATE jobs SET status='completed', result=$1, completed_at=NOW() WHERE id=$2`,
           [JSON.stringify(s.result), id]
         );
-        return reply.send({ job_id: id, status: 'completed', provider: job.provider_id, result: s.result, cost_usd: parseFloat(job.cost_usd) });
+        return reply.send({ job_id: id, status: 'completed', provider: job.provider_id, result: s.result });
       }
 
       if (s.status === 'failed') {
         // Per billing policy: no refund on provider-side failure
         await pool.query(`UPDATE jobs SET status='failed', completed_at=NOW() WHERE id=$1`, [id]);
-        return reply.send({ job_id: id, status: 'failed', provider: job.provider_id, error: s.error, cost_usd: parseFloat(job.cost_usd) });
+        return reply.send({ job_id: id, status: 'failed', provider: job.provider_id, error: s.error });
       }
 
       return reply.send({ job_id: id, status: 'running', provider: job.provider_id });

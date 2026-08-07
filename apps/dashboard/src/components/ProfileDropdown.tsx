@@ -107,14 +107,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               <span>Profile &amp; Account</span>
             </Link>
 
-            <Link
-              to="/settings?tab=billing"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
-            >
-              <CreditCard className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-              <span>Billing &amp; Wallet</span>
-            </Link>
+
 
             <Link
               to="/logs"

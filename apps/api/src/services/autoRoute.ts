@@ -10,7 +10,6 @@
 import { pool }                   from '../db/client';
 import { getAdapter }             from '../adapters/index';
 import { getProviderKeysForUser, markKeyUsed } from './byok';
-import { calculateCharge }        from './billing';
 import { ProviderError }          from '../types';
 import type { LDProvider }        from '../types';
 
@@ -20,7 +19,6 @@ export interface AutoRouteResult {
   result:           any;
   provider:         LDProvider;
   apiKey:           string;
-  charge:           number;
   duration_ms:      number;
   routedVia:        RoutedVia;
   attemptsCount:    number;
@@ -33,7 +31,7 @@ export async function getLiveProviders(endpoint: string): Promise<LDProvider[]> 
     `SELECT * FROM providers
      WHERE endpoint   = $1
        AND is_active  = true
-     ORDER BY cost_per_call_usd ASC`,
+     ORDER BY id ASC`,
     [endpoint],
   );
   return r.rows as LDProvider[];
@@ -70,13 +68,11 @@ export async function autoRun(
 
     const res    = await adapter.run(params, cleanKey);
     const result = (res as any).result ?? res;
-    const charge = calculateCharge(provider.id);
 
     return {
       result,
       provider,
       apiKey: cleanKey,
-      charge,
       duration_ms: Date.now() - started,
       routedVia: 'BYOK-Header-Override',
       attemptsCount: 1,
@@ -103,7 +99,6 @@ export async function autoRun(
       try {
         const res    = await adapter.run(params, keyObj.rawKey);
         const result = (res as any).result ?? res;
-        const charge = calculateCharge(provider.id);
 
         markKeyUsed(keyObj.id);
 
@@ -111,7 +106,6 @@ export async function autoRun(
           result,
           provider,
           apiKey: keyObj.rawKey,
-          charge,
           duration_ms: Date.now() - started,
           routedVia: keyObj.key_type === 'prioritized' ? 'BYOK-Prioritized' : 'BYOK-Fallback',
           attemptsCount,

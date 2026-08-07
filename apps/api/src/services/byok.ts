@@ -152,8 +152,7 @@ export async function listByokKeys(userId: string) {
        upk.created_at,
        p.name              AS provider_name,
        p.endpoint,
-       p.adapter_type,
-       p.cost_per_call_usd AS platform_cost_usd
+       p.adapter_type
      FROM user_provider_keys upk
      JOIN providers p ON p.id = upk.provider_id
      WHERE upk.user_id = $1
@@ -176,7 +175,6 @@ export async function listByokKeys(userId: string) {
     is_active:         row.is_active,
     last_used_at:      row.last_used_at,
     created_at:        row.created_at,
-    platform_cost_usd: parseFloat(row.platform_cost_usd),
     key_hint:          'sk-••••••••••••••••••••',
   }));
 }

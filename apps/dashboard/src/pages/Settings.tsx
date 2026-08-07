@@ -12,15 +12,11 @@ import { RegenerateKeyModal } from '../components/RegenerateKeyModal';
 
 interface Me {
   email: string;
-  plan: string;
   created_at: string;
-  balance_usd: number;
   total_calls: number;
-  billed_calls: number;
-  total_spent_usd: number;
 }
 
-type SettingsSubTab = 'general' | 'billing' | 'reference';
+type SettingsSubTab = 'general' | 'reference';
 type EndpointTab    = 'scrape' | 'search' | 'browser' | 'execute' | 'document';
 
 function formatDate(iso: string) {
@@ -38,8 +34,6 @@ export const Settings: React.FC = () => {
     const tabParam = searchParams.get('tab')?.toLowerCase();
     if (tabParam === 'profile' || tabParam === 'general') {
       setActiveSubTab('general');
-    } else if (tabParam === 'billing' || tabParam === 'wallet') {
-      setActiveSubTab('billing');
     } else if (tabParam === 'reference') {
       setActiveSubTab('reference');
     }
@@ -164,7 +158,6 @@ export const Settings: React.FC = () => {
       <div className="border-b border-zinc-200 dark:border-zinc-800/80 flex space-x-6 overflow-x-auto font-mono text-xs">
         {[
           { id: 'general',   label: 'General & Keys' },
-          { id: 'billing',   label: 'Billing & Wallet' },
           { id: 'reference', label: 'Quick Reference' },
         ].map((tab) => {
           const isActive = activeSubTab === tab.id;
@@ -294,75 +287,27 @@ export const Settings: React.FC = () => {
         </div>
       )}
 
-      {/* ── TAB 2: PREPAID WALLET & METERED BILLING BAR ────────────────────── */}
-      {(activeSubTab === 'billing' || activeSubTab === 'general') && (
+      {/* ── TAB 2: USAGE STATISTICS ────────────────────────────────────────── */}
+      {activeSubTab === 'general' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between font-mono">
             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Wallet className="w-4 h-4 text-lime-500" />
-              <span>Prepaid Wallet &amp; Metered Billing</span>
+              <Activity className="w-4 h-4 text-lime-500" />
+              <span>Usage Statistics</span>
             </h3>
-
-            <Link
-              to="/billing"
-              className="text-xs text-lime-600 dark:text-lime-400 hover:underline font-bold flex items-center gap-1"
-            >
-              Billing Details <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
-            
-            {/* Card 1: Prepaid Gateway Balance */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-3">
-              <div className="flex items-center justify-between text-zinc-400 text-[10px] uppercase font-bold">
-                <span>Prepaid Gateway Balance</span>
-                <Wallet className="w-4 h-4 text-emerald-500" />
-              </div>
-
-              <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                ${me ? me.balance_usd.toFixed(4) : '$\u2014'}
-              </div>
-
-              <div className="flex items-center justify-between pt-1 border-t border-zinc-200 dark:border-zinc-800">
-                <span className="text-[10px] text-zinc-400">Micro-debited per call</span>
-                <button
-                  onClick={() => navigate('/billing')}
-                  className="px-3 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-zinc-950 font-bold text-xs shadow-sm transition-all cursor-pointer"
-                >
-                  + Deposit Funds
-                </button>
-              </div>
-            </div>
-
-            {/* Card 2: Total Requests Metered */}
             <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-2">
               <div className="flex items-center justify-between text-zinc-400 text-[10px] uppercase font-bold">
-                <span>Total Gateway Requests Metered</span>
+                <span>Total Gateway Requests</span>
                 <Activity className="w-4 h-4 text-cyan-500" />
               </div>
-
               <div className="text-2xl font-extrabold text-cyan-600 dark:text-cyan-400">
-                {me ? me.total_calls.toLocaleString() : '10'} Calls
+                {me ? me.total_calls.toLocaleString() : '0'} Calls
               </div>
-
               <span className="text-[10px] text-zinc-400 block">Unified endpoint executions</span>
             </div>
-
-            {/* Card 3: Platform Routing Fees */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-2xl space-y-2">
-              <div className="flex items-center justify-between text-zinc-400 text-[10px] uppercase font-bold">
-                <span>Platform Routing Fees</span>
-                <DollarSign className="w-4 h-4 text-amber-500" />
-              </div>
-
-              <div className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">
-                ${me ? me.total_spent_usd.toFixed(4) : '$\u2014'}
-              </div>
-
-              <span className="text-[10px] text-zinc-400 block">Flat 5% BYOK optimization fee</span>
-            </div>
-
           </div>
         </div>
       )}

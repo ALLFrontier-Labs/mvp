@@ -4,34 +4,7 @@
 
 ---
 
-## ⚡ Core Business & Billing Architecture
 
-LiteDaemon is **NOT** an LLM wrapper or credit seller. It provides unified, high-performance gateway routing and encrypted key vault orchestration for developer AI tool APIs.
-
-### 1. Free Tier Threshold
-Every LiteDaemon account receives **100 free API calls per billing month** across all integrated tools (Tavily, Exa, E2B, Firecrawl, Serper, Browserbase, etc.).
-
-### 2. Monthly Auto-Reset
-Free monthly call counters automatically reset to 0 every 30 days from the start of the user's billing period.
-
-### 3. Paid Tier — 5% Gateway Fee (Call 101+)
-Starting on call 101, a **5% gateway routing fee** is applied:
-
-$$\text{Gateway Fee} = \text{Provider Base Price} \times 0.05$$
-
-Since users bring their own keys (BYOK), the raw provider cost is billed directly by the provider. **LiteDaemon only charges the 5% gateway fee.**
-
-| Tool Provider | Provider Base Price | LiteDaemon 5% Fee |
-|---|---|---|
-| Tavily Search | `$0.0010` | `$0.00005` |
-| Exa AI | `$0.0020` | `$0.00010` |
-| Firecrawl Scrape | `$0.0030` | `$0.00015` |
-| E2B Sandbox | `$0.0080` | `$0.00040` |
-
-### 4. Pre-Call Balance Check
-API requests beyond 100 calls require an active wallet balance. Requests with insufficient funds return an **HTTP 402 ("Payment Required / Insufficient Balance")** error prior to invoking the upstream provider API.
-
----
 
 ## 🛠️ Quick Start
 
@@ -66,7 +39,6 @@ curl -X POST https://www.litedaemon.xyz/v1/scrape \
 ```
 apps/api/           → Fastify backend (TypeScript) — routes, services, adapters
 apps/dashboard/     → React + Vite frontend (TypeScript + Tailwind CSS)
-lib/billing/        → Shared billing calculator & usage controller
 docs/               → Specifications (billing, pricing, BYOK, API overview)
 schema.sql          → PostgreSQL schema definition (Supabase)
 ```
@@ -113,8 +85,6 @@ cd apps/dashboard && npm run dev  # Dashboard on port 5173
 
 ## 📚 Documentation & Specs
 
-- [Billing Engine Specification](docs/billing.md)
-- [Pricing Model](docs/pricing.md)
 - [API Overview & Endpoints](docs/api-overview.md)
 - [BYOK Key Encryption & Routing](docs/byok.md)
 
@@ -129,8 +99,3 @@ cd apps/dashboard && npm run dev  # Dashboard on port 5173
 - **CORS Enforcement**: Production CORS only allows `*.litedaemon.xyz`, `*.vercel.app`, and `localhost`.
 - **No Hardcoded Secrets**: All credentials are loaded from environment variables; `.env` is gitignored.
 
----
-
-## 💳 Payments
-
-Wallet deposits are processed via **Dodo Payments**. Minimum deposit is `$5.00 USD` with a 5.5% platform fee ($0.80 minimum). Wallet credits never expire.

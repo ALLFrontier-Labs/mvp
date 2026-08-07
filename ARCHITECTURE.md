@@ -10,8 +10,8 @@ LiteDaemon is an **API gateway and intelligent routing layer for AI agent tools*
 
 ### Core Value Proposition
 
-- **Bring Your Own Keys (BYOK):** Developers register their own provider API keys (Firecrawl, Tavily, E2B, etc.). LiteDaemon routes requests through the best available key with automatic failover, charging only a **5% gateway fee** on the provider's published list price.
-- **Free Tier:** Every account receives **100 free API calls per billing month** across all tools. The 5% fee applies to calls 101+.
+- **Bring Your Own Keys (BYOK):** Developers register their own provider API keys (Firecrawl, Tavily, E2B, etc.). LiteDaemon routes requests through the best available key with automatic failover.
+- **100% Free & Open Source:** No subscriptions, no paywalls, no markup fees. Run your own gateway and scale endlessly.
 - **Unified Schema:** All providers return a standardized JSON response — eliminating per-integration glue code for developers.
 
 ### Tech Stack
@@ -22,7 +22,6 @@ LiteDaemon is an **API gateway and intelligent routing layer for AI agent tools*
 | Dashboard | Vite + React 18 + TailwindCSS | Developer SPA |
 | Database | Supabase (PostgreSQL 15) | Primary data store |
 | Cache | Upstash Redis (ioredis) | Auth token cache, rate-limit counters |
-| Payments | Dodo Payments (dodopayments SDK) | Checkout, webhook-driven wallet credits |
 | Error Tracking | Sentry (@sentry/node) | Production error monitoring |
 | API Hosting | Railway (NIXPACKS) | Container-based Node.js |
 | Dashboard Hosting | Vercel | Static SPA with CDN |
@@ -55,11 +54,7 @@ ROUTE HANDLER (e.g., routes/scrape.ts)
   7.  Per-user rate limit (services/rateLimit.ts)
         free=100, pro=1000, enterprise=10000 req/min via Redis INCR
         Falls back to in-memory Map when Redis unavailable
-  8.  BYOK allowance pre-check (services/byokPricing.ts)
-        monthly_call_count <= 100 -> isFreeCall=true, no charge
-        monthly_call_count  > 100 -> check wallet >= 5% gateway fee
-        Insufficient balance -> HTTP 402 (before provider is called)
-        Resets monthly_call_count if 30 days elapsed
+  8.  [Removed billing]
 
 autoRun() ROUTING ENGINE (services/autoRoute.ts)
   9.  If X-Provider-Key header present -> use it directly (BYOK-Header-Override)
@@ -73,14 +68,8 @@ autoRun() ROUTING ENGINE (services/autoRoute.ts)
 
 POST-EXECUTION (back in route handler)
   11. INSERT INTO jobs (...) RETURNING id
-  12. debitLedger() if finalCharge > 0
-        SELECT FOR UPDATE (row-level lock on users row)
-        Check balance >= charge
-        UPDATE users SET balance_usd = balance_usd - charge WHERE balance_usd >= charge
-        INSERT immutable ledger_entry (append-only, never modified)
-        bustAuthCache(userId) -> DEL Redis keys for user
-  13. UPDATE jobs SET result, completed_at
-  14. Return HTTP 200: { job_id, status, provider, result, cost_usd, duration_ms, routed_via }
+  12. UPDATE jobs SET result, completed_at
+  13. Return HTTP 200: { job_id, status, provider, result, duration_ms, routed_via }
 ```
 
 ### Diagnostic Response Headers
@@ -89,7 +78,6 @@ POST-EXECUTION (back in route handler)
 |---|---|---|
 | X-LiteDaemon-Routed-Via | BYOK-Prioritized | Key tier used |
 | X-LiteDaemon-Key-Attempts | 2 | Number of BYOK keys tried |
-| X-LiteDaemon-Wallet-Deducted | $0.000150 | Exact gateway fee debited |
 | X-RateLimit-Limit | 100 | Plan rate limit |
 | X-RateLimit-Remaining | 87 | Calls left in current 1-min window |
 | X-RateLimit-Reset | 1723000860 | Unix timestamp when window resets |
@@ -112,13 +100,6 @@ POST-EXECUTION (back in route handler)
 | password_hash | TEXT | NULLABLE | PBKDF2-SHA512 (100k iterations), format: salt:hash. NULL for OAuth-only accounts |
 | first_name | TEXT | NULLABLE | Optional |
 | last_name | TEXT | NULLABLE | Optional |
-| balance_usd | NUMERIC(18,8) | NOT NULL, DEFAULT 0 | Prepaid wallet; 8dp for sub-cent precision |
-| credit_balance | NUMERIC(18,8) | NOT NULL, DEFAULT 0 | Mirror of balance_usd; kept in sync on every transaction |
-| monthly_call_count | INTEGER | NOT NULL, DEFAULT 0 | Resets every 30 days |
-| billing_period_start | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Timestamp of last billing reset |
-| stripe_customer_id | TEXT | NULLABLE | Legacy; unused |
-| stripe_payment_method_id | TEXT | NULLABLE | Legacy; unused |
-| plan | TEXT | NOT NULL, DEFAULT 'free' | Values: free, pro, enterprise |
 | is_active | BOOLEAN | NOT NULL, DEFAULT true | Soft-delete flag |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
 
@@ -147,7 +128,6 @@ POST-EXECUTION (back in route handler)
 | adapter_type | TEXT | NOT NULL | Maps to src/adapters/<slug>.ts |
 | response_type | TEXT | NOT NULL, DEFAULT 'sync' | sync or async |
 | api_key_encrypted | TEXT | NOT NULL | AES-256-GCM encrypted key. 'PLACEHOLDER' = not yet seeded |
-| cost_per_call_usd | NUMERIC(18,8) | NOT NULL | Wholesale list price; basis for 5% fee |
 | config | JSONB | NOT NULL, DEFAULT '{}' | Reserved |
 | is_active | BOOLEAN | NOT NULL, DEFAULT true | |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
@@ -167,29 +147,7 @@ POST-EXECUTION (back in route handler)
 | steel | Steel Browser | browser | sync | $0.015000 |
 | e2b | E2B Sandbox | execute | sync | $0.003000 |
 
-### Table: `ledger_entries`
 
-**Append-only.** Rows are NEVER updated or deleted.
-
-| Column | Type | Constraints | Notes |
-|---|---|---|---|
-| id | UUID | PK | |
-| user_id | UUID | NOT NULL, FK -> users(id) | |
-| type | TEXT | NOT NULL | debit, deposit, free_call |
-| direction | TEXT | NOT NULL | debit, credit, none |
-| amount_usd | NUMERIC(18,8) | NOT NULL | |
-| raw_provider_cost | NUMERIC(18,8) | NULLABLE | Provider's wholesale cost before markup |
-| markup_amount | NUMERIC(18,8) | NULLABLE | 5% markup = final - raw |
-| total_deducted | NUMERIC(18,8) | NULLABLE | Equals amount_usd |
-| provider_id | TEXT | NULLABLE, FK -> providers(id) | |
-| job_id | UUID | NULLABLE | FK to jobs(id) |
-| description | TEXT | NOT NULL | e.g., "Tavily Search search gateway fee" |
-| balance_after | NUMERIC(18,8) | NOT NULL | Wallet balance after this entry |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
-
-**Indexes:** idx_ledger_user(user_id), idx_ledger_created(created_at DESC), idx_ledger_job(job_id)
-
-### Table: `jobs`
 
 | Column | Type | Constraints | Notes |
 |---|---|---|---|
@@ -201,7 +159,6 @@ POST-EXECUTION (back in route handler)
 | params | JSONB | NOT NULL, DEFAULT '{}' | Request params |
 | status | TEXT | NOT NULL, DEFAULT 'pending' | pending, running, completed, failed |
 | result | JSONB | NULLABLE | Set when status=completed |
-| cost_usd | NUMERIC(18,8) | NOT NULL | Final gateway fee |
 | is_byok | BOOLEAN | NOT NULL, DEFAULT false | |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | |
 | completed_at | TIMESTAMPTZ | NULLABLE | Used to compute duration_ms |
@@ -229,10 +186,8 @@ POST-EXECUTION (back in route handler)
 
 ```sql
 SELECT user_id,
-  COUNT(*) AS total_calls,
-  COUNT(*) FILTER (WHERE type = 'debit') AS billed_calls,
-  COALESCE(SUM(amount_usd) FILTER (WHERE type = 'debit'), 0) AS total_spent_usd
-FROM ledger_entries
+  COUNT(*) AS total_calls
+FROM jobs
 GROUP BY user_id;
 ```
 
@@ -308,22 +263,3 @@ Runs every 60 minutes. Finds jobs with `status='running'` AND `created_at < NOW(
 
 ---
 
-## 6. Billing Engine
-
-### 5% Gateway Fee
-```
-gateway_fee = provider_base_price_usd * 0.05
-```
-Price registry: `src/config/provider-prices.ts`. Unknown providers: $0.002 base price.
-
-| Provider | Base | Fee |
-|---|---|---|
-| Firecrawl | $0.003 | $0.00015 |
-| Tavily | $0.001 | $0.00005 |
-| Browserbase | $0.015 | $0.00075 |
-
-### Free Tier
-100 calls/month free. Tracked in `users.monthly_call_count`. Resets every 30 days.
-
-### Atomic Debit
-`SELECT FOR UPDATE` + conditional `UPDATE WHERE balance_usd >= charge` = double overdraft protection. On failure: `InsufficientFundsError` → HTTP 402.

@@ -12,7 +12,6 @@ import { browserRoute } from './routes/browser';
 import { executeRoute } from './routes/execute';
 import { jobsRoute } from './routes/jobs';
 import { usageRoute } from './routes/usage';
-import { billingRoute } from './routes/billing';
 import { providersRoute } from './routes/providers';
 import { keysRoute }      from './routes/keys';
 import { documentRoute }  from './routes/document';
@@ -190,7 +189,6 @@ async function main() {
   app.register(documentRoute);
   app.register(jobsRoute);
   app.register(usageRoute);
-  app.register(billingRoute);
   app.register(providersRoute);
   app.register(keysRoute);
 

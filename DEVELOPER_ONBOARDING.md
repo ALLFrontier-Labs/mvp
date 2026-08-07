@@ -30,7 +30,6 @@ Install the following before starting:
 You will also need **accounts** with:
 - [Supabase](https://supabase.com) — free tier is sufficient for development
 - [Upstash](https://upstash.com) — free Redis instance
-- [Dodo Payments](https://dodopayments.com) — for payment testing (test mode available)
 - [Google Cloud Console](https://console.cloud.google.com) — for OAuth credentials
 
 ---
@@ -111,18 +110,7 @@ postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.co
    - `https://www.litedaemon.xyz/auth/callback` (production)
 4. Note the **Client ID** and **Client Secret**.
 
----
 
-## 7. Dodo Payments Setup
-
-1. Create an account at [dodopayments.com](https://dodopayments.com).
-2. Go to **API Keys** and generate a key (use **test mode** for development).
-3. Create a **Product** for wallet top-ups (one-time payment, USD).
-4. Note the **Product ID**.
-5. In Webhooks settings, add endpoint `https://<your-api-url>/v1/webhooks/dodo` and note the **Webhook Secret**.
-6. For local testing, use a tool like [ngrok](https://ngrok.com) to expose your local server.
-
----
 
 ## 8. Environment Variable Configuration
 
@@ -151,12 +139,6 @@ PROVIDER_ENCRYPTION_KEY=<64-char-hex-string>
 # ── Google OAuth ───────────────────────────────────────────────────────────────
 GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=<your-client-secret>
-
-# ── Dodo Payments ──────────────────────────────────────────────────────────────
-DODO_PAYMENTS_API_KEY=<your-dodo-api-key>
-DODO_PRODUCT_ID=<your-dodo-product-id>
-DODO_WEBHOOK_SECRET=<your-webhook-secret>
-NEXT_PUBLIC_DODO_PAYMENTS_ENVIRONMENT=test_mode   # Change to live_mode in production
 
 # ── Application ────────────────────────────────────────────────────────────────
 FRONTEND_URL=http://localhost:5173
@@ -289,10 +271,7 @@ Complete reference of every environment variable used in the system.
 | `REDIS_URL` | Recommended | Upstash → Database → ioredis URL | Optional — auth works without Redis (falls back to DB), but performance degrades significantly |
 | `GOOGLE_CLIENT_ID` | For Google OAuth | Google Cloud Console → OAuth Credentials | Without this, /v1/auth/google/exchange returns 503 |
 | `GOOGLE_CLIENT_SECRET` | For Google OAuth | Google Cloud Console → OAuth Credentials | Must match GOOGLE_CLIENT_ID |
-| `DODO_PAYMENTS_API_KEY` | For billing | Dodo Payments → API Keys | Without this, /v1/billing/checkout returns an error |
-| `DODO_PRODUCT_ID` | For billing | Dodo Payments → Products | Without this, checkout will throw at runtime |
-| `DODO_WEBHOOK_SECRET` | For webhooks | Dodo Payments → Webhooks | Without this, all webhook requests return 503 |
-| `FRONTEND_URL` | Recommended | Set to your dashboard URL | Used for Dodo Payments return_url redirect |
+| `FRONTEND_URL` | Recommended | Set to your dashboard URL | Used for redirects |
 | `PORT` | No | n/a | Default: 3000 |
 | `NODE_ENV` | No | n/a | 'development' or 'production'. Debug logs disabled in production |
 | `SENTRY_DSN` | Optional | Sentry → Project → DSN | Leave empty for local dev |
@@ -342,9 +321,7 @@ cd apps/api && npm run typecheck
 ```bash
 # API tests (no test runner configured — use ts-node directly)
 cd apps/api
-npx ts-node -r dotenv/config src/tests/billing.test.ts
-npx ts-node -r dotenv/config src/tests/byok_billing.test.ts
-node src/tests/test_byok_allowance.js
+npx ts-node -r dotenv/config src/tests/provider_failover.test.ts
 ```
 
 ### Code Structure Conventions
@@ -408,12 +385,6 @@ The provider's `adapter_type` in the `providers` table doesn't match any key in 
 ### HTTP 401 BYOK_KEY_REQUIRED
 The user has no active BYOK keys for the requested provider. They need to add keys in the dashboard at `/keys`.
 
-### HTTP 402 insufficient_balance
-The user's wallet balance is below the 5% gateway fee for this call. Direct them to `/billing` to top up.
-
-### Webhook returns 401 invalid_signature
-The `DODO_WEBHOOK_SECRET` in the environment doesn't match the secret configured in Dodo Payments dashboard. Also check that you're sending the raw unmodified request body (not a parsed JSON re-stringification).
-
 ### "No Browserbase projects found"
 The user's Browserbase API key is valid but has no projects. The user needs to create a project in their Browserbase account first. Or pass `project_id` explicitly in the request params.
 
@@ -428,9 +399,6 @@ The user's Browserbase API key is valid but has no projects. The user needs to c
 | schema.sql | Complete database schema — run once to set up |
 | apps/api/src/services/auth.ts | API key validation, hashing, cache management |
 | apps/api/src/services/autoRoute.ts | BYOK routing engine — the core of the gateway |
-| apps/api/src/services/ledger.ts | Atomic wallet debit and credit operations |
-| apps/api/src/services/byokPricing.ts | 100-call free tier + 5% fee pre-check |
-| apps/api/src/config/provider-prices.ts | Provider price registry |
 | apps/api/src/adapters/index.ts | Adapter registry — add new providers here |
 | apps/dashboard/src/lib/api.ts | Dashboard API client — all HTTP calls to the gateway |
 | apps/api/.env.example | Complete list of all required environment variables |

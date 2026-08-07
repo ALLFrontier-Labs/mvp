@@ -11,19 +11,17 @@ The LiteDaemon Gateway routes tool requests through a unified API surface using 
 - `POST /v1/browser` — Cloud Browser Sessions (Browserbase, Steel)
 - `POST /v1/execute` — Code Sandbox Execution (E2B)
 - `POST /v1/document` — Document Processing & Parsing
-- `GET /v1/usage` — Usage statistics & monthly call count
-- `GET /v1/billing/checkout` — Wallet deposit session creation
+- `GET /v1/usage` — Usage statistics & call count
 
 ---
 
-## Billing & Rate Limit Headers
+## Rate Limit Headers
 
 Every successful gateway call returns telemetry headers:
 ```http
 HTTP/1.1 200 OK
 X-LiteDaemon-Routed-Via: tavily
 X-LiteDaemon-Key-Attempts: 1
-X-LiteDaemon-Wallet-Deducted: $0.000000
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 99
 ```
@@ -36,7 +34,6 @@ X-RateLimit-Remaining: 99
 |---|---|---|
 | **200 OK** | Success | Tool executed successfully |
 | **401 Unauthorized** | Invalid Token | Missing or invalid `LITEDAEMON_MASTER_KEY` |
-| **402 Payment Required** | Insufficient Balance | Exceeded 100 free monthly calls with insufficient balance |
 | **422 Validation Error** | Invalid Parameters | Required parameters missing |
 | **429 Too Many Requests** | Rate Limit Exceeded | Exceeded tier rate limit |
 | **502 Bad Gateway** | Provider Error | Upstream provider failure |

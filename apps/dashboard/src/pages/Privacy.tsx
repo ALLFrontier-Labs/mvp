@@ -80,7 +80,7 @@ export const Privacy: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-zinc-800 dark:text-zinc-200 font-semibold mb-1">Billing &amp; Financial Data</h3>
-                <p>Wallet balance, transaction ledger entries (credits, debits, gateway fees), and payment metadata (processed by Dodo Payments — we never store full card numbers, CVVs, or bank details).</p>
+                <p>Account usage metrics and API execution logs. We do not store or process payment card data or financial information.</p>
               </div>
               <div>
                 <h3 className="text-zinc-800 dark:text-zinc-200 font-semibold mb-1">Usage Telemetry (Non-Sensitive)</h3>

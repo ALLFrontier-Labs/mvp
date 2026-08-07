@@ -248,9 +248,11 @@ export const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                         )}
                       </div>
 
-                      <span className="px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-[10px]">
+                      <div className="flex items-center space-x-2">
+                      <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-mono font-bold uppercase border border-purple-500/20">
                         {ws.role}
                       </span>
+                    </div>
                     </div>
 
                     <div className="flex items-center gap-3 text-[11px] text-zinc-500 dark:text-zinc-400 pt-1 border-t border-zinc-200/60 dark:border-zinc-800/60 font-mono">

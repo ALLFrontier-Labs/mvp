@@ -1321,7 +1321,7 @@ print(response.json())`
                       <tr>
                         <td className="p-3 text-amber-500 font-bold">402</td>
                         <td className="p-3 text-zinc-900 dark:text-zinc-100 font-bold">Payment Required</td>
-                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Insufficient prepaid routing wallet balance.</td>
+                        <td className="p-3 text-zinc-600 dark:text-zinc-400">Legacy payment error code (not used in free mode).</td>
                       </tr>
                       <tr className="bg-zinc-50 dark:bg-zinc-900/60">
                         <td className="p-3 text-cyan-500 font-bold">429</td>
